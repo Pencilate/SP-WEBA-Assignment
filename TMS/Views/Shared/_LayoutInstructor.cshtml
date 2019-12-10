@@ -1,0 +1,101 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TimeSheet Tracking</title>
+
+    <!-- Font Awesome -->
+    <link href="~/lib/font-awesome/css/all.min.css" rel="stylesheet" />
+    <!-- Bootstrap core CSS -->
+    <link href="~/lib/twitter-bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Material Design Bootstrap -->
+    <link href="~/lib/mdb/css/mdb.min.css" rel="stylesheet" />
+    <!-- Your custom styles (optional) -->
+    <link href="~/css/site.css" rel="stylesheet" />
+
+    <link href="~/lib/noty/noty.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/noty_custom.css" />
+    <link rel="stylesheet" href="~/css/sticky_footer.css" />
+    <!-- Bootsrap-table core CSS -->
+    <link href="~/lib/bootstrap-table/bootstrap-table.min.css" rel="stylesheet" />
+    <!-- jqWidget core CSS -->
+    <link href="~/lib/jqwidgets/styles/jqx.base.css" rel="stylesheet" />
+    <link href="~/lib/jqwidgets/styles/jqx.flat.css" rel="stylesheet" />
+    <!-- jQuery library-->
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+
+    <!-- Bootstrap tooltips -->
+    <script src="~/lib/popper.js/umd/popper.min.js"></script>
+    <!-- Bootstrap core JavaScript -->
+    <script src="~/lib/twitter-bootstrap/js/bootstrap.min.js"></script>
+    <!-- MDB core JavaScript -->
+    <script src="~/lib/mdb/js/mdb.min.js"></script>
+    <!-- jqWidgets core JavaScript for all widgets (large JS file size)-->
+    <script src="~/lib/jqwidgets/jqx-all.js"></script>
+    <!-- jQuery validate plugin-->
+    <script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+    <script src="~/lib/jquery-validation/dist/additional-methods.js"></script>
+    <!-- Boostrap table core JavaScript -->
+    <script src="~/lib/bootstrap-table/bootstrap-table.min.js"></script>
+    <script src="~/lib/noty/noty.min.js"></script>
+    <script src="~/lib/moment/moment.min.js"></script>
+    <script src="~/lib/store/store.min.js"></script>
+    <script src="~/lib/moment/moment-weekdaysin.js"></script>
+</head>
+<body>
+ <!-- Wrap all page content here -->
+ <div id="wrap">
+  <!-- Using Bootstrap 4 -->
+  <!-- Fixed navbar -->
+  <div class="navbar navbar-expand-md navbar-dark bg-primary fixed-top">
+   <span class="navbar-brand mb-0 h1">Timesheet Tracking</span>
+   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+   </button>
+   <div class="collapse navbar-collapse" id="navbarSupportedContent">
+		 <ul class="navbar-nav mr-auto">
+		 	<li class="nav-item dropdown">
+		 		<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown1" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+		 			Timesheet
+		 		</a>
+					<div class="dropdown-menu" aria-labelledby="navbarDropdown1">
+						<a class="dropdown-item" asp-controller="InstructorHome" asp-action="PrepareMyTimeSheet">Prepare timesheet</a>
+						<a class="dropdown-item" asp-controller="InstructorHome" asp-action="ManageMyTimeSheet">Manage timesheet</a>
+						<a class="dropdown-item" asp-controller="DateTimeSettings" asp-action="Index">Mock up Date time for testing</a>
+					</div>
+		 	</li>
+		 	<li class="nav-item">
+		 		<a class="nav-link" href="/Experiments/Index">
+		 			Experiments
+		 		</a>
+		 	</li>
+		 </ul>
+			
+
+		
+       @await Html.PartialAsync("_LoginPartial")
+
+
+
+
+   </div>
+  </div>
+ </div>
+
+
+ <div class="container-fluid body-content">
+
+  @RenderBody()
+
+ </div>
+
+
+ <footer class="footer">
+  <div class="container">
+   <p class="text-muted">Remember to self-explore the _LayoutInstructor.cshtml to see how the HTML markups are used to make the whole site consistent</p>
+  </div>
+ </footer>
+ @RenderSection("scripts", required: false)
+</body>
+</html>

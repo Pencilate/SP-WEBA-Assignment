@@ -1,0 +1,32 @@
+﻿@using System.Security.Claims
+@using TMS.Services
+@{/*http://www.binaryintellect.net/articles/17ee0ba2-99bb-47f0-ab18-f4fc32f476f8.aspx How to access DI service*/}
+@{IAppDateTimeService appDateTimeService = (IAppDateTimeService)Context.RequestServices.GetService(typeof(IAppDateTimeService));}
+@{var identity = Context.User.Identity as ClaimsIdentity; }
+@if (identity.IsAuthenticated)
+{
+    <!-- This is a <form> tag section which has a submit type control that shall call the Account controller instance's Logout action method-->
+    <form asp-area="" asp-controller="Home" asp-action="Logout" method="post" id="logoutForm" class="navbar-right">
+        <ul class="nav navbar-nav navbar-right">
+
+            <li>
+                <a asp-area="" asp-controller="Accounts" asp-action="Profile" title="Manage"><span class="text-light mr-2"><span class="text-white-50">@appDateTimeService.GetCurrentDateTime().ToString("dddd, dd MMMM yyyy")</span> Hello @identity.FindFirst("fullName").Value</span></a>
+            </li>
+            <li>
+                <button type="submit" class="btn btn-info">Log out</button>
+            </li>
+        </ul>
+    </form>
+}
+else
+{
+    <ul class="nav navbar-nav flex-row justify-content-between ml-auto">
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Home" asp-action="Register">Sign up</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/Home/Login">Sign in</a>
+        </li>
+
+    </ul>
+}

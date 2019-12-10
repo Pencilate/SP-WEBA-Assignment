@@ -1,0 +1,147 @@
+﻿
+<p class="h1">Update User</p>
+
+<form id="dataForm">
+
+    <div class="form-group row">
+        <label class="col-md-2 col-form-label" for="fullNameInput">Full name</label>
+        <div class="col-md-6">
+            <input type="text" id="fullNameInput" name="fullNameInput" class="form-control"
+                   placeholder="Full name" value="" />
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-md-2 col-form-label" for="emailInput">Email</label>
+        <div class="col-md-4">
+            <input type="text" id="emailInput" name="emailInput" class="form-control "
+                   placeholder="Email" value="" />
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-md-2 col-form-label" for="roleIdInput">Role</label>
+        <div class="col-md-4">
+            <select type="text" id="roleIdInput" name="roleIdInput" class="form-control ">
+                <option value="0">-- Select role --</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-10 offset-2">
+            <a class="btn btn-secondary" href="/AccountManager/ManageUsers">Cancel</a>
+            <input type="button" class="btn btn-danger" value="Delete" id="deleteButton" />
+            <input type="button" class="btn btn-primary" value="Save" id="saveButton" />
+        </div>
+    </div>
+</form>
+@section Scripts  {
+    <script>
+        (function () {
+        const ID = getIdFromAddressBar();
+        $.when(setupRoleListBox()).then(function (resp1) {
+            //this callback will be fired once all ajax calls have finished.
+            loadData();
+        });
+
+       
+            jQuery('#saveButton').on('click', function () {
+
+                let collectedFullName = jQuery('#fullNameInput').val();
+                let collectedEmail = jQuery('#emailInput').val();
+                let collectedRoleId = jQuery('#roleIdInput').val();
+
+
+                /* Create a new JavaScript class */
+                function WebFormData(inFullName, inEmail, inRoleId) {
+                    this.fullName = inFullName;
+                    this.email = inEmail;
+                    this.roleId = inRoleId;
+                }//End of WebFormData class definition
+
+                //Create a object, webFormData by using WebFormData class
+                let webFormData = new WebFormData(collectedFullName,
+                    collectedEmail, collectedRoleId);
+
+
+                $.ajax({
+                    type: 'PUT',
+                    url: '/API/AccountManager/UpdateUser/' + ID,
+                    data: webFormData,
+                    datatype: 'application/json',
+                    contentType: 'application/x-www-form-urlencoded',
+                }).done(function (data) {
+                    console.dir(data);
+                    new Noty({ text: data.message, type: 'success', layout: 'center' }).show();
+                }).fail(function (data) {
+                    if (data.responseJSON) {
+                        new Noty({ text: data.responseJSON.message, type: 'error', layout: 'center' }).show();
+                    } else {
+                        new Noty({ text: 'Unable to create record.', type: 'error', layout: 'center' }).show();
+                    }
+                })
+            }//end of anonymous function
+            );//$.ajax().done().fail()
+
+            function loadData() {
+                return $.ajax({
+                    method: 'GET',
+                    url: '/API/AccountManager/GetOneUser/' + ID,
+                    dataType: 'json'
+                }).done(function (data) {
+                    jQuery('#fullNameInput').val(data.record.fullName);
+                    jQuery('#emailInput').val(data.record.userName);
+                    jQuery('#roleIdInput').val(data.record.roleId);
+                });
+            };//loadData
+            function setupRoleListBox() {
+                return $.ajax({
+                    method: 'GET',
+                    url: '/API/AccountManager/GetRolesForInputControls/',
+                    dataType: 'json'
+                }).done(function (data) {
+                    let roleList = data.records;
+                    for (let index = 0; index < roleList.length; index++) {
+                        $('#roleIdInput').append($('<option value="' + roleList[index].id + '">' + roleList[index].roleName + '</option>'));
+                    }
+                    });
+            }//setupRoleListBox
+            function getIdFromAddressBar() {
+                //Get Id from the url string in the browser's address bar
+                let urlArray = window.location.href.split('/');
+                let id = urlArray[urlArray.length - 1];
+                return id;
+            };
+
+            $('#deleteButton').on('click', function () {
+                jQuery.ajax({
+                    method: 'DELETE',
+                    url: '/API/AccountManager/DeleteUser/' + ID
+                }).done(function (data) {
+                    //Referred to https://ned.im/noty/#/confirm to make a confirm dialog form
+                    var noty = new Noty({
+                        modal: true,
+                        layout: 'center',
+                        text: 'Deleted user record.',
+                        buttons: [
+                            Noty.button('BACK', 'btn btn-success', function () {
+                                location.replace('/AccountManager/ManageUsers');
+                            }, { id: 'button1', 'data-status': 'ok' })
+                        ]
+                    });
+                    noty.show();
+
+                }).fail(function (data) {
+                    console.log(data);
+                    new Noty({
+                        text: data.responseJSON.message, type: 'error',
+                        layout: 'center',
+                    }).show();//end of new Noty(..).show()
+                });
+
+            });////end of $('#deleteButton').on('click', anonymous function)
+
+
+        })()
+    </script>
+}
+

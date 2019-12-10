@@ -1,0 +1,88 @@
+﻿<p class="h1">Register</p>
+
+<form id="dataForm">
+    @Html.AntiForgeryToken()
+    <div class="form-group row">
+        <label class="col-md-2 col-form-label" for="fullNameInput">Full name</label>
+        <div class="col-md-6">
+            <input type="text" id="fullNameInput" name="fullNameInput" class="form-control"
+                   placeholder="First name" value="KENNETH" />
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-md-2 col-form-label" for="emailInput">Email</label>
+        <div class="col-md-4">
+            <input type="text" id="emailInput" name="emailInput" class="form-control "
+                   placeholder="Email" value="KENNETH@EMU.COM" />
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-md-2 col-form-label" for="password1Input">Password</label>
+        <div class="col-md-4">
+            <input type="text" id="password1Input" name="password1Input" class="form-control "
+                   placeholder="Email" value="p@ssw0rd" />
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-md-2 col-form-label" for="password2Input">Confirm Password</label>
+        <div class="col-md-4">
+            <input type="text" id="password2Input" name="password2Input" class="form-control "
+                   placeholder="Email" value="p@ssw0rd" />
+        </div>
+    </div>
+    <div class="form-group row">
+        <div class="col-10 offset-2">
+            <a class="btn btn-secondary" href="/Home/Index">Cancel</a>
+            <input type="button" class="btn btn-primary" value="Register" id="registerButton" />
+        </div>
+    </div>
+</form>
+@section Scripts  {
+    <script>
+
+  jQuery('#registerButton').on('click', function () {
+
+   let collectedFullName = jQuery('#fullNameInput').val();
+   let collectedEmail = jQuery('#emailInput').val();
+   let collectedPassword = jQuery('#password1Input').val();
+
+
+   /* Create a new JavaScript class */
+   function WebFormData(inFullName, inEmail,inPassword) {
+    this.fullName = inFullName;
+    this.email = inEmail;
+    this.password = inPassword;
+   }//End of WebFormData class definition
+
+   //Create a object, webFormData by using WebFormData class
+   let webFormData = new WebFormData(collectedFullName,
+    collectedEmail,  collectedPassword);
+
+
+   $.ajax({
+    type: 'POST',
+    url: '/API/AccountManager/SignUp',
+    data: webFormData,
+    datatype: 'application/json',
+    contentType: 'application/x-www-form-urlencoded',
+    beforeSend: function (request) {
+     request.setRequestHeader('RequestVerificationToken', $('[name="__RequestVerificationToken"]').val());
+    },/* Either you clear the token cookie or purposely don't prepare the header, the server side will block. The web api will not execute at all*/
+   }).done(function (data) {
+       console.dir(data);
+       new Noty({ text: data.message, type: 'success', layout:'center' }).show();
+
+   }).fail(function (data) {
+    if (data.responseJSON) {
+     new Noty({ text: data.responseJSON.message, type: 'error', layout: 'center' }).show();
+    } else {
+     new Noty({ text:'Sorry. Unable to complete your registration.', type: 'error', layout: 'center' }).show();
+    }
+   })
+  }//end of anonymous function
+ );
+
+
+    </script>
+}
+

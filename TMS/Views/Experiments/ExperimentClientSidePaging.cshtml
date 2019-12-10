@@ -1,0 +1,49 @@
+﻿<table cellpadding="0" cellspacing="0"
+       border="0" class="table table-bordered table-hover dt-responsive"
+       id="dataTable">
+    <thead>
+        <tr>
+            <th>Full name</th>
+            <th>User name</th>
+            <th>Role</th>
+        </tr>
+    </thead>
+    <tbody id="dataTableBody"></tbody>
+</table>
+
+@section scripts{
+    <link href="~/lib/datatables/datatables.css" rel="stylesheet" />
+    <link href="~/lib/datatables/Responsive-2.2.2/css/responsive.bootstrap4.css" rel="stylesheet" />
+    
+    <script src="~/lib/datatables/datatables.min.js"></script>
+
+    <script>
+        (function ($, window) {
+            let $dataTable = null;
+            let records = null;
+            loadData();
+            function loadData() {
+                $.ajax({
+                    url: '/API/AccountManager/GetUsers',
+                    method: 'GET'
+                }).done(function (data) {
+                    $dataTable = $('#dataTable').dataTable({
+                        data: data.records,
+                        columns: [
+                            { data: 'fullName' },
+                            { data: 'userName' },
+                            { data: 'role.roleName' }
+                        ],
+                        lengthMenu: [[5,10, 25, 50, -1], [5 ,10, 25, 50, "All"]],
+                        pageLength: 5
+                    });
+                });//end of ajax().done();
+            }//end of loadData function
+        })($, window)
+
+    </script>
+
+
+
+}
+

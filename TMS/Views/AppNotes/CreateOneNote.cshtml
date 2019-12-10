@@ -1,0 +1,167 @@
+﻿<body>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb ">
+            <li class="breadcrumb-item font-small">
+                <a asp-controller="AppNotes" asp-action="Index">Manage notes</a>
+            </li>
+            <li class="breadcrumb-item font-small active">Create note</li>
+        </ol>
+    </nav>
+    <div class="card">
+        <div class="card-header stylish-color-dark white-text">
+            <h4 class="one" style="padding-top:1.8%;">Create a note</h4>
+        </div>
+        <div class="card-body" style="padding:3% 6%">
+            <p style="padding-top:2%"><strong>Note</strong></p>
+            <p class="font-small float-right">* indicates required fields</p>
+            <form id="dataForm">
+                <div class="form-group col-md-12">
+                    <label for="noteInput" class="font-small font-weight-medium">
+                        Note <a class=" d-inline">*</a>
+                    </label>
+                    <textarea id="noteInput" name="noteInput" class="form-control" rows="4" cols="200" maxlength="800" placeholder="Enter text.."></textarea>
+                    <span></span>
+                </div>
+                <div class="form-group col-md-12">
+                    <label for="deadlineInput" class="font-small font-weight-medium">
+                        Deadline *
+                    </label>
+                    <input type="text" id="deadlineInput" class="form-control"
+                           data-toggle="datepicker" name="deadlineInput" placeholder="dd/MM/YYYY" />
+                </div>
+                <div class="form-group col-md-12">
+                    <label for="" class="font-small font-weight-medium">
+                        Priority *
+                    </label>
+                    <div id="priorityInputContainer"></div>
+                </div>
+                <div class="form-group col-md-12">
+                    <label class="control-label col-md-1"></label>
+                    <div class="float-right">
+                        <button type="button" id="saveButton" class="btn btn-primary">
+                            Create note
+                        </button>
+                        <button type="button" id="resetButton" class="btn btn-secondary">
+                            Reset
+                        </button>
+                        <button type="button" class="btn btn-light"
+                                onclick="location.href='@Url.Action("Index", "AppNotes")'">
+                            Back
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div><!-- end of div element which has the class="card-body" -->
+    </div><!-- end of the div element which has the class="card" -->
+</body>
+@section scripts{
+    <link href="~/lib/datepicker/datepicker.min.css" rel="stylesheet" />
+    <script src="~/lib/datepicker/datepicker.min.js"></script>
+    <style>
+    </style>
+    <script>
+        //Interested to learn IIFE Immediately-Invoked JavaScript Expression? Check out
+        //https://medium.com/@@vvkchandra/essential-javascript-mastering-immediately-invoked-functionexpressions-67791338ddc6
+            (function ($, moment) {
+                //Initialise datepicker
+                $('[data-toggle="datepicker"]').datepicker({ format: 'DD/MM/YYYY' });
+                setupRadioButtonList();
+                //Validate Valid date
+                $.validator.addMethod('validDate', function (value, element) {
+                    //http://stackoverflow.com/questions/24380305/validate-date-in-dd-mm-yyyy-format-usingjquery-validate
+                    return this.optional(element) || moment(value, 'DD/MM/YYYY').isValid();
+                }, 'Please enter a valid date in the format DD/MM/YYYY');
+                //Set jquery validation rules
+                $('#dataForm').validate({
+                    rules: {
+                        noteInput: {
+                            required: true,
+                            maxlength: 800
+                        },
+                        deadlineInput: {
+                            required: true,
+                            validDate: true
+                        }
+                    },
+                    messages: {
+                        noteInput: {
+                            required: 'Note is required',
+                            maxlength: 'Not more than 800 characters'
+                        },
+                        deadlineInput: {
+                            required: 'Deadline is required'
+                        }
+                    }
+                });
+                //Make clicking the datepicker validate the input field immediately
+                $('#deadlineInput').datepicker({
+                    autoclose: true,
+                }).on('change', function () {
+                    $(this).valid(); // Triggers a validation test
+                });
+                //Create JavaScript object with constructor
+                // https://codeburst.io/various-ways-to-create-javascript-object-9563c6887a47
+                function WebFormData(inNote, inDeadline, inPriorityLevelId) {
+                    this.note = inNote;
+                    this.deadline = inDeadline;
+                    this.priorityLevelId = inPriorityLevelId;
+                }
+                //Create method to submit form with POST API method
+                $('#saveButton').on('click', function () {
+                    //Checking the validation result in the Console window
+                    console.log($('#dataForm').valid());
+                    if ($('#dataForm').valid()) {
+                        let collectedNote = $('#noteInput').val();
+                        let collectedDeadline = $('#deadlineInput').val();
+                        let collectedPriorityLevelId = $('input[name="priorityLevelRadios"]:checked').val();
+                        let webFormData = new WebFormData(collectedNote,
+                            collectedDeadline, collectedPriorityLevelId);
+                        console.dir(webFormData);
+                        $.ajax({
+                            type: 'POST',
+                            url: '/API/AppNotes/CreateOneNote',
+                            contentType: 'application/x-www-form-urlencoded',
+                            data: webFormData
+                        }).done(function (data, textStatus, jqXHR) {
+                            new Noty({
+                                text: data.message,
+                                theme: 'metroui',
+                                layout: 'center',
+                                type: 'success'
+                            }).show();
+                        }).fail(function (data, textStatus, jqXHR) {
+                            new Noty({
+                                text: data.responseJSON.message,
+                                theme: 'metroui',
+                                layout: 'center',
+                                timeout: 3000,
+                                type: 'error'
+                            }).show();
+                        });//end of ajax().done().fail();
+                    }//end of if ($("#dataForm").valid()) {
+                });//end of $('#saveButton').on('click', function () {
+                $('#resetButton').click(function (event) {
+                    $('#dataForm').closest('form').find('input[type=text], textarea').val('');
+                });
+                function setupRadioButtonList() {
+                    let $loadPriorityLevelHandler = $.ajax({
+                        method: 'GET',
+                        url: '/api/appnoteprioritylevels/GetAllPriorityLevels'
+                    }).done(function (data) {
+                        for (let i = 0; i < data.length; i++) {
+                            let record = data[i];
+                            let html = `<div class="form-check">
+                                <input type="radio" class="form-check-input"
+                                id="priorityLevelRadio_${record.id}"
+                                value="${record.id}" name="priorityLevelRadios">
+                                <label class="form-check-label" for=id="priorityLevelRadio_${record.id}" >${record.name}
+                                </label>
+                                    </div>`;
+                            $('#priorityInputContainer').append($(html));
+                        }//end of for loop
+                    });//end of ajax().done()
+                    return $loadPriorityLevelHandler;
+                }//end of setupRadioButtonList function
+            })(jQuery, moment)/* end of IIFE */
+    </script>
+}

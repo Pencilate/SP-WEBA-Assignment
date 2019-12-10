@@ -1,0 +1,126 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>TimeSheet Tracking</title>
+
+	<!-- Font Awesome -->
+	<link href="~/lib/font-awesome/css/all.min.css" rel="stylesheet" />
+	<!-- Bootstrap core CSS -->
+	<link href="~/lib/twitter-bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+	<!-- Material Design Bootstrap -->
+	<link href="~/lib/mdb/css/mdb.min.css" rel="stylesheet" />
+	<!-- Your custom styles (optional) -->
+	<link href="~/css/site.css" rel="stylesheet" />
+
+	<link href="~/lib/noty/noty.min.css" rel="stylesheet" />
+	<link rel="stylesheet" href="~/css/noty_custom.css" />
+	<link rel="stylesheet" href="~/css/sticky_footer.css" />
+	<!-- Bootsrap-table core CSS -->
+	<link href="~/lib/bootstrap-table/bootstrap-table.min.css" rel="stylesheet" />
+	<!-- jqWidget core CSS -->
+	<link href="~/lib/jqwidgets/styles/jqx.base.css" rel="stylesheet" />
+	<link href="~/lib/jqwidgets/styles/jqx.flat.css" rel="stylesheet" />
+	<!-- Bootstrap toggle switch library CSS -->
+	<link href="~/lib/bootstrap4-toggle/css/bootstrap4-toggle.min.css" rel="stylesheet" />
+	<!-- jQuery library-->
+	<script src="~/lib/jquery/dist/jquery.js"></script>
+	<!-- Bootstrap toggle switch library -->
+	<script src="~/lib/bootstrap4-toggle/js/bootstrap4-toggle.min.js"></script>
+	<!-- Bootstrap tooltips -->
+	<script src="~/lib/popper.js/umd/popper.min.js"></script>
+	<!-- Bootstrap core JavaScript -->
+	<script src="~/lib/twitter-bootstrap/js/bootstrap.min.js"></script>
+	<!-- MDB core JavaScript -->
+	<script src="~/lib/mdb/js/mdb.min.js"></script>
+	<!-- jqWidgets core JavaScript for all widgets (large JS file size)-->
+	<script src="~/lib/jqwidgets/jqx-all.js"></script>
+	<!-- jQuery validate plugin-->
+	<script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+	<script src="~/lib/jquery-validation/dist/additional-methods.js"></script>
+	<!-- Boostrap table core JavaScript -->
+	<script src="~/lib/bootstrap-table/bootstrap-table.min.js"></script>
+	<!-- Noty library -->
+	<script src="~/lib/noty/noty.min.js"></script>
+	<!-- Moment library -->
+	<script src="~/lib/moment/moment.min.js"></script>
+	<!-- Store.js library -->
+	<script src="~/lib/store/store.min.js"></script>
+</head>
+<body>
+ <!-- Wrap all page content here -->
+ <div id="wrap">
+  <!-- Using Bootstrap 4 -->
+  <!-- Fixed navbar -->
+  <div class="navbar navbar-expand-md navbar-dark bg-primary fixed-top">
+   <span class="navbar-brand mb-0 h1">TimeSheet Tracking</span>
+   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+   </button>
+   <div class="collapse navbar-collapse" id="navbarSupportedContent">
+       <ul class="navbar-nav mr-auto">
+           <li class="nav-item dropdown">
+               <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown1" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                   Users
+               </a>
+               <div class="dropdown-menu" aria-labelledby="navbarDropdown1">
+                   <a class="dropdown-item" asp-controller="AccountManager" asp-action="ManageUsers">Manage users</a>
+                   <a class="dropdown-item" asp-controller="AccountManager" asp-action="AddUser">Add User</a>
+               </div>
+           </li>
+           <li class="nav-item dropdown">
+               <a href="#" id="navbarDropdown2" data-toggle="dropdown" class="nav-link dropdown-toggle" role="button">
+                   Administration <b class="caret"></b>
+               </a>
+               <ul class="dropdown-menu" aria-labelledby="navbarDropdown2">
+                   <li><a class="dropdown-item" asp-controller="CustomerAccounts" asp-action="Index">Manage customer account</a></li>
+                   <li><a class="dropdown-item" asp-controller="CustomerAccounts" asp-action="Create">Create customer account</a></li>
+                   <li class="divider"></li>
+                   <li><a class="dropdown-item" asp-controller="LessonTypes" asp-action="Index">Manage lesson type</a></li>
+                   <li><a class="dropdown-item" asp-controller="LessonTypes" asp-action="Create">Create lesson type</a></li>
+                   <li class="divider"></li>
+                   <li><a class="dropdown-item" asp-controller="DateTimeSettings" asp-action="Index">Manage application date time settings</a></li>
+               </ul>
+           </li>
+           <li class="nav-item">
+               <a class="nav-link" href="/Experiments/Index">
+                   Experiments
+               </a>
+           </li>
+           <li class="nav-item dropdown">
+               <a href="#" id="navbarDropdown3" data-toggle="dropdown" class="nav-link dropdown-toggle" role="button">
+                   TimeSheet <b class="caret"></b>
+               </a>
+               <ul class="dropdown-menu" aria-labelledby="navbarDropdown3">
+                   <li><a class="dropdown-item" asp-controller="TimeSheetManager" asp-action="InspectAndApproveInstructorTimeSheet">Inspect/Approve instructor timesheet</a></li>
+                   <li><a class="dropdown-item" asp-controller="TimeSheetManager" asp-action="ManageInstructorTimeSheet">Manage instructor timesheet</a></li>
+               </ul>
+           </li>
+       </ul>
+
+    @await Html.PartialAsync("_LoginPartial")
+
+
+
+
+   </div>
+  </div>
+ </div>
+
+
+ <div class="container body-content">
+
+  @RenderBody()
+
+ </div>
+
+
+ <footer class="footer">
+  <div class="container">
+   <p class="text-muted">Remember to self-explore the <b>_LayoutAdmin.cshtml</b> to see how the HTML markups are used to make the whole site consistent for Admin role users</p>
+  </div>
+ </footer>
+ @RenderSection("scripts", required: false)
+</body>
+</html>

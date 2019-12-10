@@ -1,0 +1,48 @@
+﻿<div id="interfaceMainContainer" class="card">
+    <div class="card-header stylish-color-dark white-text">
+        <h4 class="one" style="padding-top:1.8%;">Experiment Bootstrap 4 Switch</h4>
+        <text>Experimenting Bootstrap 4 switch interface behaviour and Back button</text><br />
+    </div>
+    <center><iframe style="width:655px;height:300px" src="https://www.youtube.com/embed/8FjtXse6LGg" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></center>
+    <div class="card-body" style="padding:3% 5%">
+        <form id="dataForm">
+            <div class="form-group col-md-8">
+                <label class="control-label font-weight-medium font-medium sans-serif"
+                       for="visibilityInput" style="font-size:smaller;">Visibility</label>
+                <label class="align-middle ml-3 ">
+                    <input type="checkbox" data-toggle="toggle" id="visibilityInput" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="form-group col-md-8">
+                <label class="control-label col-md-1"></label>
+
+                <div class="float-right">
+                    <button type="button" id="setToOffButton" class="btn btn-primary">Set switch to off state</button>
+                    <button type="button" id="saveButton" class="btn btn-primary">Submit</button>
+                    <button type="button" class="btn btn-light" href="##" onclick="location.href='@Url.Action("Index", "Experiments")'">Back</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+@section scripts{
+    <style>
+    </style>
+    <script>
+
+        $('#saveButton').on('click', function () {
+            collectedVisibility = $('#visibilityInput').prop('checked')
+
+            new Noty({
+                text: `Collected visibility data from input control : ${collectedVisibility}`,
+                layout: 'center',
+                type: 'info'
+            }).show();
+        });
+
+        $('#setToOffButton').on('click', function () {
+            $('#visibilityInput').bootstrapToggle('off')
+        });
+    </script>
+}

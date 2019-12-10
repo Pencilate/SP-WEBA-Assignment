@@ -1,0 +1,23 @@
+﻿@using TMS.Models
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization;
+@{var identity = Context.User.Identity as ClaimsIdentity; }
+@{
+    if (this.User.IsInRole("INSTRUCTOR") || !this.User.Identity.IsAuthenticated)
+    {
+        Layout = "~/Views/Shared/_LayoutInstructor.cshtml";
+    }
+    if (this.User.IsInRole("ADMIN") || !this.User.Identity.IsAuthenticated)
+    {
+        Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    }
+    if (this.User.IsInRole("PENDINGUSER") || !this.User.Identity.IsAuthenticated)
+    {
+        Layout = "~/Views/Shared/_LayoutPendingUser.cshtml";
+    }
+    if (!this.User.Identity.IsAuthenticated)
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+
+}

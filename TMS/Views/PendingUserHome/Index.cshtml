@@ -1,0 +1,77 @@
+﻿<div class="card mt-2" style="max-width: 20rem;">
+    <div class="card-header">
+        <h5>Registration pending approval</h5>
+    </div>
+    <div class="card-body">
+        <img class="card-img-top" src="~/images/please_wait.png">
+        <p class="card-block">The system administrator will approve your registration within 3 working days. You will receive an email notification on your registration status.</p>
+    </div>
+    <div class="card-footer">
+        &nbsp;
+    </div>
+</div>
+@section scripts{ 
+  <style>
+      .card { /*https://stackoverflow.com/questions/39031224/how-to-center-cards-in-bootstrap-4*/
+          margin: 0 auto; /* Added */
+          float: none; /* Added */
+          margin-bottom: 10px; /* Added */
+      }
+      h5 {
+          font-weight: 700;
+          line-height: 1.2857em;
+          margin: 0;
+          padding:5px;
+          font-size: 1em;
+          overflow: hidden;
+          border: solid;
+          border-radius: .58571429rem;
+          box-shadow: 0 1px 3px 0 #d4d4d5, 0 0 0 1px #d4d4d5;
+      }
+
+      .card-block {
+          font-size: 1em;
+          position: relative;
+          margin: 0;
+          padding: 1em;
+          border: none;
+          border-top: 1px solid rgba(34, 36, 38, .1);
+          box-shadow: none;
+      }
+
+      .card-img-top {
+          display: block;
+          width: 100%;
+          height: auto;
+      }
+
+      .card-title {
+          font-size: 1.28571429em;
+          font-weight: 700;
+          line-height: 1.2857em;
+      }
+
+      .card-text {
+          clear: both;
+          margin-top: .5em;
+          color: rgba(0, 0, 0, .68);
+      }
+
+      .card-footer {
+          font-size: 1em;
+          position: static;
+          top: 0;
+          left: 0;
+          max-width: 100%;
+          padding: .75em 1em;
+          color: rgba(0, 0, 0, .4);
+          border-top: 1px solid rgba(0, 0, 0, .05) !important;
+          background: #fff;
+      }
+
+      .card-inverse .btn {
+          border: 1px solid rgba(0, 0, 0, .05);
+      }
+  </style>
+
+}

@@ -1,0 +1,51 @@
+﻿<div class="row">
+	<div class="col-12">
+		<div id="commentsContainer"></div>
+	</div>
+</div>
+@section scripts{
+	<link href="/lib/jquery-comments/css/jquery-comments.css" rel="stylesheet" />
+	<script src="/lib/jquery-comments/js/jquery-comments.min.js"></script>
+<script>
+        (function () {
+            $('#commentsContainer').comments({
+                textareaPlaceholderText: 'Leave a comment',
+                enableEditing: true,
+                enableUpvoting: false,
+                enableDeleting: true,
+                enableDeletingCommentWithReplies: false,
+                enableAttachments: false,
+                enableHashtags: false,
+                enablePinging: false,
+                postCommentOnEnter: false,
+                forceResponsive: true,
+                readOnly: false,
+                getComments: function (success, error) {
+                  //Mock up the comment data
+				 let data = [{ "id": 6, "parent": null, "content": "Miss Sanya is the main contact person for getting signature after the service training session has ended.\r\nNote that the training service commences in August. We need to confirm the timetable by August.", "fullname": "You", "modified": "2019-06-07T10:30:00", "created": "2019-06-07T10:30:00", "creator": "JULIET", "createdByCurrentUser": true }, { "id": 7, "parent": null, "content": "Miss Sanya has made an email reply on 10th June 2019, Monday stating that Gem Kid SchoolHouse has agreed on weekly lessons 10AM to 12PM for Monday and Friday.\r\nIf Nancy agrees with that timetable, I will assign her to this customer and create the timetable records.", "fullname": "You", "modified": "2019-06-10T10:30:00", "created": "2019-06-10T10:30:00", "creator": "JULIET", "createdByCurrentUser": true }, { "id": 8, "parent": 7, "content": "I recall Nancy might be giving training to another customer in August on Monday 9AM to 11AM. There might be a clash. Can you check on this?", "fullname": "KENNY", "modified": "2019-06-10T14:30:00", "created": "2019-06-10T14:30:00", "creator": "KENNY", "createdByCurrentUser": false }];
+                        success(data);
+                },
+                postComment: function (commentJSON, success, error) {
+                    console.dir(commentJSON);
+                    //Insert additional property into the JSON object which
+                    //has been prepared by the jquery-comments internal logic.
+					//Hint: Check the database table CustomerAccountComment table
+                    commentJSON["whatIsTheAdditionalPropertyYouNeed"] = ID;
+                    $.ajax({
+                        method: 'POST',
+                        url: '/api/ApiControllerName/MethodName',
+                        data: commentJSON,
+                        success: function (comment) {
+                            success(comment)
+                        },
+                        error: error
+                    });
+                }
+            });
+
+        })()
+	</script>
+
+
+
+}

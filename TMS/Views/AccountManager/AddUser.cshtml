@@ -1,0 +1,100 @@
+﻿
+<p class="h1">Create User</p>
+
+<form id="dataForm">
+
+    <div class="form-group row">
+        <label class="col-md-2 col-form-label" for="fullNameInput">Full name</label>
+        <div class="col-md-6">
+            <input type="text" id="fullNameInput" name="fullNameInput" class="form-control"
+                   placeholder="Full name" value="" />
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label class="col-md-2 col-form-label" for="emailInput">Email</label>
+        <div class="col-md-4">
+            <input type="text" id="emailInput" name="emailInput" class="form-control "
+                   placeholder="Email" value="" />
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-md-2 col-form-label" for="roleIdInput">Role</label>
+        <div class="col-md-4">
+            <select type="text" id="roleIdInput" name="roleIdInput" class="form-control "
+                     ><option value="0">-- Select role --</option></select>
+        </div>
+    </div>
+   
+    <div class="form-group row">
+        <div class="col-10 offset-2">
+            <a class="btn btn-secondary" href="/AccountManager/ManageUsers">Cancel</a>
+            <input type="button" class="btn btn-primary" value="Save" id="saveButton" />
+        </div>
+    </div>
+</form>
+@section Scripts  {
+    <script>
+        (function () {
+            setupRoleListBox();
+
+
+
+            jQuery('#saveButton').on('click', function () {
+
+                let collectedFullName = jQuery('#fullNameInput').val();
+                let collectedEmail = jQuery('#emailInput').val();
+                let collectedRoleId = jQuery('#roleIdInput').val();
+
+
+                /* Create a new JavaScript class */
+                function WebFormData(inFullName, inEmail, inRoleId) {
+                    this.fullName = inFullName;
+                    this.email = inEmail;
+                    this.roleId = inRoleId;
+                }//End of WebFormData class definition
+
+                //Create a object, webFormData by using WebFormData class
+                let webFormData = new WebFormData(collectedFullName, 
+                    collectedEmail, collectedRoleId);
+
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/API/AccountManager/CreateUser',
+                    data: webFormData,
+                    datatype: 'application/json',
+                    contentType: 'application/x-www-form-urlencoded',
+                }).done(function (data) {
+                    console.dir(data);
+                    new Noty({ text: data.message, type: 'success', layout: 'center' }).show();
+                }).fail(function (data) {
+                    if (data.responseJSON) {
+                        new Noty({ text: data.responseJSON.message, type: 'error', layout: 'center' }).show();
+                    } else {
+                        new Noty({ text: 'Unable to create record.', type: 'error', layout: 'center' }).show();
+                    }
+                })
+            })//end of anonymous function//$('#saveButton').on()
+         
+        
+
+        function setupRoleListBox() {
+            return $.ajax({
+                method: 'GET',
+                url: '/API/AccountManager/GetRolesForInputControls/',
+                dataType: 'json'
+            }).done(function (data) {
+                let roleList = data.records;
+                for (let index = 0; index < roleList.length; index++) {
+                    $('#roleIdInput').append($('<option value="' + roleList[index].id + '">' + roleList[index].roleName + '</option>'));
+                }//for
+            });
+        }//setupRoleListBox
+
+
+
+      })();
+    </script>
+}
+

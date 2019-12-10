@@ -1,0 +1,274 @@
+﻿@*TEST SETTINGS FORM to modify SYSTEM APP DATE TIME*@
+
+
+<div class="card">
+    <div class="card-header stylish-color-dark white-text">
+        <h4 class="one" style="padding-top:1.8%;">Set current date and time for testing</h4>
+    </div>
+    <div class="card-body" style="padding:3% 5%">
+
+        <form id="dataForm">
+            <div class="form-group col-md-12">
+                <div class="md-form">
+                    @*Year input*@
+                    <label for="yearInput" class="font-weight-medium">Year</label>
+                    <input type="text" id="yearInput" name="yearInput" class="form-control"
+                           maxlength="4" value="2019" />
+                    <span></span>
+                </div>
+            </div>
+            <div class="form-group col-md-12">
+                <div class="md-form">
+                    @*Month input*@
+                    <label for="monthInput" class="font-weight-medium">Month</label>
+                    <input type="text" id="monthInput" name="monthInput" class="form-control"
+                           maxlength="2" value="9"  />
+                    <span></span>
+                </div>
+            </div>
+            <div class="form-group col-md-12">
+                <div class="md-form">
+                    @*Day input*@
+                    <label for="dayInput" class="font-weight-medium">Day</label>
+                    <input type="text" id="dayInput" name="dayInput" class="form-control"
+                           maxlength="2" value="1" />
+                    <span></span>
+                </div>
+            </div>
+            <div class="form-row col-md-12">
+                <div class="md-form">
+                    @*Hour input*@
+                    <label for="dayInput" class="font-weight-medium">Hour</label>
+                    <input type="text" id="hourInput" name="hourInput" class="form-control"
+                           maxlength="2" value="14" />
+                    <span></span>
+                </div>
+            </div>
+            <div class="form-row col-md-12">
+                <div class="md-form">
+                    @*Hour input*@
+                    <label for="dayInput" class="font-weight-medium">Minute</label>
+                    <input type="text" id="minuteInput" name="minuteInput" class="form-control"
+                           maxlength="2" value="0"/>
+                    <span></span>
+                </div>
+            </div>
+
+
+            <div class="form-row col-md-12">
+                <label class="control-label col-md-1"></label>
+                @*Submit and cancel buttons*@
+                <div class="float-right">
+
+                    <button type="button" id="mockupFackDateTimeButton" class="btn btn-primary">Mock up current date time</button>
+                    <button type="button" id="setupActualDateTimeButton" class="btn btn-primary">Setup actual current date time</button>
+
+
+
+                </div>
+            </div>
+        </form>
+    </div><!-- end of div element which has the class="card-body" -->
+</div><!-- end of the div element which has the class="card" -->
+
+@section scripts{
+    <style>
+        /*Set colours of error and valid messages on validation*/
+        .error {
+            color: red;
+            font-size: small
+        }
+
+        .valid {
+            color: green;
+            font-size: small
+        }
+
+        body {
+            margin-top: 30px;
+        }
+    </style>
+    <script>
+        setupWebForm();
+        //Override jquery validate plugin defaults to show validation status of input boxes
+        $.validator.setDefaults({
+            highlight: function (element) {
+                $(element).closest('.form-group').removeClass('valid').addClass('error')
+                $(element).css('border-bottom', '2px solid red');
+            },
+            unhighlight: function (element) {
+                $(element).closest('.form-group').removeClass('error').addClass('valid');
+                $(element).css('border-bottom', '2px solid #2ab934'); //green border
+
+            },
+            errorElement: 'span',
+            errorPlacement: function (error, element) {
+                if (element.parent('.input-group').length) {
+                    error.insertAfter(element.parent());
+                } else {
+                    error.insertAfter(element);
+                }
+            }
+        });
+
+        function setupWebForm() {
+
+
+            jQuery.ajax({
+                type: 'GET',
+                url: '/api/DateTimeSettings/GetSystemDateTime'
+
+            }).done(function (data, textStatus, jqXHR) {
+                let currentDateTime = new Date(data.currentDateTime);
+                $('#yearInput').val(currentDateTime.getFullYear());
+                $('#monthInput').val(currentDateTime.getMonth()+1);//January gives 0
+                $('#dayInput').val(currentDateTime.getDate());
+                $('#hourInput').val(currentDateTime.getHours());
+                $('#minuteInput').val(currentDateTime.getMinutes());
+
+            }).fail(function (data, textStatus, jqXHR) {
+                console.log(textStatus);
+                console.log(data);
+                new Noty({
+                    text: data.responseJSON.message,
+                    theme: 'metroui',
+                    layout: 'bottomRight',
+                    timeout: 3000,
+                    type: 'error'
+                }).show();
+            });//end of ajax
+
+
+        }
+
+        //Set jquery validation rules
+        $('#dataForm').validate({
+            rules: {
+            },
+            messages: {
+                yearInput: {
+                    required: "Year is required",
+                },
+                monthInput: {
+                    required: "Year is required",
+                },
+                dayInput: {
+                    required: "Day is required",
+                },
+                hourInput: {
+                    required: "Hour is required",
+                },
+                hourInput: {
+                    required: "Minute is required",
+                }
+            }
+        });
+
+
+
+
+
+        //Create method to store webform data
+        function WebFormData(inYear,inMonth,inDay,inHour,inMinute) {
+            this.year = inYear;
+            this.month = inMonth;
+            this.day = inDay;
+            this.hour = inHour;
+            this.minute = inMinute;
+        }
+
+        //Create method to submit form with POST API method
+        $('#mockupFackDateTimeButton').on('click', function () {
+            $('#dataForm').validate();
+            if ($("#dataForm").valid()) {
+
+               
+
+                var webFormData = new WebFormData($('#yearInput').val(), $('#monthInput').val(),
+                    $('#dayInput').val(), $('#hourInput').val(),
+                $('#minuteInput').val());
+
+
+
+               jQuery.ajax({
+                    type: 'POST',
+                   url: '/api/DateTimeSettings/MockupDateTimeForTesting',
+                    contentType: 'application/x-www-form-urlencoded',
+                    data: webFormData
+                }).done(function (data, textStatus, jqXHR) {
+                    new Noty({
+                        text: data.message,
+                        theme: 'metroui',
+                        layout: 'bottomRight',
+                        timeout: 1200,
+                        type: 'success'
+                    }).show();
+                    
+
+                }).fail(function (data, textStatus, jqXHR) {
+                    console.log(textStatus);
+                    console.log(data);
+                    new Noty({
+                        text: data.responseJSON.message,
+                        theme: 'metroui',
+                        layout: 'bottomRight',
+                        timeout: 3000,
+                        type: 'error'
+                    }).show();
+                });//end of ajax
+
+            }//end of if ($("#dataForm").valid()) {
+
+        });//end of $('#mockupFackDateTimeButton').on('click', function () {
+        //Create method to submit form with POST API method
+        $('#setupActualDateTimeButton').on('click', function () {
+            $('#dataForm').validate();
+            if ($("#dataForm").valid()) {
+
+
+
+                var webFormData = new WebFormData($('#yearInput').val(), $('#monthInput').val(),
+                    $('#dayInput').val(), $('#hourInput').val(),
+                    $('#minuteInput').val());
+
+
+
+                jQuery.ajax({
+                    type: 'POST',
+                    url: '/api/DateTimeSettings/SetupActualDateTime',
+                    contentType: 'application/x-www-form-urlencoded',
+                    data: webFormData
+                }).done(function (data, textStatus, jqXHR) {
+                    new Noty({
+                        text: data.message,
+                        theme: 'metroui',
+                        layout: 'bottomRight',
+                        timeout: 1200,
+                        type: 'success'
+                    }).show();
+
+
+                }).fail(function (data, textStatus, jqXHR) {
+                    console.log(textStatus);
+                    console.log(data);
+                    new Noty({
+                        text: data.responseJSON.message,
+                        theme: 'metroui',
+                        layout: 'bottomRight',
+                        timeout: 3000,
+                        type: 'error'
+                    }).show();
+                });//end of ajax
+
+            }//end of if ($("#dataForm").valid()) {
+
+        });//end of $('#setupActualDateTimeButton').on('click', function () {
+
+        $('#monthInput').focus();
+        $('#dayInput').focus();
+        $('#hourInput').focus(),
+        $('#minuteInput').focus();
+        $('#yearInput').focus()
+
+    </script>
+}

@@ -1,0 +1,16 @@
+﻿<div class="row justify-content-center">
+	<div class="col-md-6"><h2>Page 2</h2></div>
+</div>
+<div class="row">
+	<div id="displayBox" class=" col-md-6 offset-md-3"></div>
+</div>
+@section scripts{
+    <script>
+        let data = store.get('productData')
+        let productId = data.productId
+        let productName = data.productName
+        let productPrice = data.productPrice.toFixed(2);
+        $('#displayBox').html(`Id <b>${productId}</b> Name <b>${ productName }</b> price <b> ${ productPrice }</b>`)
+
+     </script>
+}

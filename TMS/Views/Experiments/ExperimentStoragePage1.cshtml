@@ -1,0 +1,24 @@
+﻿<div class="row justify-content-center">
+	<div class="col-md-6"><h2>Page 1</h2></div>
+</div>
+
+<div class="row justify-content-center">
+	<div class="col-md-6 text-center">
+		<input type="button"
+					 id="gotoPage2Button" class="btn btn-primary" value="Go to Page 2" />
+	</div>
+</div>
+@section scripts{
+
+    <script>
+        $('#gotoPage2Button').on('click', function (event) {
+            store.set('productData', {
+                productId: 13,
+                productName: 'AI Code Genie',
+                productPrice: 100
+            })
+            window.location = '/Experiments/ExperimentStoragePage2';
+        });
+
+    </script>
+}

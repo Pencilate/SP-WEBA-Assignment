@@ -1,0 +1,79 @@
+﻿<p class="h1">Login</p>
+<div class="row">
+    <div class="col-md-8">
+        <form id="dataForm" asp-antiforgery="true" asp-controller="Home" asp-action="Login">
+            <div class="form-group row">
+                <label class="col-md-2 col-form-label" for="usernameInput">User name</label>
+                <div class="col-md-6">
+                    <input type="email" maxlength="100" id="usernameInput" name="usernameInput" class="form-control "
+                           placeholder="Email" value="JULIET@EMU.COM"  />
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-md-2 col-form-label" for="passwordInput">Password</label>
+                <div class="col-md-6">
+                    <input type="text" maxlength="100" id="passwordInput" name="passwordInput" class="form-control "
+                           placeholder="Password" value="p@ssw0rd" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-10 offset-2">
+                    
+                    <input type="submit" class="btn btn-primary" value="Login" id="loginButton" />
+                </div>
+            </div>
+            @if (ViewBag.Message != "")
+            {
+             <div class="form-group row">
+                <div class="col-md-6 offset-2">
+                    <div class="alert-info" id="messageBox" >@ViewBag.Message</div>
+                </div>
+            </div>
+            }
+        </form>
+    </div>
+    <div class="col-md-4">
+        <div class="card" style="width: 18rem;">
+            <div class="card-body">
+                <h5 class="card-title">Login credentials for testing</h5>
+                <h6 class="card-subtitle mb-2 text-muted">User credentials for testing purposes. All password is <span class="text-danger">p@ssword</span>.</h6>
+                <p class="card-text">&nbsp;</p>
+                <table>
+                    <thead>
+                        <tr><th>User name</th><th>Role</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>JULIET@EMU.COM</td><td>ADMIN</td></tr>
+                        <tr><td>KENNY@EMU.COM</td><td>ADMIN</td></tr>
+                        <tr><td>LEEXIAOLONG@EMU.COM</td><td>INSTRUCTOR</td></tr>
+                        <tr><td>KENNETH@EMU.COM</td><td>INSTRUCTOR</td></tr>
+                        <tr><td>NANCY@EMU.COM</td><td>INSTRUCTOR</td></tr>
+                        <tr><td>LARRY@EMU.COM</td><td>INSTRUCTOR</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+	<div class="col-12">
+		<center><iframe style="width:655px;height:300px" src="https://www.youtube.com/embed/MbUefNgK5tQ" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></center>
+	</div>
+	</div>
+@section Scripts  {
+ <script>
+     $('#dataForm').validate({ // initialize the plugin
+        rules: {
+            usernameInput: {
+                required: true,
+                email: true
+            },
+            passwordInput: {
+                required: true
+            }
+        }
+    });
+ </script>
+
+}
+

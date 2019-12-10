@@ -1,0 +1,109 @@
+﻿<div class="row">
+    <div class="mx-auto col-md-10 mt-2">
+        <p class="h1">Manage Users</p>
+    </div>
+</div>
+<div class="row">
+    <div class="mx-auto col-md-10">
+        <a class="btn btn-secondary float-md-right mb-1" href="/AccountManager/AddUser">Create user</a>
+    </div>
+</div>
+<div class="row">
+    <div class="mx-auto col-md-10">
+        <div id="dataTable"></div>
+    </div>
+</div>
+<div class="row">
+    <div class="mx-auto col-md-10 align-content-end">
+        <a class="btn btn-secondary float-md-right mt-1" href="/AccountManager/AddUser">Create user</a>
+    </div>
+</div>
+
+<div id="jqxLoader">
+</div>
+
+@section scripts{
+    <style>
+        .cell-data {
+            font-size: 1.2em;
+        }
+
+        .cell-header {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+    </style>
+    <script>
+        (function () {
+
+            setupInterface();
+
+            function setupInterface() {
+                // prepare the web form interface.
+
+                $.ajax({
+                    url: '/API/AccountManager/GetUsers',
+                    method: 'GET'
+                }).done(function (data) {
+                    //The logic below aims to setup the jqxDataTable widget 
+                    //The logic sits inside the anonymous function which is passed into the
+                    //done method.
+                    let dataSource =
+                    {
+                        datatype: 'json',
+                        datafields: [
+                            { name: 'id' },
+                            { name: 'fullName' },
+                            {name:'userName'},
+                            { name: 'roleName', map:'role>roleName' }
+                        ],
+                        localData: data.records,
+                        id:'id'
+                    };
+                    //The jqxDataTable widget needs a dataAdapter
+                    let dataAdapter = new $.jqx.dataAdapter(dataSource);
+            
+
+
+                    $('#dataTable').jqxDataTable(
+                        {
+                            source: dataAdapter,
+                            columnsResize: true,
+                            columns: [
+
+                                { text: 'Full name', dataField: 'fullName', width: '50%', cellclassname: 'cell-data', classname: 'cell-header' },
+                                { text: 'User name (Email)', dataField: 'userName', width: '25%', cellclassname: 'cell-data', classname: 'cell-header' },
+                                { text: 'Role', dataField: 'roleName', width: '15%', cellclassname: 'cell-data', classname: 'cell-header' },
+                                {
+                                    text: 'Update', editable: false, cellsAlign: 'center', width: '10%', 
+                                    align: 'center', dataField: 'id', cellclassname: 'cell-data', classname: 'cell-header',
+                                    cellsRenderer: function (row, column, value) {
+                                        // Render custom column.
+                                        //
+                                        //The following command will be executed the the jqxWidget's logic several times
+                                        //depending on the number of rows to be created.
+                                        console.log('rows are being renderred now.');
+                                        console.log(value);
+                                        return '<a href="/AccountManager/UpdateUser/' + value + '" ><i class="w-100 fas fa-edit"></i></a>';
+                                    }
+                                }
+                            ],
+                            autoRowHeight: true,
+                            sortable: true,
+                            height:500,
+                            width: '100%',
+                        });
+                    //Display the users
+                   
+                    $('#jqxLoader').jqxLoader('close');
+                })//end of $.ajax().done()
+
+            }//end of setupInterface
+
+
+        })()
+
+    </script>
+
+
+}
