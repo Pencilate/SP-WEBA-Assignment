@@ -18,94 +18,101 @@
             <div class="container-fluid">
                 <div class="row vertical-align">
                     <h3 class="one" style="padding-top:8px;">Customer Accounts</h3>
-                    <a href="" class="btn btn-primary" style="margin-left:auto"><i class="fas fa-plus" style="color:#FFF;"></i> Add</a>
+                    <a asp-controller="CustomerAccounts" asp-action="Create" class="btn btn-primary" style="margin-left:auto"><i class="fas fa-plus" style="color:#FFF;"></i> Add</a>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="card card-body">
+            <!--<div class="row">
+                Content
+            </div>-->
+
+            <div class="row">
+                <div class="table-responsive-md w-100">
+                    <div id="topNavigationInterfaceContainer" class="btn-toolbar float-right" role="toolbar"></div>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr class="row m-0" style="height:75px;vertical-align:central;">
+                                <th class="col-md-3">Account Name</th>
+                                <th class="col-md-1">Comments</th>
+                                <th class="col-md-1">Visibility</th>
+                                <th class="col-md-1">Created By</th>
+                                <th class="col-md-1">Updated By</th>
+                                <th class="col-md-1">Updated At</th>
+                                <th class="col-md-1">Edit</th>
+                                <th class="col-md-1">Delete</th>
+                                <th class="col-md-2">Go to</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBodyElement"></tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<div class="card-body">
-    <!--<div class="row">
-        Content
-    </div>-->
 
-    <div class="row">
-        <div class="table-responsive-md w-100">
-            <div id="topNavigationInterfaceContainer" class="btn-toolbar float-right" role="toolbar"></div>
-            <table class="table table-bordered">
-                <thead>
-                    <tr class="row m-0" style="height:75px;vertical-align:central;">
-                        <th class="col-md-3">Account Name</th>
-                        <th class="col-md-1">Comments</th>
-                        <th class="col-md-1">Visibility</th>
-                        <th class="col-md-1">Created By</th>
-                        <th class="col-md-1">Updated By</th>
-                        <th class="col-md-1">Updated At</th>
-                        <th class="col-md-1">Edit</th>
-                        <th class="col-md-1">Delete</th>
-                        <th class="col-md-2">Go to</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBodyElement"></tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-
-@section Scripts{
-    <style>
-        table.table td {
-            padding-left: 0.2rem;
-            padding-right: 0.2rem;
-        }
-    </style>
-
-    <script>
-        $.ajax({
-            url: '/API/CustomerAccounts/',
-            method: 'GET'
-        }).done(function (data) {
-            $tableBodyElement = $('#tableBodyElement');
-            for (let i = 0; i < data.length; i++) {
-                oneAccount = data[i];
-                let $cusTR = $("<tr></tr");
-                $cusTR.addClass("row m-0");
-
-                $cusTR.append($("<td></td>", { text: oneAccount.accountName }).addClass("col-md-3"));
-                $cusTR.append($("<td></td>", { text: oneAccount.comments }).addClass("col-md-1"));
-                //$cusTR.append($("<td></td>", { text: oneAccount.visibility }).addClass("col-md-1"));
-                if (oneAccount.visibility == true) {
-                    $cusTR.append($("<td></td>").addClass("col-md-1").append('<i class="fas fa-check" style="color:#61d800;"></i>'));
-                }
-                else {
-                    $cusTR.append($("<td></td>").addClass("col-md-1").append('<i class="fas fa-times" style="color:#ff2410;"></i>'));
-                }
-                $cusTR.append($("<td></td>", { text: oneAccount.createdBy }).addClass("col-md-1"));
-                $cusTR.append($("<td></td>", { text: oneAccount.updatedBy }).addClass("col-md-1"));
-                $cusTR.append($("<td></td>", { text: moment(oneAccount.updatedAt).format('DD/MM/YYYY') }).addClass("col-md-1"));
-                $cusTR.append($("<td></td>").addClass("col-md-1").append(`<a href=${"CustomerAccounts/Edit/" + oneAccount.id} class="btn-sm btn-outline-primary"><i class="far fa-edit"></i> Edit</a>`));
-                $cusTR.append($("<td></td>").addClass("col-md-1").append(`<a class="btn-sm btn-outline-danger"><i class="fas fa-trash"></i> Delete</a>`));
-                $cusTR.append($("<td></td>").addClass("col-md-2").append(`
-                    <div class="dropdown show">
-                        <a class="btn-sm btn-outline-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fas fa-user-cog"></i> Manage
-                        </a>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                            <a class="dropdown-item" href=${"CustomerAccounts/ManageRates/" + oneAccount.id}>Manage rates</a>
-                            <a class="dropdown-item" href=${"CustomerAccounts/Comments/" + oneAccount.id}>Comments</a>
-                            <a class="dropdown-item" href="#">Assign instructors</a>
-                        </div>
-                    </div>
-                 `));
-
-                $tableBodyElement.append($cusTR);
-
+    @section Scripts{
+        <style>
+            table.table td {
+                padding-left: 0.2rem;
+                padding-right: 0.2rem;
             }
-        }).fail(function (data) {
-            new Noty({ text: "Fail to load customer data", type: 'Error' }).show();
-        });
 
-    </script>
-}
+                table.table th, table.table td.col-md-1, table.table td.col-md-2 {
+                    padding-left: 0.2rem;
+                    padding-right: 0.2rem;
+                    text-align: center;
+                }
+        </style>
+
+        <script>
+            $.ajax({
+                url: '/API/CustomerAccounts/',
+                method: 'GET'
+            }).done(function (data) {
+                $tableBodyElement = $('#tableBodyElement');
+                for (let i = 0; i < data.length; i++) {
+                    oneAccount = data[i];
+                    let $cusTR = $("<tr></tr");
+                    $cusTR.addClass("row m-0");
+
+                    $cusTR.append($("<td></td>", { text: oneAccount.accountName }).addClass("col-md-3"));
+                    $cusTR.append($("<td></td>", { text: oneAccount.comments }).addClass("col-md-1"));
+                    //$cusTR.append($("<td></td>", { text: oneAccount.visibility }).addClass("col-md-1"));
+                    if (oneAccount.visibility == true) {
+                        $cusTR.append($("<td></td>").addClass("col-md-1").append('<i class="fas fa-check" style="color:#61d800;"></i>'));
+                    }
+                    else {
+                        $cusTR.append($("<td></td>").addClass("col-md-1").append('<i class="fas fa-times" style="color:#ff2410;"></i>'));
+                    }
+                    $cusTR.append($("<td></td>", { text: oneAccount.createdBy }).addClass("col-md-1"));
+                    $cusTR.append($("<td></td>", { text: oneAccount.updatedBy }).addClass("col-md-1"));
+                    $cusTR.append($("<td></td>", { text: moment(oneAccount.updatedAt).format('DD/MM/YYYY') }).addClass("col-md-1"));
+                    $cusTR.append($("<td></td>").addClass("col-md-1").append(`<a href=${"CustomerAccounts/Edit/" + oneAccount.id} class="btn-sm btn-outline-primary"><i class="far fa-edit"></i> Edit</a>`));
+                    $cusTR.append($("<td></td>").addClass("col-md-1").append(`<a class="btn-sm btn-outline-danger"><i class="fas fa-trash"></i> Delete</a>`));
+                    $cusTR.append($("<td></td>").addClass("col-md-2").append(`
+                                        <div class="dropdown show">
+                                            <a class="btn-sm btn-outline-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                <i class="fas fa-user-cog"></i> Manage
+                                            </a>
+                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                                <a class="dropdown-item" href=${"CustomerAccounts/ManageRates/" + oneAccount.id}>Manage rates</a>
+                                                <a class="dropdown-item" href=${"CustomerAccounts/Comments/" + oneAccount.id}>Comments</a>
+                                                <a class="dropdown-item" href="#">Assign instructors</a>
+                                            </div>
+                                        </div>
+                                     `));
+
+                    $tableBodyElement.append($cusTR);
+
+                }
+            }).fail(function (data) {
+                new Noty({ text: "Fail to load customer data", type: 'Error' }).show();
+            });
+
+        </script>
+    }
 
