@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using TMS.Data;
 using TMS.Models;
@@ -62,6 +64,115 @@ namespace TMS.APIs
             return Ok(cusAccList);
         }
 
+        // GET: api/<controller>
+        [Authorize("ADMIN")]
+        [HttpGet("GetCustomersPaginated")]
+        public IActionResult GetCustomersPageByPage([FromQuery]QueryPagingParametersForCustomers inParameters)
+        {
+            List<Object> cusAccList = new List<Object>();
+
+            int pageSize = 10;
+            int totalPage = 0;
+            int startRecord = 0;
+            int endRecord = 0;
+            int currentPage = 0;
+            int totalRecords = 0;
+            if (ModelState.IsValid)
+            {
+                currentPage = Int32.Parse(inParameters.page_number.ToString());
+                pageSize = Int32.Parse(inParameters.per_page.ToString());
+            }
+            else
+            {
+                currentPage = 1;
+                pageSize = 10;
+            }
+            if (currentPage == 1)
+            {
+                startRecord = 1;
+            }
+            else
+            {
+                startRecord = ((currentPage - 1) * pageSize) + 1;
+            }
+            endRecord = pageSize * currentPage;
+            try
+            {
+                DbCommand cmd = Database.Database.GetDbConnection().CreateCommand();
+
+                cmd.Connection.Open();  //Open connection to database
+                                        //Pass the SQL to the DbCommand type object, cmd.
+                                        //Let the DbCommand type object cmd know that this is a stored procedure.
+                cmd.CommandText = "dbo.uspGetCustomerPaginated";
+                //Tell the DbCommand object, cmd that this is a stored procedure.
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                //Pass the page number value to the stored procedure's @pageNo parameter
+                DbParameter parameter = cmd.CreateParameter();
+                parameter.DbType = System.Data.DbType.Int32;
+                parameter.ParameterName = "pageNo";
+                parameter.Value = currentPage;
+                cmd.Parameters.Add(parameter);
+                //Pass the page size value to the stored procedure's @pageSize parameter
+                parameter = cmd.CreateParameter();
+                parameter.DbType = System.Data.DbType.Int32;
+                parameter.ParameterName = "pageSize";
+                parameter.Value = pageSize;
+                cmd.Parameters.Add(parameter);
+
+                DbDataReader dr = cmd.ExecuteReader();//This is the part where SQL is sent to DB
+                if (dr.HasRows)
+                {
+                    while (dr.Read())
+                    {
+                        //Get each column values
+                        totalRecords = int.Parse(dr["TotalCount"].ToString());
+
+                        int rowNum = int.Parse(dr["ROWNUM"].ToString());
+                        int caId = int.Parse(dr["CustomerAccountId"].ToString());
+                        string caAccountName = dr["AccountName"].ToString();
+                        int caCommentCount = Database.CustomerAccountComments.Where(c => c.UpdatedAt.CompareTo(_appDateTimeService.GetCurrentDateTime().Date.AddDays(-3)) > 0).Count(c => c.CustomerAccountId == caId);
+                        bool caIsVisible = bool.Parse(dr["IsVisible"].ToString());
+                        string caCreatedBy = dr["CreatedBy"].ToString();
+                        string caUpdatedBy = dr["UpdatedBy"].ToString();
+                        DateTime caUpdatedAt = Convert.ToDateTime(dr["UpdatedAt"].ToString());
+
+                        cusAccList.Add(new
+                        {
+                            rowNo = rowNum,
+                            id = caId,
+                            accountName = caAccountName,
+                            comments = caCommentCount,
+                            visibility = caIsVisible,
+                            createdBy = caCreatedBy,
+                            updatedBy = caUpdatedBy,
+                            updatedAt = caUpdatedAt
+                        });
+
+                    }
+                }
+                cmd.Connection.Close();
+                totalPage = (int)Math.Ceiling((double)totalRecords / pageSize);
+
+            }
+            catch (SqlException ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." });
+            }
+            object result = new
+            {
+                total = cusAccList.Count,
+                currentPage = currentPage,
+                totalPage = totalPage,
+                records = cusAccList,
+                from = startRecord,
+                to = endRecord
+
+            };
+            return Ok(result);
+        }
+
+
+
         // GET api/<controller>/5
         [HttpGet("{id}")]
         public string Get(int id)
@@ -75,11 +186,11 @@ namespace TMS.APIs
         public IActionResult Post([FromForm] IFormCollection data)
         {
             int userId = int.Parse(User.FindFirst("userid").Value);
-            
-                CustomerAccount ca = new CustomerAccount()
-                {
-                    Comments = new List<CustomerAccountComment>(),
-                };
+
+            CustomerAccount ca = new CustomerAccount()
+            {
+                Comments = new List<CustomerAccountComment>(),
+            };
             try
             {
                 ca.AccountName = data["accountName"];
@@ -140,5 +251,12 @@ namespace TMS.APIs
         public void Delete(int id)
         {
         }
+
+        public class QueryPagingParametersForCustomers
+        {
+            [BindRequired]
+            public int page_number { get; set; }
+            public int per_page { get; set; }
+        }//end of QueryPagingParametersForNotes class
     }
 }

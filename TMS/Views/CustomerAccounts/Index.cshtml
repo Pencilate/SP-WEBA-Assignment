@@ -12,107 +12,244 @@
     </ol>
 
 </nav>
-<div class="row">
-    <div class="card col-12 w-100">
-        <div class="card-header elegant-color white-text">
-            <div class="container-fluid">
-                <div class="row vertical-align">
-                    <h3 class="one" style="padding-top:8px;">Customer Accounts</h3>
-                    <a asp-controller="CustomerAccounts" asp-action="Create" class="btn btn-primary" style="margin-left:auto"><i class="fas fa-plus" style="color:#FFF;"></i> Add</a>
-                </div>
+@*<div class="card col-12 w-100">
+    <div class="card-header elegant-color white-text">
+        <div class="container-fluid">
+            <div class="row vertical-align">
+                <h3 class="one" style="padding-top:8px;">Customer Accounts</h3>
+                <a asp-controller="CustomerAccounts" asp-action="Create" class="btn btn-primary" style="margin-left:auto"><i class="fas fa-plus" style="color:#FFF;"></i> Add</a>
             </div>
         </div>
-
-
-        <div class="card card-body">
-            <!--<div class="row">
-                Content
-            </div>-->
-
-            <div class="row">
-                <div class="table-responsive-md w-100">
-                    <div id="topNavigationInterfaceContainer" class="btn-toolbar float-right" role="toolbar"></div>
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr class="row m-0" style="height:75px;vertical-align:central;">
-                                <th class="col-md-3">Account Name</th>
-                                <th class="col-md-1">Comments</th>
-                                <th class="col-md-1">Visibility</th>
-                                <th class="col-md-1">Created By</th>
-                                <th class="col-md-1">Updated By</th>
-                                <th class="col-md-1">Updated At</th>
-                                <th class="col-md-1">Edit</th>
-                                <th class="col-md-1">Delete</th>
-                                <th class="col-md-2">Go to</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBodyElement"></tbody>
-                    </table>
-                </div>
+    </div>
+    <div class="card-body">*@
+<div class="card">
+    <div class="card-header stylish-color-dark white-text">
+        <div class="container-fluid d-flex">
+            <h4 class="one" style="padding-top:1.8%;width:80%">Create customer account</h4>
+            <a asp-controller="CustomerAccounts" asp-action="Create" class="btn btn-primary" style="margin-left:auto"><i class="fas fa-plus" style="color:#FFF;"></i> Add</a>
+        </div>
+    </div>
+    <div class="card-body" style="padding:1% 3%">
+        <div class="row justify-content-center">
+            <nav>
+                <ul class="pagination" id="topNav"></ul>
+            </nav>
+        </div>
+        <div class="row">
+            <div class="table-responsive-md w-100">
+                <div id="topNavigationInterfaceContainer" class="btn-toolbar float-right" role="toolbar"></div>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr class="row m-0" style="vertical-align:central;">
+                            <th class="col-md-3">Account Name</th>
+                            <th class="col-md-1">Comments (Past 3 Days)</th>
+                            <th class="col-md-1">Visibility</th>
+                            <th class="col-md-1">Created By</th>
+                            <th class="col-md-1">Updated By</th>
+                            <th class="col-md-1">Updated At</th>
+                            <th class="col-md-1">Edit</th>
+                            <th class="col-md-1">Delete</th>
+                            <th class="col-md-2">Go to</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBodyElement"></tbody>
+                </table>
             </div>
+        </div>
+        <div class="row justify-content-center">
+            <nav>
+                <ul class="pagination" id="btmNav"></ul>
+            </nav>
         </div>
     </div>
 </div>
 
-    @section Scripts{
-        <style>
-            table.table td {
+@section Scripts{
+    <style>
+        table.table td {
+            padding-left: 0.2rem;
+            padding-right: 0.2rem;
+        }
+
+            table.table th, table.table td.col-md-1, table.table td.col-md-2 {
                 padding-left: 0.2rem;
                 padding-right: 0.2rem;
+                text-align: center;
             }
 
-                table.table th, table.table td.col-md-1, table.table td.col-md-2 {
-                    padding-left: 0.2rem;
-                    padding-right: 0.2rem;
-                    text-align: center;
-                }
-        </style>
+        .pagination .page-item.disabled .page-link {
+            color: white;
+        }
+    </style>
 
-        <script>
+    <script>
+        //Code wihtou pagination
+        //$.ajax({
+        //    url: '/API/CustomerAccounts/',
+        //    method: 'GET'
+        //}).done(function (data) {
+        //    $tableBodyElement = $('#tableBodyElement');
+        //    for (let i = 0; i < data.length; i++) {
+        //        oneAccount = data[i];
+        //        let $cusTR = $("<tr></tr");
+        //        $cusTR.addClass("row m-0");
+
+        //        $cusTR.append($("<td></td>", { text: oneAccount.accountName }).addClass("col-md-3"));
+        //        $cusTR.append($("<td></td>", { text: oneAccount.comments }).addClass("col-md-1"));
+        //        //$cusTR.append($("<td></td>", { text: oneAccount.visibility }).addClass("col-md-1"));
+        //        if (oneAccount.visibility == true) {
+        //            $cusTR.append($("<td></td>").addClass("col-md-1").append('<i class="fas fa-check" style="color:#61d800;"></i>'));
+        //        }
+        //        else {
+        //            $cusTR.append($("<td></td>").addClass("col-md-1").append('<i class="fas fa-times" style="color:#ff2410;"></i>'));
+        //        }
+        //        $cusTR.append($("<td></td>", { text: oneAccount.createdBy }).addClass("col-md-1"));
+        //        $cusTR.append($("<td></td>", { text: oneAccount.updatedBy }).addClass("col-md-1"));
+        //        $cusTR.append($("<td></td>", { text: moment(oneAccount.updatedAt).format('DD/MM/YYYY') }).addClass("col-md-1"));
+        //        $cusTR.append($("<td></td>").addClass("col-md-1").append(`<a href=${"CustomerAccounts/Edit/" + oneAccount.id} class="btn-sm btn-outline-primary"><i class="far fa-edit"></i> Edit</a>`));
+        //        $cusTR.append($("<td></td>").addClass("col-md-1").append(`<a class="btn-sm btn-outline-danger"><i class="fas fa-trash"></i> Delete</a>`));
+        //        $cusTR.append($("<td></td>").addClass("col-md-2").append(`
+        //                            <div class="dropdown show">
+        //                                <a class="btn-sm btn-outline-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        //                                    <i class="fas fa-user-cog"></i> Manage
+        //                                </a>
+        //                                <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+        //                                    <a class="dropdown-item" href=${"CustomerAccounts/ManageRates/" + oneAccount.id}>Manage rates</a>
+        //                                    <a class="dropdown-item" href=${"CustomerAccounts/Comments/" + oneAccount.id}>Comments</a>
+        //                                    <a class="dropdown-item" href="#">Assign instructors</a>
+        //                                </div>
+        //                            </div>
+        //                         `));
+
+        //        $tableBodyElement.append($cusTR);
+
+        //    }
+        //    }).fail(function (data) {
+        //        new Noty({ text: "Fail to load customer data. " + data.responseJSON.message, type: 'error' }).show();
+        //});
+
+        var pageSize = 5;
+        (function () {
+            loadData(1, pageSize);
+        })();
+
+        function loadData(pageNo, perPageSize) {
             $.ajax({
-                url: '/API/CustomerAccounts/',
+                url: `/API/CustomerAccounts/GetCustomersPaginated?page_number=${pageNo}&per_page=${perPageSize}`,
                 method: 'GET'
             }).done(function (data) {
-                $tableBodyElement = $('#tableBodyElement');
-                for (let i = 0; i < data.length; i++) {
-                    oneAccount = data[i];
-                    let $cusTR = $("<tr></tr");
-                    $cusTR.addClass("row m-0");
+                console.dir(data);
+                let totalCurrentPageRecord = data.total;
+                let currentPage = data.currentPage;
+                let totalPages = data.totalPage;
+                let fromRec = data.from;
+                let toRec = data.to;
 
-                    $cusTR.append($("<td></td>", { text: oneAccount.accountName }).addClass("col-md-3"));
-                    $cusTR.append($("<td></td>", { text: oneAccount.comments }).addClass("col-md-1"));
-                    //$cusTR.append($("<td></td>", { text: oneAccount.visibility }).addClass("col-md-1"));
-                    if (oneAccount.visibility == true) {
-                        $cusTR.append($("<td></td>").addClass("col-md-1").append('<i class="fas fa-check" style="color:#61d800;"></i>'));
-                    }
-                    else {
-                        $cusTR.append($("<td></td>").addClass("col-md-1").append('<i class="fas fa-times" style="color:#ff2410;"></i>'));
-                    }
-                    $cusTR.append($("<td></td>", { text: oneAccount.createdBy }).addClass("col-md-1"));
-                    $cusTR.append($("<td></td>", { text: oneAccount.updatedBy }).addClass("col-md-1"));
-                    $cusTR.append($("<td></td>", { text: moment(oneAccount.updatedAt).format('DD/MM/YYYY') }).addClass("col-md-1"));
-                    $cusTR.append($("<td></td>").addClass("col-md-1").append(`<a href=${"CustomerAccounts/Edit/" + oneAccount.id} class="btn-sm btn-outline-primary"><i class="far fa-edit"></i> Edit</a>`));
-                    $cusTR.append($("<td></td>").addClass("col-md-1").append(`<a class="btn-sm btn-outline-danger"><i class="fas fa-trash"></i> Delete</a>`));
-                    $cusTR.append($("<td></td>").addClass("col-md-2").append(`
-                                        <div class="dropdown show">
-                                            <a class="btn-sm btn-outline-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                <i class="fas fa-user-cog"></i> Manage
-                                            </a>
-                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                                <a class="dropdown-item" href=${"CustomerAccounts/ManageRates/" + oneAccount.id}>Manage rates</a>
-                                                <a class="dropdown-item" href=${"CustomerAccounts/Comments/" + oneAccount.id}>Comments</a>
-                                                <a class="dropdown-item" href="#">Assign instructors</a>
-                                            </div>
-                                        </div>
-                                     `));
-
-                    $tableBodyElement.append($cusTR);
-
-                }
+                renderData(data.records);
+                createPageNav($('#topNav'), currentPage, totalPages);
+                createPageNav($('#btmNav'), currentPage, totalPages);
             }).fail(function (data) {
-                new Noty({ text: "Fail to load customer data", type: 'Error' }).show();
+                new Noty({ text: "Fail to load customer data. " + data.responseJSON.message, type: 'error' }).show();
             });
+        }
 
-        </script>
-    }
+        function renderData(data) {
+            $tableBodyElement = $('#tableBodyElement');
+            $tableBodyElement.empty();
+            for (let i = 0; i < data.length; i++) {
+                oneAccount = data[i];
+                let $cusTR = $("<tr></tr");
+                $cusTR.addClass("row m-0");
+
+                $cusTR.append($("<td></td>", { text: oneAccount.accountName }).addClass("col-md-3"));
+                $cusTR.append($("<td></td>", { text: oneAccount.comments }).addClass("col-md-1"));
+                //$cusTR.append($("<td></td>", { text: oneAccount.visibility }).addClass("col-md-1"));
+                if (oneAccount.visibility == true) {
+                    $cusTR.append($("<td></td>").addClass("col-md-1").append('<i class="fas fa-check" style="color:#61d800;"></i>'));
+                }
+                else {
+                    $cusTR.append($("<td></td>").addClass("col-md-1").append('<i class="fas fa-times" style="color:#ff2410;"></i>'));
+                }
+                $cusTR.append($("<td></td>", { text: oneAccount.createdBy }).addClass("col-md-1"));
+                $cusTR.append($("<td></td>", { text: oneAccount.updatedBy }).addClass("col-md-1"));
+                $cusTR.append($("<td></td>", { text: moment(oneAccount.updatedAt).format('DD/MM/YYYY') }).addClass("col-md-1"));
+                $cusTR.append($("<td></td>").addClass("col-md-1").append(`<a href=${"CustomerAccounts/Edit/" + oneAccount.id} class="btn-sm btn-outline-primary"><i class="far fa-edit"></i> Edit</a>`));
+                $cusTR.append($("<td></td>").addClass("col-md-1").append(`<a class="btn-sm btn-outline-danger"><i class="fas fa-trash"></i> Delete</a>`));
+                $cusTR.append($("<td></td>").addClass("col-md-2").append(`
+                                                    <div class="dropdown show">
+                                                        <a class="btn-sm btn-outline-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                            <i class="fas fa-user-cog"></i> Manage
+                                                        </a>
+                                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                                            <a class="dropdown-item" href=${"CustomerAccounts/ManageRates/" + oneAccount.id}>Manage rates</a>
+                                                            <a class="dropdown-item" href=${"CustomerAccounts/Comments/" + oneAccount.id}>Comments</a>
+                                                            <a class="dropdown-item" href="#">Assign instructors</a>
+                                                        </div>
+                                                    </div>
+                                                 `));
+
+                $tableBodyElement.append($cusTR);
+            }
+        }
+
+        function createPageNav($navElm, currentPage, totalPages) {
+            $navElm.empty();
+            let $liPrev = $('<li></li>').addClass('page-item');
+            if (currentPage == 1) {
+                $liPrev.addClass('disabled');
+                let $a = $('<a>Previous</a>').addClass('page-link').attr('href', '#').attr('tabindex', '-1');
+                $liPrev.append($a);
+            }
+            else {
+                let $a = $('<a>Previous</a>').addClass('page-link').attr('href', '#').attr('data-page-number', currentPage - 1).attr('data-page-size', pageSize);
+                $a.on('click', function (event) {
+                    let perPageSize = $(event.target).data('page-size');
+                    let pageNumber = $(event.target).data('page-number');
+                    loadData(pageNumber, perPageSize);
+                })
+                $liPrev.append($a);
+            }
+            $navElm.append($liPrev);
+
+            for (let i = 1; i <= totalPages; i++) {
+                let $li = $('<li></li>').addClass('page-item');
+                if (i == currentPage) {
+                    $li.addClass('active disabled');
+                    let $a = $(`<a>${i}</a>`).addClass('page-link').attr('href', '#').attr('tabindex', '-1');
+                    $li.append($a);
+                }
+                else {
+                    let $a = $(`<a>${i}</a>`).addClass('page-link').attr('href', '#').attr('data-page-number', i).attr('data-page-size', pageSize);
+                    $a.on('click', function (event) {
+                        let perPageSize = $(event.target).data('page-size');
+                        let pageNumber = $(event.target).data('page-number');
+                        loadData(pageNumber, perPageSize);
+                    })
+                    $li.append($a);
+                }
+                $navElm.append($li);
+
+            }
+
+            let $liNext = $('<li></li>').addClass('page-item');
+            if (currentPage == totalPages) {
+                $liNext.addClass('disabled');
+                let $a = $('<a>Next</a>').addClass('page-link').attr('href', '#').attr('tabindex', '-1');
+                $liNext.append($a);
+            }
+            else {
+                let $a = $('<a>Next</a>').addClass('page-link').attr('href', '#').attr('data-page-number', currentPage + 1).attr('data-page-size', pageSize);
+                $a.on('click', function (event) {
+                    let perPageSize = $(event.target).data('page-size');
+                    let pageNumber = $(event.target).data('page-number');
+                    loadData(pageNumber, perPageSize);
+                })
+                $liNext.append($a);
+            }
+            $navElm.append($liNext);
+        }
+
+
+    </script>
+}
 
