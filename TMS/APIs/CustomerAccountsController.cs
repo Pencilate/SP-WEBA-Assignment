@@ -72,20 +72,30 @@ namespace TMS.APIs
             List<Object> cusAccList = new List<Object>();
 
             int pageSize = 10;
+            int currentPage = 0;
+            string sortColumn = "";
+            string sortOrder = "ASC";
+            string searchFilter = "";
+
             int totalPage = 0;
             int startRecord = 0;
             int endRecord = 0;
-            int currentPage = 0;
             int totalRecords = 0;
             if (ModelState.IsValid)
             {
                 currentPage = Int32.Parse(inParameters.page_number.ToString());
                 pageSize = Int32.Parse(inParameters.per_page.ToString());
+                sortColumn = inParameters.sort_column;
+                sortOrder = inParameters.sort_order;
+                searchFilter = inParameters.search_filter;
             }
             else
             {
                 currentPage = 1;
                 pageSize = 10;
+                sortColumn = "ACCOUNTNAME";
+                sortOrder = "ASC";
+                searchFilter = "";
             }
             if (currentPage == 1)
             {
@@ -95,7 +105,7 @@ namespace TMS.APIs
             {
                 startRecord = ((currentPage - 1) * pageSize) + 1;
             }
-            endRecord = pageSize * currentPage;
+            //endRecord = pageSize * currentPage;
             try
             {
                 DbCommand cmd = Database.Database.GetDbConnection().CreateCommand();
@@ -118,6 +128,27 @@ namespace TMS.APIs
                 parameter.ParameterName = "pageSize";
                 parameter.Value = pageSize;
                 cmd.Parameters.Add(parameter);
+                //Pass the page size value to the stored procedure's @sortColumn parameter
+                parameter = cmd.CreateParameter();
+                parameter.DbType = System.Data.DbType.String;
+                parameter.ParameterName = "sortColumn";
+                parameter.Value = sortColumn;
+                cmd.Parameters.Add(parameter);
+                //Pass the page size value to the stored procedure's @sortORDER parameter
+                parameter = cmd.CreateParameter();
+                parameter.DbType = System.Data.DbType.String;
+                parameter.ParameterName = "sortOrder";
+                parameter.Value = sortOrder;
+                cmd.Parameters.Add(parameter);
+                if (!String.IsNullOrEmpty(searchFilter))
+                {
+                    //Pass the page size value to the stored procedure's @customerName parameter
+                    parameter = cmd.CreateParameter();
+                    parameter.DbType = System.Data.DbType.String;
+                    parameter.ParameterName = "customerName";
+                    parameter.Value = searchFilter;
+                    cmd.Parameters.Add(parameter);
+                }
 
                 DbDataReader dr = cmd.ExecuteReader();//This is the part where SQL is sent to DB
                 if (dr.HasRows)
@@ -158,9 +189,11 @@ namespace TMS.APIs
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." });
             }
+            endRecord = startRecord + cusAccList.Count - 1;
             object result = new
             {
-                total = cusAccList.Count,
+                totalRecordCount = totalRecords,
+                totalCurrentPgRec = cusAccList.Count,
                 currentPage = currentPage,
                 totalPage = totalPage,
                 records = cusAccList,
@@ -257,6 +290,10 @@ namespace TMS.APIs
             [BindRequired]
             public int page_number { get; set; }
             public int per_page { get; set; }
+            public string sort_order { get; set; }
+            public string sort_column { get; set; }
+            public string search_filter { get; set; }
+
         }//end of QueryPagingParametersForNotes class
     }
 }

@@ -30,6 +30,56 @@
         </div>
     </div>
     <div class="card-body" style="padding:1% 3%">
+        <div class="row justify-content-center" id="paginationOptions" style="padding: 0.5em 0;">
+            <div class="col d-inline">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <label class="input-group-text" for="pageSizeSelection">Show</label>
+                    </div>
+                    <select class="custom-select" name="pageSizeSelection" id="pageSizeSelection" style="width:30%;">
+                        <option value="5" selected>5</option>
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
+                    <div class="input-group-append">
+                        <label class="input-group-text" for="pageSizeSelection">entries</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <label class="input-group-text" for="sortOrderSelection">Order</label>
+                    </div>
+                    <select class="custom-select" name="sortOrderSelection" id="sortOrderSelection" style="width:60%;">
+                        <option value="ASC" selected>Ascending</option>
+                        <option value="DESC">Descending</option>
+                    </select>
+                </div>
+            </div>
+                <div class="col">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <label class="input-group-text" for="sortColumnSelection">Sort by</label>
+                        </div>
+                        <select class="custom-select" name="sortColumnSelection" id="sortColumnSelection" style="width:60%;">
+                            <option value="ACCOUNTNAME" selected>Account Name</option>
+                            <option value="ISVISIBLE">Visibility</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <label class="input-group-text" for="searchFilter"> Search</label>
+                        </div>
+                        <input type="text" name="searchFilter" id="searchFilterInput" class="form-control" "    />
+                    </div>
+
+                </div>
+
+            </div>
         <div class="row justify-content-center">
             <nav>
                 <ul class="pagination" id="topNav"></ul>
@@ -55,6 +105,9 @@
                     <tbody id="tableBodyElement"></tbody>
                 </table>
             </div>
+        </div>
+        <div class="row justify-content-center">
+            <p id="navInfo"></p>
         </div>
         <div class="row justify-content-center">
             <nav>
@@ -129,18 +182,42 @@
         //});
 
         var pageSize = 5;
+        var sortColumn = 'ACCOUNTNAME';
+        var sortOrder = 'ASC';
+        var currentPage;
+        var searchFilter = '';
+
         (function () {
-            loadData(1, pageSize);
+            loadData(1, pageSize, sortOrder, sortColumn, searchFilter);
+
+            $('#pageSizeSelection').on('change', function () {
+                pageSize = this.value;
+                loadData(1, pageSize, sortOrder, sortColumn, searchFilter)
+            })
+            $('#sortColumnSelection').on('change', function () {
+                sortColumn = this.value;
+                loadData(currentPage, pageSize, sortOrder, sortColumn, searchFilter)
+            })
+            $('#sortOrderSelection').on('change', function () {
+                sortOrder = this.value;
+                loadData(currentPage, pageSize, sortOrder, sortColumn, searchFilter)
+            })
+            $('#searchFilterInput').on('change', function () {
+                searchFilter = this.value;
+                loadData(1, pageSize, sortOrder, sortColumn, searchFilter)
+            })
+
         })();
 
-        function loadData(pageNo, perPageSize) {
+        function loadData(pageNo, perPageSize, prefSortOrder, prefSortColumn, prefSearchFilter) {
             $.ajax({
-                url: `/API/CustomerAccounts/GetCustomersPaginated?page_number=${pageNo}&per_page=${perPageSize}`,
+                url: `/API/CustomerAccounts/GetCustomersPaginated?page_number=${pageNo}&per_page=${perPageSize}&sort_column=${prefSortColumn}&sort_order=${prefSortOrder}&search_filter=${prefSearchFilter}`,
                 method: 'GET'
             }).done(function (data) {
                 console.dir(data);
-                let totalCurrentPageRecord = data.total;
-                let currentPage = data.currentPage;
+                let totalRecCount = data.totalRecordCount;
+                let totalCurrentPageRecord = data.totalCurrentPgRec;
+                currentPage = data.currentPage;
                 let totalPages = data.totalPage;
                 let fromRec = data.from;
                 let toRec = data.to;
@@ -148,8 +225,11 @@
                 renderData(data.records);
                 createPageNav($('#topNav'), currentPage, totalPages);
                 createPageNav($('#btmNav'), currentPage, totalPages);
+                let $navInfo = $('#navInfo');
+                $navInfo.empty();
+                $navInfo.text(`Showing ${fromRec} to ${toRec} of ${totalRecCount} entries`);
             }).fail(function (data) {
-                new Noty({ text: "Fail to load customer data. " + data.responseJSON.message, type: 'error' }).show();
+                new Noty({ text: "Fail to load customer data. " + data.responseJSON.message, type: 'error', timeout: 3000 }).show();
             });
         }
 
@@ -201,11 +281,14 @@
                 $liPrev.append($a);
             }
             else {
-                let $a = $('<a>Previous</a>').addClass('page-link').attr('href', '#').attr('data-page-number', currentPage - 1).attr('data-page-size', pageSize);
+                let $a = $('<a>Previous</a>').addClass('page-link').attr('href', '#').attr('data-page-number', currentPage - 1).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder).attr('data-sort-column', sortColumn).attr("data-search-filter", searchFilter);
                 $a.on('click', function (event) {
                     let perPageSize = $(event.target).data('page-size');
                     let pageNumber = $(event.target).data('page-number');
-                    loadData(pageNumber, perPageSize);
+                    let prefSortOrder = $(event.target).data('sort-order');
+                    let prefSortColumn = $(event.target).data('sort-column');
+                    let prefSearchFilter = $(event.target).data('search-filter');
+                    loadData(pageNumber, perPageSize, prefSortOrder, prefSortColumn, prefSearchFilter);
                 })
                 $liPrev.append($a);
             }
@@ -219,11 +302,14 @@
                     $li.append($a);
                 }
                 else {
-                    let $a = $(`<a>${i}</a>`).addClass('page-link').attr('href', '#').attr('data-page-number', i).attr('data-page-size', pageSize);
+                    let $a = $(`<a>${i}</a>`).addClass('page-link').attr('href', '#').attr('data-page-number', i).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder).attr('data-sort-column', sortColumn).attr("data-search-filter", searchFilter);
                     $a.on('click', function (event) {
                         let perPageSize = $(event.target).data('page-size');
                         let pageNumber = $(event.target).data('page-number');
-                        loadData(pageNumber, perPageSize);
+                        let prefSortOrder = $(event.target).data('sort-order');
+                        let prefSortColumn = $(event.target).data('sort-column');
+                        let prefSearchFilter = $(event.target).data('search-filter');
+                        loadData(pageNumber, perPageSize, prefSortOrder, prefSortColumn, prefSearchFilter);
                     })
                     $li.append($a);
                 }
@@ -238,11 +324,14 @@
                 $liNext.append($a);
             }
             else {
-                let $a = $('<a>Next</a>').addClass('page-link').attr('href', '#').attr('data-page-number', currentPage + 1).attr('data-page-size', pageSize);
+                let $a = $('<a>Next</a>').addClass('page-link').attr('href', '#').attr('data-page-number', currentPage + 1).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder).attr('data-sort-column', sortColumn).attr("data-search-filter", searchFilter);
                 $a.on('click', function (event) {
                     let perPageSize = $(event.target).data('page-size');
                     let pageNumber = $(event.target).data('page-number');
-                    loadData(pageNumber, perPageSize);
+                    let prefSortOrder = $(event.target).data('sort-order');
+                    let prefSortColumn = $(event.target).data('sort-column');
+                    let prefSearchFilter = $(event.target).data('search-filter');
+                    loadData(pageNumber, perPageSize, prefSortOrder, prefSortColumn, prefSearchFilter);
                 })
                 $liNext.append($a);
             }
