@@ -56,12 +56,13 @@ namespace TMS.APIs
                         updatedAt = ca.UpdatedAt
                     });
                 }
+                return Ok(cusAccList);
             }
             catch (SqlException ex)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." });
             }
-            return Ok(cusAccList);
+           
         }
 
         // GET: api/<controller>
@@ -184,33 +185,59 @@ namespace TMS.APIs
                 cmd.Connection.Close();
                 totalPage = (int)Math.Ceiling((double)totalRecords / pageSize);
 
+                endRecord = startRecord + cusAccList.Count - 1;
+                object result = new
+                {
+                    totalRecordCount = totalRecords,
+                    totalCurrentPgRec = cusAccList.Count,
+                    currentPage = currentPage,
+                    totalPage = totalPage,
+                    records = cusAccList,
+                    from = startRecord,
+                    to = endRecord
+
+                };
+                return Ok(result);
             }
             catch (SqlException ex)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." });
             }
-            endRecord = startRecord + cusAccList.Count - 1;
-            object result = new
-            {
-                totalRecordCount = totalRecords,
-                totalCurrentPgRec = cusAccList.Count,
-                currentPage = currentPage,
-                totalPage = totalPage,
-                records = cusAccList,
-                from = startRecord,
-                to = endRecord
-
-            };
-            return Ok(result);
+            
         }
 
 
 
         // GET api/<controller>/5
+        [Authorize("ADMIN")]
         [HttpGet("{id}")]
-        public string Get(int id)
+        public IActionResult GetCustomerInfo(int id)
         {
-            return "value";
+            try
+            {
+                CustomerAccount ca = Database.CustomerAccounts.Include(c => c.CreatedBy).Include(c => c.UpdatedBy).SingleOrDefault(c => c.CustomerAccountId == id);
+                if (ca == null)
+                {
+                    return NotFound(new { message = "Customer could not be found" });
+                }
+                else
+                {
+                    object cusAccObj = new
+                    {
+                        id = ca.CustomerAccountId,
+                        accountName = ca.AccountName,
+                        visibility = ca.IsVisible,
+                        createdAt = ca.CreatedAt,
+                        createdBy = ca.CreatedBy.FullName,
+                        updatedAt = ca.UpdatedAt,
+                        updatedBy = ca.UpdatedBy.FullName
+                    };
+                    return Ok(cusAccObj);
+                }
+            }catch(SqlException ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." });
+            }
         }
 
         // POST api/<controller>
@@ -259,7 +286,7 @@ namespace TMS.APIs
 
                 Database.CustomerAccounts.Add(ca);
                 Database.SaveChanges();
-
+                return Ok(new { message = "Successfully Registered " + ca.AccountName });
             }
             catch (SqlException ex)
             {
@@ -269,14 +296,38 @@ namespace TMS.APIs
             {
                 return BadRequest(new { message = ex.InnerException.Message });
             }
-            return Ok(new { message = "Successfully Registered " + ca.AccountName });
+            
 
         }
 
         // PUT api/<controller>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
+        [Authorize("ADMIN")]
+        [HttpPut("Update/{id}")]
+        public IActionResult UpdateCustomerAccount(int id, [FromForm] IFormCollection data)
         {
+            int userId = int.Parse(User.FindFirst("userid").Value);
+            CustomerAccount ca;
+            try
+            {
+                ca = Database.CustomerAccounts.SingleOrDefault(c => c.CustomerAccountId == id);
+                ca.AccountName = data["accountName"].ToString();
+                ca.IsVisible = bool.Parse(data["visibility"].ToString());
+                ca.UpdatedById = userId;
+                ca.UpdatedAt = _appDateTimeService.GetCurrentDateTime();
+            
+                Database.CustomerAccounts.Update(ca);
+                Database.SaveChanges();
+                return Ok(new { message = "Successfully Updated " + ca.AccountName });
+            }
+            catch (SqlException ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "There are issues with the request." });
+            }
+            
         }
 
         // DELETE api/<controller>/5

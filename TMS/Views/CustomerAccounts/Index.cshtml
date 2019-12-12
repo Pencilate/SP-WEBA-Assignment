@@ -12,16 +12,7 @@
     </ol>
 
 </nav>
-@*<div class="card col-12 w-100">
-    <div class="card-header elegant-color white-text">
-        <div class="container-fluid">
-            <div class="row vertical-align">
-                <h3 class="one" style="padding-top:8px;">Customer Accounts</h3>
-                <a asp-controller="CustomerAccounts" asp-action="Create" class="btn btn-primary" style="margin-left:auto"><i class="fas fa-plus" style="color:#FFF;"></i> Add</a>
-            </div>
-        </div>
-    </div>
-    <div class="card-body">*@
+
 <div class="card">
     <div class="card-header stylish-color-dark white-text">
         <div class="container-fluid d-flex">
@@ -29,7 +20,7 @@
             <a asp-controller="CustomerAccounts" asp-action="Create" class="btn btn-primary" style="margin-left:auto"><i class="fas fa-plus" style="color:#FFF;"></i> Add</a>
         </div>
     </div>
-    <div class="card-body" style="padding:1% 3%">
+    <div class="card-body col-12" style="padding:1% 3%">
         <div class="row justify-content-center" id="paginationOptions" style="padding: 0.5em 0;">
             <div class="col d-inline">
                 <div class="input-group">
@@ -58,28 +49,28 @@
                     </select>
                 </div>
             </div>
-                <div class="col">
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <label class="input-group-text" for="sortColumnSelection">Sort by</label>
-                        </div>
-                        <select class="custom-select" name="sortColumnSelection" id="sortColumnSelection" style="width:60%;">
-                            <option value="ACCOUNTNAME" selected>Account Name</option>
-                            <option value="ISVISIBLE">Visibility</option>
-                        </select>
+            <div class="col">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <label class="input-group-text" for="sortColumnSelection">Sort by</label>
                     </div>
+                    <select class="custom-select" name="sortColumnSelection" id="sortColumnSelection" style="width:60%;">
+                        <option value="ACCOUNTNAME" selected>Account Name</option>
+                        <option value="ISVISIBLE">Visibility</option>
+                    </select>
                 </div>
-                <div class="col">
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <label class="input-group-text" for="searchFilter"> Search</label>
-                        </div>
-                        <input type="text" name="searchFilter" id="searchFilterInput" class="form-control" "    />
+            </div>
+            <div class="col">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <label class="input-group-text" for="searchFilter"> Search</label>
                     </div>
-
+                    <input type="text" name="searchFilter" id="searchFilterInput" class="form-control" />
                 </div>
 
             </div>
+
+        </div>
         <div class="row justify-content-center">
             <nav>
                 <ul class="pagination" id="topNav"></ul>
@@ -117,19 +108,56 @@
     </div>
 </div>
 
+<!-- Modal -->
+<div class="modal fade" id="editCustomerModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Customer Account</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form name="editAccountForm" novalidate>
+                    <p style="padding-top:2%"><strong>General information</strong></p>
+                    <div class="form-group">
+                        <label for="accountName">Customer Account Name</label><br>
+                        <input type="text" class="form-control" name="accountName" id="accountName" placeholder="Enter name" />
+                    </div>
+                    <div class="form-group">
+                        <label for="accountVisibilityToggle">Visibility</label><br>
+                        <input type="checkbox" name="accountVisibilityToggle" id="accountVisibilityToggle" class="form-control" data-toggle="toggle" data-on="Visible" data-off="Hidden" data-onstyle="success" data-offstyle="danger" data-width="140" data-height="45" />
+                    </div>
+                    <p style="padding-top:2%" id="editCreateTS">Creation timestamp: </p>
+                    <p style="padding-top:2%" id="editModifiedTS">Last modified timestamp: </p>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <div class="form-group" style="display:flex;justify-content:flex-end;">
+                    <input type="button" name="editSubmitBtn" id="editSubmitBtn" value="Update" class="btn btn-primary">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 @section Scripts{
     <style>
         table.table td {
             padding-left: 0.2rem;
             padding-right: 0.2rem;
         }
-
-            table.table th, table.table td.col-md-1, table.table td.col-md-2 {
+        table.table th, table.table td.col-md-1, table.table td.col-md-2 {
                 padding-left: 0.2rem;
                 padding-right: 0.2rem;
                 text-align: center;
-            }
-
+        }
+        .error {
+            color: red;
+        }
         .pagination .page-item.disabled .page-link {
             color: white;
         }
@@ -180,6 +208,8 @@
         //    }).fail(function (data) {
         //        new Noty({ text: "Fail to load customer data. " + data.responseJSON.message, type: 'error' }).show();
         //});
+
+        var customerID;
 
         var pageSize = 5;
         var sortColumn = 'ACCOUNTNAME';
@@ -253,20 +283,28 @@
                 $cusTR.append($("<td></td>", { text: oneAccount.createdBy }).addClass("col-md-1"));
                 $cusTR.append($("<td></td>", { text: oneAccount.updatedBy }).addClass("col-md-1"));
                 $cusTR.append($("<td></td>", { text: moment(oneAccount.updatedAt).format('DD/MM/YYYY') }).addClass("col-md-1"));
-                $cusTR.append($("<td></td>").addClass("col-md-1").append(`<a href=${"CustomerAccounts/Edit/" + oneAccount.id} class="btn-sm btn-outline-primary"><i class="far fa-edit"></i> Edit</a>`));
-                $cusTR.append($("<td></td>").addClass("col-md-1").append(`<a class="btn-sm btn-outline-danger"><i class="fas fa-trash"></i> Delete</a>`));
+
+                let $btnEdit = $('<button type="button"><i class="far fa-edit"></i> Edit</button>').addClass('btn-sm btn-outline-primary').attr('data-toggle', 'modal').attr('data-target', `#editCustomerModal`).attr('data-customerid', oneAccount.id);
+                //$btnEdit.on('click', function () {
+                   
+                //});
+
+                $cusTR.append($("<td></td>").addClass("col-md-1").append($btnEdit));
+                let $btnDelete = $('<button type="button"><i class="fas fa-trash"></i> Delete</button>').addClass('btn-sm btn-outline-danger').attr('data-toggle', 'modal').attr('data-target', `#deleteCustomerModal`).attr('data-customerId', oneAccount.id);
+
+                $cusTR.append($("<td></td>").addClass("col-md-1").append($btnDelete));
                 $cusTR.append($("<td></td>").addClass("col-md-2").append(`
-                                                    <div class="dropdown show">
-                                                        <a class="btn-sm btn-outline-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                            <i class="fas fa-user-cog"></i> Manage
-                                                        </a>
-                                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                                            <a class="dropdown-item" href=${"CustomerAccounts/ManageRates/" + oneAccount.id}>Manage rates</a>
-                                                            <a class="dropdown-item" href=${"CustomerAccounts/Comments/" + oneAccount.id}>Comments</a>
-                                                            <a class="dropdown-item" href="#">Assign instructors</a>
-                                                        </div>
-                                                    </div>
-                                                 `));
+                                                                <div class="dropdown show">
+                                                                    <button type="button" class="btn-sm btn-outline-secondary dropdown-toggle" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                                        <i class="fas fa-user-cog"></i> Manage
+                                                                    </button>
+                                                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                                                        <a class="dropdown-item" href=${"CustomerAccounts/ManageRates/" + oneAccount.id}>Manage rates</a>
+                                                                        <a class="dropdown-item" href=${"CustomerAccounts/Comments/" + oneAccount.id}>Comments</a>
+                                                                        <a class="dropdown-item" href="#">Assign instructors</a>
+                                                                    </div>
+                                                                </div>
+                                                             `));
 
                 $tableBodyElement.append($cusTR);
             }
@@ -337,6 +375,93 @@
             }
             $navElm.append($liNext);
         }
+
+        $('#editCustomerModal').on('show.bs.modal', function (event) {
+            
+            let $button = $(event.relatedTarget); // Button that triggered the modal
+            cusID = $button.data('customerid'); // Extract info from data-* attributes
+            console.dir(cusID + " of Modal");
+
+            new Noty({ text: `Edit Button Pressed for ${cusID}`, type: 'info', timeout: 1000 }).show();
+
+            var modal = $(this);
+            modal.find('.modal-footer input#submitBtn').removeAttr('data-customerid');
+            $.ajax({
+                url: '/API/CustomerAccounts/' + cusID,
+                method: 'GET'
+            }).done(function (editData) {
+                modal.find('.modal-body input#accountName').val(editData.accountName);
+                //modal.find('.modal-body input#accountVisibilityToggle').prop('checked', editData.visibility);
+                if (editData.visibility) {
+                    modal.find('.modal-body input#accountVisibilityToggle').attr('checked');
+                    modal.find('.modal-body input#accountVisibilityToggle').bootstrapToggle('on');
+                }
+                modal.find('.modal-body p#editCreateTS').text(`Creation timestamp: ${moment(editData.createdAt).format('DD/MM/YYYY HH:ss')} by ${editData.createdBy}`);
+                modal.find('.modal-body p#editModifiedTS').text(`Last modified timestamp: ${moment(editData.updatedAt).format('DD/MM/YYYY HH:ss')} by ${editData.updatedBy}`);
+
+            }).fail(function (editData) {
+                new Noty({ text: editData.responseJSON.message, type: 'error', timeout: 3000 }).show();
+                $('#editCustomerModal').modal('hide');
+            });
+        });
+
+        $('input#editSubmitBtn').on('click', function (event) {
+            if ($("form[name='editAccountForm']").valid() == true) {
+                console.dir(cusID + " of PUT Method");
+                let cAccountName = $('#accountName').val();
+                let cVisibility = $('#accountVisibilityToggle').prop('checked');
+
+                function WebFormData(iAccountName, iVisibility) {
+                    this.accountName = iAccountName;
+                    this.visibility = iVisibility;
+                }
+
+                let webformData = new WebFormData(cAccountName, cVisibility);
+                console.dir(webformData);
+
+                $.ajax({
+                    url: '/API/CustomerAccounts/Update/' + cusID,
+                    method: 'PUT',
+                    data: webformData,
+                    contentType: 'application/x-www-form-urlencoded',
+                    datatype: 'application/json'
+
+                }).done(function (editResult) {
+                    new Noty({ text: editResult.message, type: 'success', timeout: 3000 }).show();
+                    $('#editCustomerModal').modal('hide');
+                    loadData(currentPage, pageSize, sortOrder, sortColumn, searchFilter)
+                }).fail(function (editResult) {
+                    new Noty({ text: editResult.responseJSON.message, type: 'error', timeout: 3000 }).show();
+                });
+
+               
+            }
+        });
+
+        (function () {
+            $.validator.addMethod("alphanumeric", function (value, element) {
+                return this.optional(element) || /^[\w.' ]+$/i.test(value);
+            }, "Please enter valid name with alphanumeric characters or _ or . or ' or ' ' only.");
+          
+            $("form[name='editAccountForm']").validate({
+                success: 'valid',
+                //focusCleanup: true,
+                rules: {
+                    accountName: {
+                        required: true,
+                        alphanumeric: true,
+                        maxlength: 100
+                    }
+                },
+                messages: {
+                    accountName: {
+                        required: 'Please enter name of customer.',
+                        maxlength: 'Please shorten the account name to less than 100 characters.'
+                    }
+                }
+            });
+        })();
+
 
 
     </script>
