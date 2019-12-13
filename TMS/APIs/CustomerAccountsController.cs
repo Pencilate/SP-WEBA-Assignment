@@ -278,7 +278,8 @@ namespace TMS.APIs
 
             CustomerAccount ca = new CustomerAccount()
             {
-                Comments = new List<CustomerAccountComment>()
+                Comments = new List<CustomerAccountComment>(),
+                AccountRates = new List<AccountRate>()
             };
             try
             {
