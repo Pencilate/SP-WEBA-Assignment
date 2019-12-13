@@ -1,0 +1,375 @@
+﻿<nav aria-label="breadcrumb">
+    <ol class="breadcrumb ">
+        <li class="breadcrumb-item font-small">
+            <a asp-controller="CustomerAccounts" asp-action="Index">Manage Customer Accounts</a>
+        </li>
+        <li class="breadcrumb-item font-small active">Manage Account Rates</li>
+    </ol>
+</nav>
+
+<div class="card">
+    <div class="card-header stylish-color-dark white-text">
+        <div class="container-fluid d-flex">
+            <h4 class="one" style="padding-top:1.8%;width:80%">Account Rates for </h4>
+            <a asp-controller="AccountRates" asp-action="Create" class="btn btn-primary" style="margin-left:auto"><i class="fas fa-plus" style="color:#FFF;"></i> Add</a>
+        </div>
+    </div>
+    <div class="card-body col-12" style="padding:1% 3%">
+        <div class="row justify-content-center" id="paginationOptions" style="padding: 0.5em 0;">
+            <div class="col d-inline">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <label class="input-group-text" for="pageSizeSelection">Show</label>
+                    </div>
+                    <select class="custom-select" name="pageSizeSelection" id="pageSizeSelection" style="width:30%;">
+                        <option value="5" selected>5</option>
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
+                    <div class="input-group-append">
+                        <label class="input-group-text" for="pageSizeSelection">entries</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <label class="input-group-text" for="sortOrderSelection">Order</label>
+                    </div>
+                    <select class="custom-select" name="sortOrderSelection" id="sortOrderSelection" style="width:60%;">
+                        <option value="ASC" selected>Ascending</option>
+                        <option value="DESC">Descending</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <nav>
+                <ul class="pagination" id="topNav"></ul>
+            </nav>
+        </div>
+        <div class="row">
+            <div class="table-responsive-md w-100">
+                <div id="topNavigationInterfaceContainer" class="btn-toolbar float-right" role="toolbar"></div>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr class="row m-0" style="vertical-align:central;">
+                            <th class="col-md-1">No.</th>
+                            <th class="col-md-2">Rate per Hour</th>
+                            <th class="col-md-2">Effective Start Date</th>
+                            <th class="col-md-2">Effective End Date</th>
+                            <th class="col-md-1">Edit</th>
+                            <th class="col-md-2">Timetable</th>
+                            <th class="col-md-2">Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBodyElement"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <p id="navInfo"></p>
+        </div>
+        <div class="row justify-content-center">
+            <nav>
+                <ul class="pagination" id="btmNav"></ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <style>
+        table.table td {
+            padding-left: 0.2rem;
+            padding-right: 0.2rem;
+        }
+
+            table.table th, table.table td.col-md-1, table.table td.col-md-2 {
+                padding-left: 0.2rem;
+                padding-right: 0.2rem;
+                text-align: center;
+            }
+
+        .error {
+            color: red;
+        }
+
+        .pagination .page-item.disabled .page-link {
+            color: white;
+        }
+    </style>
+    <script>
+        var customerID;
+
+        var pageSize = 5;
+        var sortOrder = 'ASC';
+        var currentPage;
+
+        (function () {
+            loadData(1, pageSize, sortOrder);
+
+            $('#pageSizeSelection').on('change', function () {
+                pageSize = this.value;
+                loadData(1, pageSize, sortOrder);
+            })
+            $('#sortOrderSelection').on('change', function () {
+                sortOrder = this.value;
+                loadData(currentPage, pageSize, sortOrder);
+            })
+
+        })();
+
+        function loadData(pageNo, perPageSize, prefSortOrder) {
+            $.ajax({
+                url: `/API/AccountRates/GetAccountRatesPaginated?page_number=${pageNo}&per_page=${perPageSize}&sort_order=${prefSortOrder}`,
+                method: 'GET'
+            }).done(function (data) {
+                console.dir(data);
+                let totalRecCount = data.totalRecordCount;
+                let totalCurrentPageRecord = data.totalCurrentPgRec;
+                currentPage = data.currentPage;
+                let totalPages = data.totalPage;
+                let fromRec = data.from;
+                let toRec = data.to;
+
+                renderData(data.records);
+                createPageNav($('#topNav'), currentPage, totalPages);
+                createPageNav($('#btmNav'), currentPage, totalPages);
+                let $navInfo = $('#navInfo');
+                $navInfo.empty();
+                $navInfo.text(`Showing ${fromRec} to ${toRec} of ${totalRecCount} entries`);
+            }).fail(function (data) {
+                new Noty({ text: "Fail to load customer account rate data. " + data.responseJSON.message, type: 'error', timeout: 3000 }).show();
+            });
+        }
+
+        function renderData(data) {
+            $tableBodyElement = $('#tableBodyElement');
+            $tableBodyElement.empty();
+            for (let i = 0; i < data.length; i++) {
+                oneAccount = data[i];
+                let $cusTR = $("<tr></tr");
+                $cusTR.addClass("row m-0");
+
+                $cusTR.append($("<td></td>", { text: oneAccount.accountName }).addClass("col-md-3"));
+                $cusTR.append($("<td></td>", { text: moment(oneAccount.updatedAt).format('DD/MM/YYYY') }).addClass("col-md-1"));
+
+                let $btnEdit = $('<button type="button"><i class="far fa-edit"></i> Edit</button>').addClass('btn-sm btn-outline-primary').attr('data-toggle', 'modal').attr('data-target', `#editAccountRateModal`).attr('data-customerid', oneAccount.id);
+                $cusTR.append($("<td></td>").addClass("col-md-1").append($btnEdit));
+
+                let $btnTimetable = $('<input type="button"><i class="fas fa-calendar-day"></i> Timetable</button>').attr('href', '/AccountTimeTable/' + oneAccount.id).addClass('btn-sm btn-outline-secondary');
+                $cusTR.append($("<td></td>").addClass("col-md-1").append($btnTimetable));
+
+                let $btnDelete = $('<button type="button"><i class="fas fa-trash"></i> Delete</button>').addClass('btn-sm btn-outline-danger').attr('data-toggle', 'modal').attr('data-target', `#deleteAccountRateModal`).attr('data-customerId', oneAccount.id);
+                $cusTR.append($("<td></td>").addClass("col-md-1").append($btnDelete));
+
+                $tableBodyElement.append($cusTR);
+            }
+        }
+
+        function createPageNav($navElm, currentPage, totalPages) {
+            $navElm.empty();
+            let $liPrev = $('<li></li>').addClass('page-item');
+            if (currentPage == 1) {
+                $liPrev.addClass('disabled');
+                let $a = $('<a>Previous</a>').addClass('page-link').attr('href', '#').attr('tabindex', '-1');
+                $liPrev.append($a);
+            }
+            else {
+                let $a = $('<a>Previous</a>').addClass('page-link').attr('href', '#').attr('data-page-number', currentPage - 1).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder);
+                $a.on('click', function (event) {
+                    let perPageSize = $(event.target).data('page-size');
+                    let pageNumber = $(event.target).data('page-number');
+                    let prefSortOrder = $(event.target).data('sort-order');
+                    loadData(pageNumber, perPageSize, prefSortOrder);
+                })
+                $liPrev.append($a);
+            }
+            $navElm.append($liPrev);
+
+            for (let i = 1; i <= totalPages; i++) {
+                let $li = $('<li></li>').addClass('page-item');
+                if (i == currentPage) {
+                    $li.addClass('active disabled');
+                    let $a = $(`<a>${i}</a>`).addClass('page-link').attr('href', '#').attr('tabindex', '-1');
+                    $li.append($a);
+                }
+                else {
+                    let $a = $(`<a>${i}</a>`).addClass('page-link').attr('href', '#').attr('data-page-number', i).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder);
+                    $a.on('click', function (event) {
+                        let perPageSize = $(event.target).data('page-size');
+                        let pageNumber = $(event.target).data('page-number');
+                        let prefSortOrder = $(event.target).data('sort-order');
+                        loadData(pageNumber, perPageSize, prefSortOrder);
+                    })
+                    $li.append($a);
+                }
+                $navElm.append($li);
+
+            }
+
+            let $liNext = $('<li></li>').addClass('page-item');
+            if (currentPage == totalPages) {
+                $liNext.addClass('disabled');
+                let $a = $('<a>Next</a>').addClass('page-link').attr('href', '#').attr('tabindex', '-1');
+                $liNext.append($a);
+            }
+            else {
+                let $a = $('<a>Next</a>').addClass('page-link').attr('href', '#').attr('data-page-number', currentPage + 1).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder);
+                $a.on('click', function (event) {
+                    let perPageSize = $(event.target).data('page-size');
+                    let pageNumber = $(event.target).data('page-number');
+                    let prefSortOrder = $(event.target).data('sort-order');
+                    loadData(pageNumber, perPageSize, prefSortOrder);
+                })
+                $liNext.append($a);
+            }
+            $navElm.append($liNext);
+        }
+
+        //$('#editCustomerModal').on('show.bs.modal', function (event) {
+
+        //    let $button = $(event.relatedTarget); // Button that triggered the modal
+        //    cusID = $button.data('customerid'); // Extract info from data-* attributes
+        //    console.dir(cusID + " of Modal");
+
+        //    //new Noty({ text: `Edit Button Pressed for ${cusID}`, type: 'info', timeout: 1000 }).show();//For Debug
+
+        //    var modal = $(this);
+        //    $.ajax({
+        //        url: '/API/CustomerAccounts/' + cusID,
+        //        method: 'GET'
+        //    }).done(function (editData) {
+        //        modal.find('.modal-body input#accountName').val(editData.accountName);
+        //        if (editData.visibility == true) {
+        //            //modal.find('.modal-body input#accountVisibilityToggle').prop('checked',true);
+        //            modal.find('.modal-body input#accountVisibilityToggle').bootstrapToggle('on');
+        //        }
+        //        modal.find('.modal-body p#editCreateTS').text(`Creation timestamp: ${moment(editData.createdAt).format('DD/MM/YYYY HH:ss')} by ${editData.createdBy}`);
+        //        modal.find('.modal-body p#editModifiedTS').text(`Last modified timestamp: ${moment(editData.updatedAt).format('DD/MM/YYYY HH:ss')} by ${editData.updatedBy}`);
+
+        //    }).fail(function (editData) {
+        //        new Noty({ text: editData.responseJSON.message, type: 'error', timeout: 3000 }).show();
+        //        $('#editCustomerModal').modal('hide');
+        //    });
+        //});
+
+        //$('input#editSubmitBtn').on('click', function () {
+        //    if ($("form[name='editAccountForm']").valid() == true) {
+        //        console.dir(cusID + " of PUT Method");
+        //        let cAccountName = $('#accountName').val();
+        //        let cVisibility = $('#accountVisibilityToggle').prop('checked');
+
+        //        function WebFormData(iAccountName, iVisibility) {
+        //            this.accountName = iAccountName;
+        //            this.visibility = iVisibility;
+        //        }
+
+        //        let webformData = new WebFormData(cAccountName, cVisibility);
+        //        console.dir(webformData);
+
+        //        $.ajax({
+        //            url: '/API/CustomerAccounts/Update/' + cusID,
+        //            method: 'PUT',
+        //            data: webformData,
+        //            contentType: 'application/x-www-form-urlencoded',
+        //            datatype: 'application/json'
+
+        //        }).done(function (editResult) {
+        //            new Noty({ text: editResult.message, type: 'success', timeout: 3000 }).show();
+        //            $('#editCustomerModal').modal('hide');
+        //            loadData(currentPage, pageSize, sortOrder, sortColumn, searchFilter)
+        //        }).fail(function (editResult) {
+        //            new Noty({ text: editResult.responseJSON.message, type: 'error', timeout: 3000 }).show();
+        //        });
+
+
+        //    }
+        //});
+
+        //(function () {
+        //    $.validator.addMethod("alphanumeric", function (value, element) {
+        //        return this.optional(element) || /^[\w.' ]+$/i.test(value);
+        //    }, "Please enter valid name with alphanumeric characters or _ or . or ' or ' ' only.");
+
+        //    $("form[name='editAccountForm']").validate({
+        //        success: 'valid',
+        //        //focusCleanup: true,
+        //        rules: {
+        //            accountName: {
+        //                required: true,
+        //                alphanumeric: true,
+        //                maxlength: 100
+        //            }
+        //        },
+        //        messages: {
+        //            accountName: {
+        //                required: 'Please enter name of customer.',
+        //                maxlength: 'Please shorten the account name to less than 100 characters.'
+        //            }
+        //        }
+        //    });
+        //})();
+
+        //$('#editCustomerModal').on('hidden.bs.modal', function () {
+        //    var modal = $(this);
+        //    modal.find('.modal-body input#accountName').val('');
+        //    let $toggle = modal.find('.modal-body input#accountVisibilityToggle');
+        //    if ($toggle.prop('checked') == true) {
+        //        //$toggle.removeAttr('checked');
+        //        $toggle.bootstrapToggle('off');
+        //    }
+
+        //    modal.find('.modal-body p#editCreateTS').text(`Creation timestamp:`);
+        //    modal.find('.modal-body p#editModifiedTS').text(`Last modified timestamp:`);
+        //});
+
+        //$('#deleteCustomerModal').on('show.bs.modal', function (event) {
+
+        //    let $button = $(event.relatedTarget); // Button that triggered the modal
+        //    cusID = $button.data('customerid'); // Extract info from data-* attributes
+        //    console.dir(cusID + " of Modal");
+
+        //    //new Noty({ text: `Edit Button Pressed for ${cusID}`, type: 'info', timeout: 1000 }).show();//For Debug
+
+        //    var modal = $(this);
+
+        //    $.ajax({
+        //        url: '/API/CustomerAccounts/GetCustomerAccountSummary/' + cusID,
+        //        method: 'GET'
+        //    }).done(function (delData) {
+        //        modal.find('.modal-body p#delAccountNameTxt').text(`Delete ${delData.accountName}?`);
+        //        modal.find('.modal-body .card p#accountRateDetail').text(delData.accountRateCount);
+        //        modal.find('.modal-body .card p#accountCommentsDetail').text(delData.accountCommentCount);
+        //        modal.find('.modal-body .card p#accountInstructorRelDetail').text(delData.accountInstructorCount);
+        //    }).fail(function (delData) {
+        //        new Noty({ text: delData.responseJSON.message, type: 'error', timeout: 3000 }).show();
+        //        $('#deleteCustomerModal').modal('hide');
+        //    });
+        //})
+
+        //$('input#deleteSubmitBtn').on('click', function () {
+        //    console.dir(cusID + " of DELETE Method");
+        //    $.ajax({
+        //        url: '/API/CustomerAccounts/Delete/' + cusID,
+        //        method: 'DELETE'
+        //    }).done(function (delResult) {
+        //        new Noty({ text: delResult.message, type: 'success', timeout: 3000 }).show();
+        //        $('#deleteCustomerModal').modal('hide');
+        //        loadData(1, pageSize, sortOrder, sortColumn, searchFilter)
+        //    }).fail(function (delResult) {
+        //        new Noty({ text: delResult.responseJSON.message, type: 'error', timeout: 3000 }).show();
+        //    });
+        //})
+
+        //$('#deleteCustomerModal').on('hidden.bs.modal', function () {
+        //    var modal = $(this);
+        //    modal.find('.modal-body p#delAccountNameTxt').text(`Delete?`);
+        //    modal.find('.modal-body .card p#accountRateDetail').html('<i class="fas fa-circle-notch"></i>');
+        //    modal.find('.modal-body .card p#accountCommentsDetail').html('<i class="fas fa-circle-notch"></i>');
+        //    modal.find('.modal-body .card p#accountInstructorRelDetail').html('<i class="fas fa-circle-notch"></i>');
+        //});
+    </script>
+}
