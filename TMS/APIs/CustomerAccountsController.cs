@@ -240,6 +240,35 @@ namespace TMS.APIs
             }
         }
 
+        [Authorize("ADMIN")]
+        [HttpGet("GetCustomerAccountSummary/{id}")]
+        public IActionResult GetCustomerAccountSummary(int id){
+            try
+            {
+                CustomerAccount ca = Database.CustomerAccounts.SingleOrDefault(c => c.CustomerAccountId == id);
+                if(ca == null)
+                {
+                    return NotFound(new { message = "Customer could not be found" });
+                }
+                int accRateCount = Database.AccountRates.Where(ar => ar.CustomerAccountId == id).Count();
+                int accCommentCount = Database.CustomerAccountComments.Where(cac => cac.CustomerAccountId == id).Count();
+                int accInstructorRelationCount = Database.InstructorAccounts.Where(ia => ia.CustomerAccountId == id).Count();
+                object summary = new
+                {
+                    accountName = ca.AccountName,
+                    accountRateCount = accRateCount,
+                    accountCommentCount = accCommentCount,
+                    accountInstructorCount = accInstructorRelationCount
+                };
+                return Ok(summary);
+            } catch (SqlException ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." });
+
+            }
+
+        }
+
         // POST api/<controller>
         [Authorize("ADMIN")]
         [HttpPost("Create")]
@@ -331,9 +360,33 @@ namespace TMS.APIs
         }
 
         // DELETE api/<controller>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [Authorize("ADMIN")]
+        [HttpDelete("Delete/{id}")]
+        public IActionResult Delete(int id)
         {
+            try
+            {
+                CustomerAccount ca = Database.CustomerAccounts.SingleOrDefault(c => c.CustomerAccountId == id);
+               if(ca == null)
+                {
+                    return NotFound(new { message = "Customer could not be found." });
+                }
+
+                List<AccountRate> car = Database.AccountRates.Where(r => r.CustomerAccountId == id).ToList();
+                List<CustomerAccountComment> cac = Database.CustomerAccountComments.Where(c => c.CustomerAccountId == id).ToList();
+                List<InstructorAccount> cia = Database.InstructorAccounts.Where(a => a.CustomerAccountId == id).ToList();
+
+                Database.AccountRates.RemoveRange(car);
+                Database.CustomerAccountComments.RemoveRange(cac);
+                Database.InstructorAccounts.RemoveRange(cia);
+                Database.CustomerAccounts.Remove(ca);
+                Database.SaveChanges();
+                return Ok(new { message = "Successfully Deleted: "+ca.AccountName });
+            }
+            catch (SqlException ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." });
+            }
         }
 
         public class QueryPagingParametersForCustomers

@@ -135,8 +135,58 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <div class="form-group" style="display:flex;justify-content:flex-end;">
+                <div class="form-group">
                     <input type="button" name="editSubmitBtn" id="editSubmitBtn" value="Update" class="btn btn-primary">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteCustomerModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+
+                <div>
+                    <h4 class="modal-title">Are you sure?</h4>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div style="text-align:center;">
+                    <i class="far fa-trash-alt" style="font-size: 2em; color: red;"></i>
+                    <p class="card-title" id="delAccountNameTxt">Delete Company Name?</p>
+                    <p>The following will be deleted:</p>
+                </div>
+                <div class="row" id="accSummary">
+                    <div class="col">
+                        <div class="card h-100 text-white bg-warning mb-3">
+                            <i class="fas fa-dollar-sign"></i>
+                            <p class="card-title text-uppercase">Account Rate Record</p>
+                            <p class="card-text" id="accountRateDetail">0</p>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card h-100 text-white bg-warning mb-3">
+                            <i class="fas fa-comment-alt"></i>
+                            <p class="card-title text-uppercase">Comments</p>
+                            <p class="card-text" id="accountCommentsDetail">0</p>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card h-100 text-white bg-warning mb-3">
+                            <i class="fas fa-link"></i>
+                            <p class="card-title text-uppercase">Instructor Relationship Record</p>
+                            <p class="card-text" id="accountInstructorRelDetail">0</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer" style="justify-content:center">
+                <div class="form-group" style="display:flex;">
+                    <input type="button" name="deleteSubmitBtn" id="deleteSubmitBtn" value="Yes" class="btn btn-danger">
+                    <input type="button" value="No" class="btn btn-white" data-dismiss="modal">
                 </div>
             </div>
         </div>
@@ -150,16 +200,38 @@
             padding-left: 0.2rem;
             padding-right: 0.2rem;
         }
-        table.table th, table.table td.col-md-1, table.table td.col-md-2 {
+
+            table.table th, table.table td.col-md-1, table.table td.col-md-2 {
                 padding-left: 0.2rem;
                 padding-right: 0.2rem;
                 text-align: center;
-        }
+            }
+
         .error {
             color: red;
         }
+
         .pagination .page-item.disabled .page-link {
             color: white;
+        }
+
+        div#deleteCustomerModal div#accSummary .card-title {
+            text-align: center;
+            min-height: 5em;
+            font-size: 12px;
+        }
+
+        div#deleteCustomerModal div#accSummary .card-text {
+            text-align: center;
+            font-size: 2em;
+        }
+        div#deleteCustomerModal div#accSummary .card i {
+            text-align: center;
+            font-size: 1.5em;
+        }
+
+        div#deleteCustomerModal .card {
+            padding: 1em;
         }
     </style>
 
@@ -285,26 +357,23 @@
                 $cusTR.append($("<td></td>", { text: moment(oneAccount.updatedAt).format('DD/MM/YYYY') }).addClass("col-md-1"));
 
                 let $btnEdit = $('<button type="button"><i class="far fa-edit"></i> Edit</button>').addClass('btn-sm btn-outline-primary').attr('data-toggle', 'modal').attr('data-target', `#editCustomerModal`).attr('data-customerid', oneAccount.id);
-                //$btnEdit.on('click', function () {
-                   
-                //});
-
                 $cusTR.append($("<td></td>").addClass("col-md-1").append($btnEdit));
-                let $btnDelete = $('<button type="button"><i class="fas fa-trash"></i> Delete</button>').addClass('btn-sm btn-outline-danger').attr('data-toggle', 'modal').attr('data-target', `#deleteCustomerModal`).attr('data-customerId', oneAccount.id);
 
+                let $btnDelete = $('<button type="button"><i class="fas fa-trash"></i> Delete</button>').addClass('btn-sm btn-outline-danger').attr('data-toggle', 'modal').attr('data-target', `#deleteCustomerModal`).attr('data-customerId', oneAccount.id);
                 $cusTR.append($("<td></td>").addClass("col-md-1").append($btnDelete));
+
                 $cusTR.append($("<td></td>").addClass("col-md-2").append(`
-                                                                <div class="dropdown show">
-                                                                    <button type="button" class="btn-sm btn-outline-secondary dropdown-toggle" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                                        <i class="fas fa-user-cog"></i> Manage
-                                                                    </button>
-                                                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                                                        <a class="dropdown-item" href=${"CustomerAccounts/ManageRates/" + oneAccount.id}>Manage rates</a>
-                                                                        <a class="dropdown-item" href=${"CustomerAccounts/Comments/" + oneAccount.id}>Comments</a>
-                                                                        <a class="dropdown-item" href="#">Assign instructors</a>
+                                                                    <div class="dropdown show">
+                                                                        <button type="button" class="btn-sm btn-outline-secondary dropdown-toggle" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                                            <i class="fas fa-user-cog"></i> Manage
+                                                                        </button>
+                                                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                                                            <a class="dropdown-item" href=${"CustomerAccounts/ManageRates/" + oneAccount.id}>Manage rates</a>
+                                                                            <a class="dropdown-item" href=${"CustomerAccounts/Comments/" + oneAccount.id}>Comments</a>
+                                                                            <a class="dropdown-item" href="#">Assign instructors</a>
+                                                                        </div>
                                                                     </div>
-                                                                </div>
-                                                             `));
+                                                                 `));
 
                 $tableBodyElement.append($cusTR);
             }
@@ -377,12 +446,12 @@
         }
 
         $('#editCustomerModal').on('show.bs.modal', function (event) {
-            
+
             let $button = $(event.relatedTarget); // Button that triggered the modal
             cusID = $button.data('customerid'); // Extract info from data-* attributes
             console.dir(cusID + " of Modal");
 
-            new Noty({ text: `Edit Button Pressed for ${cusID}`, type: 'info', timeout: 1000 }).show();
+            //new Noty({ text: `Edit Button Pressed for ${cusID}`, type: 'info', timeout: 1000 }).show();//For Debug
 
             var modal = $(this);
             modal.find('.modal-footer input#submitBtn').removeAttr('data-customerid');
@@ -405,7 +474,7 @@
             });
         });
 
-        $('input#editSubmitBtn').on('click', function (event) {
+        $('input#editSubmitBtn').on('click', function () {
             if ($("form[name='editAccountForm']").valid() == true) {
                 console.dir(cusID + " of PUT Method");
                 let cAccountName = $('#accountName').val();
@@ -434,7 +503,7 @@
                     new Noty({ text: editResult.responseJSON.message, type: 'error', timeout: 3000 }).show();
                 });
 
-               
+
             }
         });
 
@@ -442,7 +511,7 @@
             $.validator.addMethod("alphanumeric", function (value, element) {
                 return this.optional(element) || /^[\w.' ]+$/i.test(value);
             }, "Please enter valid name with alphanumeric characters or _ or . or ' or ' ' only.");
-          
+
             $("form[name='editAccountForm']").validate({
                 success: 'valid',
                 //focusCleanup: true,
@@ -461,6 +530,44 @@
                 }
             });
         })();
+
+        $('#deleteCustomerModal').on('show.bs.modal', function (event) {
+
+            let $button = $(event.relatedTarget); // Button that triggered the modal
+            cusID = $button.data('customerid'); // Extract info from data-* attributes
+            console.dir(cusID + " of Modal");
+
+            //new Noty({ text: `Edit Button Pressed for ${cusID}`, type: 'info', timeout: 1000 }).show();//For Debug
+
+            var modal = $(this);
+            
+            $.ajax({
+                url: '/API/CustomerAccounts/GetCustomerAccountSummary/' + cusID,
+                method: 'GET'
+            }).done(function (delData) {
+                modal.find('.modal-body p#delAccountNameTxt').text(`Delete ${delData.accountName}?`);
+                modal.find('.modal-body .card p#accountRateDetail').text(delData.accountRateCount);
+                modal.find('.modal-body .card p#accountCommentsDetail').text(delData.accountCommentCount);
+                modal.find('.modal-body .card p#accountInstructorRelDetail').text(delData.accountInstructorCount);
+            }).fail(function (delData) {
+                new Noty({ text: delData.responseJSON.message, type: 'error', timeout: 3000 }).show();
+                $('#deleteCustomerModal').modal('hide');
+            });
+        })
+
+        $('input#deleteSubmitBtn').on('click', function () {
+            console.dir(cusID + " of DELETE Method");
+            $.ajax({
+                url: '/API/CustomerAccounts/Delete/' + cusID,
+                method: 'DELETE'
+            }).done(function (delResult) {
+                new Noty({ text: delResult.message, type: 'success', timeout: 3000 }).show();
+                $('#deleteCustomerModal').modal('hide');
+                loadData(1, pageSize, sortOrder, sortColumn, searchFilter)
+            }).fail(function (delResult) {
+                new Noty({ text: delResult.responseJSON.message, type: 'error', timeout: 3000 }).show();
+            });
+        })
 
 
 
