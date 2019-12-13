@@ -455,15 +455,13 @@
             //new Noty({ text: `Edit Button Pressed for ${cusID}`, type: 'info', timeout: 1000 }).show();//For Debug
 
             var modal = $(this);
-            modal.find('.modal-footer input#submitBtn').removeAttr('data-customerid');
             $.ajax({
                 url: '/API/CustomerAccounts/' + cusID,
                 method: 'GET'
             }).done(function (editData) {
                 modal.find('.modal-body input#accountName').val(editData.accountName);
-                //modal.find('.modal-body input#accountVisibilityToggle').prop('checked', editData.visibility);
-                if (editData.visibility) {
-                    modal.find('.modal-body input#accountVisibilityToggle').attr('checked');
+                if (editData.visibility == true) {
+                    //modal.find('.modal-body input#accountVisibilityToggle').prop('checked',true);
                     modal.find('.modal-body input#accountVisibilityToggle').bootstrapToggle('on');
                 }
                 modal.find('.modal-body p#editCreateTS').text(`Creation timestamp: ${moment(editData.createdAt).format('DD/MM/YYYY HH:ss')} by ${editData.createdBy}`);
@@ -532,6 +530,19 @@
             });
         })();
 
+        $('#editCustomerModal').on('hidden.bs.modal', function () {
+            var modal = $(this);
+            modal.find('.modal-body input#accountName').val('');
+            let $toggle = modal.find('.modal-body input#accountVisibilityToggle');
+            if ($toggle.prop('checked') == true) {
+                //$toggle.removeAttr('checked');
+                $toggle.bootstrapToggle('off');
+            }
+
+            modal.find('.modal-body p#editCreateTS').text(`Creation timestamp:`);
+            modal.find('.modal-body p#editModifiedTS').text(`Last modified timestamp:`);
+        });
+
         $('#deleteCustomerModal').on('show.bs.modal', function (event) {
 
             let $button = $(event.relatedTarget); // Button that triggered the modal
@@ -570,7 +581,13 @@
             });
         })
 
-
+        $('#deleteCustomerModal').on('hidden.bs.modal', function () {
+            var modal = $(this);
+            modal.find('.modal-body p#delAccountNameTxt').text(`Delete?`);
+            modal.find('.modal-body .card p#accountRateDetail').html('<i class="fas fa-circle-notch"></i>');
+            modal.find('.modal-body .card p#accountCommentsDetail').html('<i class="fas fa-circle-notch"></i>');
+            modal.find('.modal-body .card p#accountInstructorRelDetail').html('<i class="fas fa-circle-notch"></i>');
+        });
 
     </script>
 }
