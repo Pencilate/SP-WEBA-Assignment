@@ -10,7 +10,7 @@
 <div class="card">
     <div class="card-header stylish-color-dark white-text">
         <div class="container-fluid d-flex">
-            <h4 class="one" style="padding-top:1.8%;width:80%">Account Rates for </h4>
+            <h4 class="one" style="padding-top:1.8%;width:80%">Account Rates for <span id="accountNameTitle">Account Name</span></h4>
             <a asp-controller="AccountRates" asp-action="Create" class="btn btn-primary" style="margin-left:auto"><i class="fas fa-plus" style="color:#FFF;"></i> Add</a>
         </div>
     </div>
@@ -79,7 +79,133 @@
     </div>
 </div>
 
+<!-- Modal -->
+<div class="modal fade" id="editAccountRateModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Account Rate</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="font-small float-right">* indicates required fields</p>
+                <form name="editAccountForm" novalidate>
+
+                    <div class="form-group">
+                        <label for="accountName"> Enter Rate per Hour*</label><br>
+                        <input type="number" class="form-control" name="accountRate" id="accountRate" placeholder="Enter amount" />
+                    </div>
+                    <div class="form-group">
+                        <label for="startDate">Pick a Start Date*</label><br>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-calendar-day"></i></span>
+                            </div>
+                            <input type="text" class="form-control" name="startDate" id="startDate" data-toggle="datepicker" placeholder="Pick date" />
+                            <div data-toggle="datepicker"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">Pick a End Date*</label><br>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-calendar-day"></i></span>
+                            </div>
+                            <input type="text" class="form-control" name="endDate" id="endDate" data-toggle="datepicker" placeholder="Pick date" />
+                            <div data-toggle="datepicker"></div>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <div class="form-group">
+                    <input type="button" name="editSubmitBtn" id="editSubmitBtn" value="Update" class="btn btn-primary">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteAccountRateModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+
+                <div>
+                    <h4 class="modal-title">Are you sure?</h4>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div style="text-align:center;">
+                    <i class="far fa-trash-alt" style="font-size: 2em; color: red;"></i>
+                    <p class="card-title">Delete account rate?</p>
+                    <p>Summary:</p>
+                </div>
+                <div class="card h-100 text-white bg-info mb-3 rateDetail">
+                    <div class=".d-inline-block">
+                        <i class="fas fa-dollar-sign"></i>
+                        <span class="card-title text-uppercase">Rate</span>
+                    </div>
+                    <p class="card-text" id="accountRateRateDetail">0</p>
+                </div>
+                <div class="card h-100 text-white bg-info mb-3 rateDetail">
+                    <div class=".d-inline-block">
+                        <i class="fas fa-calendar-day"></i>
+                        <span class="card-title text-uppercase">Start Date</span>
+                    </div>
+                    <p class="card-text" id="accountRateStartDateDetail">DD/MM/YYYY</p>
+                </div>
+                <div class="card h-100 text-white bg-info mb-3 rateDetail">
+                    <div class=".d-inline-block">
+                        <i class="fas fa-calendar-day"></i>
+                        <span class="card-title text-uppercase">End Date</span>
+                    </div>
+                    <p class="card-text" id="accountRateEndDateDetail">DD/MM/YYYY</p>
+                </div>
+                <div style="text-align:center;">
+                    <p>The following will be deleted:</p>
+                </div>
+                <div class="row" id="accSummary">
+                    <div class="col">
+                        <div class="card h-100 text-white bg-warning mb-3">
+                            <i class="fas fa-table"></i>
+                            <p class="card-title text-uppercase">TimeTable Record</p>
+                            <p class="card-text" id="accountRateDetail">0</p>
+                        </div>
+                    </div>
+                    <!--<div class="col">
+                        <div class="card h-100 text-white bg-warning mb-3">
+                            <i class="fas fa-comment-alt"></i>
+                            <p class="card-title text-uppercase">Comments</p>
+                            <p class="card-text" id="accountCommentsDetail">0</p>
+                        </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100 text-white bg-warning mb-3">
+                            <i class="fas fa-link"></i>
+                            <p class="card-title text-uppercase">Instructor Relationship Record</p>
+                            <p class="card-text" id="accountInstructorRelDetail">0</p>
+                        </div>
+                    </div>-->
+                </div>
+
+            </div>
+            <div class="modal-footer" style="justify-content:center">
+                <div class="form-group" style="display:flex;">
+                    <input type="button" name="deleteSubmitBtn" id="deleteSubmitBtn" value="Yes" class="btn btn-danger">
+                    <input type="button" value="No" class="btn btn-white" data-dismiss="modal">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts{
+    <link href="~/lib/datepicker/datepicker.min.css" rel="stylesheet" />
+    <script src="~/lib/datepicker/datepicker.min.js"></script>
     <style>
         table.table td {
             padding-left: 0.2rem;
@@ -99,9 +225,47 @@
         .pagination .page-item.disabled .page-link {
             color: white;
         }
+
+        div#deleteAccountRateModal div#accSummary .card-title {
+            text-align: center;
+            font-size: 12px;
+        }
+
+        div#deleteAccountRateModal div#accSummary .card-text {
+            text-align: center;
+            font-size: 2em;
+        }
+
+        div#deleteAccountRateModal div#accSummary .card i {
+            text-align: center;
+            font-size: 1.5em;
+            padding: 0.5em;
+        }
+
+        div#deleteAccountRateModal .card {
+            padding: 1em;
+        }
+
+        div#deleteAccountRateModal .rateDetail i {
+            font-size: 1em;
+            padding-right: 0.5em;
+        }
+
+        div#deleteAccountRateModal .rateDetail .card-text {
+            text-align: center;
+            font-size: 1.2em;
+        }
+
+
     </style>
     <script>
-        var customerID;
+        const customerID = getIdFromAddressBar();
+        function getIdFromAddressBar() {
+            let urlArray = window.location.href.split('/');
+            return urlArray[urlArray.length - 1];
+        }
+
+        var accountRateID;
 
         var pageSize = 5;
         var sortOrder = 'ASC';
@@ -123,10 +287,11 @@
 
         function loadData(pageNo, perPageSize, prefSortOrder) {
             $.ajax({
-                url: `/API/AccountRates/GetAccountRatesPaginated?page_number=${pageNo}&per_page=${perPageSize}&sort_order=${prefSortOrder}`,
+                url: `/API/AccountRates/GetAccountRatesPaginated/${customerID}?page_number=${pageNo}&per_page=${perPageSize}&sort_order=${prefSortOrder}`,
                 method: 'GET'
             }).done(function (data) {
                 console.dir(data);
+                $('#accountNameTitle').text(data.accountName);
                 let totalRecCount = data.totalRecordCount;
                 let totalCurrentPageRecord = data.totalCurrentPgRec;
                 currentPage = data.currentPage;
@@ -149,21 +314,23 @@
             $tableBodyElement = $('#tableBodyElement');
             $tableBodyElement.empty();
             for (let i = 0; i < data.length; i++) {
-                oneAccount = data[i];
+                oneRate = data[i];
                 let $cusTR = $("<tr></tr");
                 $cusTR.addClass("row m-0");
 
-                $cusTR.append($("<td></td>", { text: oneAccount.accountName }).addClass("col-md-3"));
-                $cusTR.append($("<td></td>", { text: moment(oneAccount.updatedAt).format('DD/MM/YYYY') }).addClass("col-md-1"));
+                $cusTR.append($("<td></td>", { text: oneRate.no }).addClass("col-md-1"));
+                $cusTR.append($("<td></td>", { text: oneRate.rate }).addClass("col-md-2"));
+                $cusTR.append($("<td></td>", { text: moment(oneRate.effectiveStartDate).format('DD/MM/YYYY') }).addClass("col-md-2"));
+                $cusTR.append($("<td></td>", { text: moment(oneRate.effectiveEndDate).format('DD/MM/YYYY') }).addClass("col-md-2"));
 
-                let $btnEdit = $('<button type="button"><i class="far fa-edit"></i> Edit</button>').addClass('btn-sm btn-outline-primary').attr('data-toggle', 'modal').attr('data-target', `#editAccountRateModal`).attr('data-customerid', oneAccount.id);
+                let $btnEdit = $('<button type="button"><i class="far fa-edit"></i> Edit</button>').addClass('btn-sm btn-outline-primary').attr('data-toggle', 'modal').attr('data-target', `#editAccountRateModal`).attr('data-customerid', oneRate.id);
                 $cusTR.append($("<td></td>").addClass("col-md-1").append($btnEdit));
 
-                let $btnTimetable = $('<input type="button"><i class="fas fa-calendar-day"></i> Timetable</button>').attr('href', '/AccountTimeTable/' + oneAccount.id).addClass('btn-sm btn-outline-secondary');
-                $cusTR.append($("<td></td>").addClass("col-md-1").append($btnTimetable));
-
-                let $btnDelete = $('<button type="button"><i class="fas fa-trash"></i> Delete</button>').addClass('btn-sm btn-outline-danger').attr('data-toggle', 'modal').attr('data-target', `#deleteAccountRateModal`).attr('data-customerId', oneAccount.id);
-                $cusTR.append($("<td></td>").addClass("col-md-1").append($btnDelete));
+                let $btnTimetable = $('<a><button class="btn-sm btn-outline-secondary"><i class="fas fa-calendar-day"></i> Timetable</button></a>').attr('href', '/AccountTimeTable/' + oneRate.id);
+                $cusTR.append($("<td></td>").addClass("col-md-2").append($btnTimetable));
+                //append(`<a href=${"CustomerAccounts/Edit/" + oneAccount.id} class="btn-sm btn-outline-primary"><i class="far fa-edit"></i> Edit</a>`
+                let $btnDelete = $('<button type="button"><i class="fas fa-trash"></i> Delete</button>').addClass('btn-sm btn-outline-danger').attr('data-toggle', 'modal').attr('data-target', `#deleteAccountRateModal`).attr('data-customerId', oneRate.id);
+                $cusTR.append($("<td></td>").addClass("col-md-2").append($btnDelete));
 
                 $tableBodyElement.append($cusTR);
             }
@@ -229,147 +396,158 @@
             $navElm.append($liNext);
         }
 
-        //$('#editCustomerModal').on('show.bs.modal', function (event) {
+        $('[data-toggle="datepicker"]').datepicker({ format: 'DD/MM/YYYY' });
 
-        //    let $button = $(event.relatedTarget); // Button that triggered the modal
-        //    cusID = $button.data('customerid'); // Extract info from data-* attributes
-        //    console.dir(cusID + " of Modal");
-
-        //    //new Noty({ text: `Edit Button Pressed for ${cusID}`, type: 'info', timeout: 1000 }).show();//For Debug
-
-        //    var modal = $(this);
-        //    $.ajax({
-        //        url: '/API/CustomerAccounts/' + cusID,
-        //        method: 'GET'
-        //    }).done(function (editData) {
-        //        modal.find('.modal-body input#accountName').val(editData.accountName);
-        //        if (editData.visibility == true) {
-        //            //modal.find('.modal-body input#accountVisibilityToggle').prop('checked',true);
-        //            modal.find('.modal-body input#accountVisibilityToggle').bootstrapToggle('on');
-        //        }
-        //        modal.find('.modal-body p#editCreateTS').text(`Creation timestamp: ${moment(editData.createdAt).format('DD/MM/YYYY HH:ss')} by ${editData.createdBy}`);
-        //        modal.find('.modal-body p#editModifiedTS').text(`Last modified timestamp: ${moment(editData.updatedAt).format('DD/MM/YYYY HH:ss')} by ${editData.updatedBy}`);
-
-        //    }).fail(function (editData) {
-        //        new Noty({ text: editData.responseJSON.message, type: 'error', timeout: 3000 }).show();
-        //        $('#editCustomerModal').modal('hide');
-        //    });
-        //});
-
-        //$('input#editSubmitBtn').on('click', function () {
-        //    if ($("form[name='editAccountForm']").valid() == true) {
-        //        console.dir(cusID + " of PUT Method");
-        //        let cAccountName = $('#accountName').val();
-        //        let cVisibility = $('#accountVisibilityToggle').prop('checked');
-
-        //        function WebFormData(iAccountName, iVisibility) {
-        //            this.accountName = iAccountName;
-        //            this.visibility = iVisibility;
-        //        }
-
-        //        let webformData = new WebFormData(cAccountName, cVisibility);
-        //        console.dir(webformData);
-
-        //        $.ajax({
-        //            url: '/API/CustomerAccounts/Update/' + cusID,
-        //            method: 'PUT',
-        //            data: webformData,
-        //            contentType: 'application/x-www-form-urlencoded',
-        //            datatype: 'application/json'
-
-        //        }).done(function (editResult) {
-        //            new Noty({ text: editResult.message, type: 'success', timeout: 3000 }).show();
-        //            $('#editCustomerModal').modal('hide');
-        //            loadData(currentPage, pageSize, sortOrder, sortColumn, searchFilter)
-        //        }).fail(function (editResult) {
-        //            new Noty({ text: editResult.responseJSON.message, type: 'error', timeout: 3000 }).show();
-        //        });
+        $('#startDate').on('focus', function () {
+            $('.datepicker-container').css('z-index', 10000);
+        })
+        $('#endDate').on('focus', function () {
+            $('.datepicker-container').css('z-index', 10000);
+        })
 
 
-        //    }
-        //});
 
-        //(function () {
-        //    $.validator.addMethod("alphanumeric", function (value, element) {
-        //        return this.optional(element) || /^[\w.' ]+$/i.test(value);
-        //    }, "Please enter valid name with alphanumeric characters or _ or . or ' or ' ' only.");
+                    //$('#editCustomerModal').on('show.bs.modal', function (event) {
 
-        //    $("form[name='editAccountForm']").validate({
-        //        success: 'valid',
-        //        //focusCleanup: true,
-        //        rules: {
-        //            accountName: {
-        //                required: true,
-        //                alphanumeric: true,
-        //                maxlength: 100
-        //            }
-        //        },
-        //        messages: {
-        //            accountName: {
-        //                required: 'Please enter name of customer.',
-        //                maxlength: 'Please shorten the account name to less than 100 characters.'
-        //            }
-        //        }
-        //    });
-        //})();
+                    //    let $button = $(event.relatedTarget); // Button that triggered the modal
+                    //    cusID = $button.data('customerid'); // Extract info from data-* attributes
+                    //    console.dir(cusID + " of Modal");
 
-        //$('#editCustomerModal').on('hidden.bs.modal', function () {
-        //    var modal = $(this);
-        //    modal.find('.modal-body input#accountName').val('');
-        //    let $toggle = modal.find('.modal-body input#accountVisibilityToggle');
-        //    if ($toggle.prop('checked') == true) {
-        //        //$toggle.removeAttr('checked');
-        //        $toggle.bootstrapToggle('off');
-        //    }
+                    //    //new Noty({ text: `Edit Button Pressed for ${cusID}`, type: 'info', timeout: 1000 }).show();//For Debug
 
-        //    modal.find('.modal-body p#editCreateTS').text(`Creation timestamp:`);
-        //    modal.find('.modal-body p#editModifiedTS').text(`Last modified timestamp:`);
-        //});
+                    //    var modal = $(this);
+                    //    $.ajax({
+                    //        url: '/API/CustomerAccounts/' + cusID,
+                    //        method: 'GET'
+                    //    }).done(function (editData) {
+                    //        modal.find('.modal-body input#accountName').val(editData.accountName);
+                    //        if (editData.visibility == true) {
+                    //            //modal.find('.modal-body input#accountVisibilityToggle').prop('checked',true);
+                    //            modal.find('.modal-body input#accountVisibilityToggle').bootstrapToggle('on');
+                    //        }
+                    //        modal.find('.modal-body p#editCreateTS').text(`Creation timestamp: ${moment(editData.createdAt).format('DD/MM/YYYY HH:ss')} by ${editData.createdBy}`);
+                    //        modal.find('.modal-body p#editModifiedTS').text(`Last modified timestamp: ${moment(editData.updatedAt).format('DD/MM/YYYY HH:ss')} by ${editData.updatedBy}`);
 
-        //$('#deleteCustomerModal').on('show.bs.modal', function (event) {
+                    //    }).fail(function (editData) {
+                    //        new Noty({ text: editData.responseJSON.message, type: 'error', timeout: 3000 }).show();
+                    //        $('#editCustomerModal').modal('hide');
+                    //    });
+                    //});
 
-        //    let $button = $(event.relatedTarget); // Button that triggered the modal
-        //    cusID = $button.data('customerid'); // Extract info from data-* attributes
-        //    console.dir(cusID + " of Modal");
+                    //$('input#editSubmitBtn').on('click', function () {
+                    //    if ($("form[name='editAccountForm']").valid() == true) {
+                    //        console.dir(cusID + " of PUT Method");
+                    //        let cAccountName = $('#accountName').val();
+                    //        let cVisibility = $('#accountVisibilityToggle').prop('checked');
 
-        //    //new Noty({ text: `Edit Button Pressed for ${cusID}`, type: 'info', timeout: 1000 }).show();//For Debug
+                    //        function WebFormData(iAccountName, iVisibility) {
+                    //            this.accountName = iAccountName;
+                    //            this.visibility = iVisibility;
+                    //        }
 
-        //    var modal = $(this);
+                    //        let webformData = new WebFormData(cAccountName, cVisibility);
+                    //        console.dir(webformData);
 
-        //    $.ajax({
-        //        url: '/API/CustomerAccounts/GetCustomerAccountSummary/' + cusID,
-        //        method: 'GET'
-        //    }).done(function (delData) {
-        //        modal.find('.modal-body p#delAccountNameTxt').text(`Delete ${delData.accountName}?`);
-        //        modal.find('.modal-body .card p#accountRateDetail').text(delData.accountRateCount);
-        //        modal.find('.modal-body .card p#accountCommentsDetail').text(delData.accountCommentCount);
-        //        modal.find('.modal-body .card p#accountInstructorRelDetail').text(delData.accountInstructorCount);
-        //    }).fail(function (delData) {
-        //        new Noty({ text: delData.responseJSON.message, type: 'error', timeout: 3000 }).show();
-        //        $('#deleteCustomerModal').modal('hide');
-        //    });
-        //})
+                    //        $.ajax({
+                    //            url: '/API/CustomerAccounts/Update/' + cusID,
+                    //            method: 'PUT',
+                    //            data: webformData,
+                    //            contentType: 'application/x-www-form-urlencoded',
+                    //            datatype: 'application/json'
 
-        //$('input#deleteSubmitBtn').on('click', function () {
-        //    console.dir(cusID + " of DELETE Method");
-        //    $.ajax({
-        //        url: '/API/CustomerAccounts/Delete/' + cusID,
-        //        method: 'DELETE'
-        //    }).done(function (delResult) {
-        //        new Noty({ text: delResult.message, type: 'success', timeout: 3000 }).show();
-        //        $('#deleteCustomerModal').modal('hide');
-        //        loadData(1, pageSize, sortOrder, sortColumn, searchFilter)
-        //    }).fail(function (delResult) {
-        //        new Noty({ text: delResult.responseJSON.message, type: 'error', timeout: 3000 }).show();
-        //    });
-        //})
+                    //        }).done(function (editResult) {
+                    //            new Noty({ text: editResult.message, type: 'success', timeout: 3000 }).show();
+                    //            $('#editCustomerModal').modal('hide');
+                    //            loadData(currentPage, pageSize, sortOrder, sortColumn, searchFilter)
+                    //        }).fail(function (editResult) {
+                    //            new Noty({ text: editResult.responseJSON.message, type: 'error', timeout: 3000 }).show();
+                    //        });
 
-        //$('#deleteCustomerModal').on('hidden.bs.modal', function () {
-        //    var modal = $(this);
-        //    modal.find('.modal-body p#delAccountNameTxt').text(`Delete?`);
-        //    modal.find('.modal-body .card p#accountRateDetail').html('<i class="fas fa-circle-notch"></i>');
-        //    modal.find('.modal-body .card p#accountCommentsDetail').html('<i class="fas fa-circle-notch"></i>');
-        //    modal.find('.modal-body .card p#accountInstructorRelDetail').html('<i class="fas fa-circle-notch"></i>');
-        //});
+
+                    //    }
+                    //});
+
+                    //(function () {
+                    //    $.validator.addMethod("alphanumeric", function (value, element) {
+                    //        return this.optional(element) || /^[\w.' ]+$/i.test(value);
+                    //    }, "Please enter valid name with alphanumeric characters or _ or . or ' or ' ' only.");
+
+                    //    $("form[name='editAccountForm']").validate({
+                    //        success: 'valid',
+                    //        //focusCleanup: true,
+                    //        rules: {
+                    //            accountName: {
+                    //                required: true,
+                    //                alphanumeric: true,
+                    //                maxlength: 100
+                    //            }
+                    //        },
+                    //        messages: {
+                    //            accountName: {
+                    //                required: 'Please enter name of customer.',
+                    //                maxlength: 'Please shorten the account name to less than 100 characters.'
+                    //            }
+                    //        }
+                    //    });
+                    //})();
+
+                    //$('#editCustomerModal').on('hidden.bs.modal', function () {
+                    //    var modal = $(this);
+                    //    modal.find('.modal-body input#accountName').val('');
+                    //    let $toggle = modal.find('.modal-body input#accountVisibilityToggle');
+                    //    if ($toggle.prop('checked') == true) {
+                    //        //$toggle.removeAttr('checked');
+                    //        $toggle.bootstrapToggle('off');
+                    //    }
+
+                    //    modal.find('.modal-body p#editCreateTS').text(`Creation timestamp:`);
+                    //    modal.find('.modal-body p#editModifiedTS').text(`Last modified timestamp:`);
+                    //});
+
+                    //$('#deleteCustomerModal').on('show.bs.modal', function (event) {
+
+                    //    let $button = $(event.relatedTarget); // Button that triggered the modal
+                    //    cusID = $button.data('customerid'); // Extract info from data-* attributes
+                    //    console.dir(cusID + " of Modal");
+
+                    //    //new Noty({ text: `Edit Button Pressed for ${cusID}`, type: 'info', timeout: 1000 }).show();//For Debug
+
+                    //    var modal = $(this);
+
+                    //    $.ajax({
+                    //        url: '/API/CustomerAccounts/GetCustomerAccountSummary/' + cusID,
+                    //        method: 'GET'
+                    //    }).done(function (delData) {
+                    //        modal.find('.modal-body p#delAccountNameTxt').text(`Delete ${delData.accountName}?`);
+                    //        modal.find('.modal-body .card p#accountRateDetail').text(delData.accountRateCount);
+                    //        modal.find('.modal-body .card p#accountCommentsDetail').text(delData.accountCommentCount);
+                    //        modal.find('.modal-body .card p#accountInstructorRelDetail').text(delData.accountInstructorCount);
+                    //    }).fail(function (delData) {
+                    //        new Noty({ text: delData.responseJSON.message, type: 'error', timeout: 3000 }).show();
+                    //        $('#deleteCustomerModal').modal('hide');
+                    //    });
+                    //})
+
+                    //$('input#deleteSubmitBtn').on('click', function () {
+                    //    console.dir(cusID + " of DELETE Method");
+                    //    $.ajax({
+                    //        url: '/API/CustomerAccounts/Delete/' + cusID,
+                    //        method: 'DELETE'
+                    //    }).done(function (delResult) {
+                    //        new Noty({ text: delResult.message, type: 'success', timeout: 3000 }).show();
+                    //        $('#deleteCustomerModal').modal('hide');
+                    //        loadData(1, pageSize, sortOrder, sortColumn, searchFilter)
+                    //    }).fail(function (delResult) {
+                    //        new Noty({ text: delResult.responseJSON.message, type: 'error', timeout: 3000 }).show();
+                    //    });
+                    //})
+
+                    //$('#deleteCustomerModal').on('hidden.bs.modal', function () {
+                    //    var modal = $(this);
+                    //    modal.find('.modal-body p#delAccountNameTxt').text(`Delete?`);
+                    //    modal.find('.modal-body .card p#accountRateDetail').html('<i class="fas fa-circle-notch"></i>');
+                    //    modal.find('.modal-body .card p#accountCommentsDetail').html('<i class="fas fa-circle-notch"></i>');
+                    //    modal.find('.modal-body .card p#accountInstructorRelDetail').html('<i class="fas fa-circle-notch"></i>');
+                    //});
     </script>
 }

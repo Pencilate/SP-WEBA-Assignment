@@ -29,7 +29,7 @@ namespace TMS.APIs
         }
 
         // GET api/<controller>/5
-        [HttpGet("{id}")]
+        [HttpGet("GetAccountRatesPaginated/{id}")]
         public IActionResult Get(int id, [FromQuery]QueryPagingParametersForAccountRates inParameters)
         {
             try
@@ -97,8 +97,17 @@ namespace TMS.APIs
                 List<object> cusAccountRateByPage = new List<object>();
                 for (int i = startRecord-1; i <= endRecord-1; i++)
                 {
+                    int recordNo = -1;
+                    if (sortOrder.Equals("ASC"))
+                    {
+                        recordNo = i + 1;
+                    }
+                    else if (sortOrder.Equals("DESC"))
+                    {
+                        recordNo = endRecord - i;
+                    }
                     cusAccountRateByPage.Add(new {
-                        no = i,
+                        no = recordNo,
                         id = cusAccountRate[i].AccountRateId,
                         rate = cusAccountRate[i].RatePerHour,
                         effectiveStartDate = cusAccountRate[i].EffectiveStartDate,
@@ -109,6 +118,7 @@ namespace TMS.APIs
                    
                 object result = new
                 {
+                    accountName = ca.AccountName,
                     totalRecordCount = totalRecords,
                     totalCurrentPgRec = cusAccountRateByPage.Count,
                     currentPage = currentPage,
