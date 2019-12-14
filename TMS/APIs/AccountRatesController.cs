@@ -29,6 +29,7 @@ namespace TMS.APIs
         }
 
         // GET api/<controller>/5
+        [Authorize("ADMIN")]
         [HttpGet("GetAccountRatesPaginated/{id}")]
         public IActionResult Get(int id, [FromQuery]QueryPagingParametersForAccountRates inParameters)
         {
@@ -141,9 +142,52 @@ namespace TMS.APIs
         }
 
         // POST api/<controller>
-        [HttpPost]
-        public void Post([FromBody]string value)
+        [HttpPost("Create/{id}")]
+        public IActionResult Post(int id, [FromForm]IFormCollection data)
         {
+            int userId = int.Parse(User.FindFirst("userid").Value);
+
+            AccountRate newAR = new AccountRate();
+            newAR.CustomerAccountId = id;
+            newAR.EffectiveStartDate = DateTime.ParseExact(data["rateStartDate"], "d/M/yyyy", System.Globalization.CultureInfo.InvariantCulture);
+            newAR.EffectiveEndDate = DateTime.ParseExact(data["rateEndDate"], "d/M/yyyy", System.Globalization.CultureInfo.InvariantCulture);
+            newAR.RatePerHour = decimal.Parse(data["accountRate"]);
+            newAR.CreatedAt = _appDateTimeService.GetCurrentDateTime();
+            newAR.CreatedById = userId;
+            newAR.UpdatedAt = _appDateTimeService.GetCurrentDateTime();
+            newAR.UpdatedById = userId;
+
+            List<AccountRate> allAR = Database.AccountRates.Where(r => r.CustomerAccountId == id).ToList();
+            bool overlap = false;
+            foreach (AccountRate ar in allAR)
+            {
+                bool overlapCurrentRecord = false;
+                if (newAR.EffectiveStartDate.CompareTo(ar.EffectiveStartDate) >= 0)//After
+                {
+                    if(newAR.EffectiveEndDate.CompareTo(ar.EffectiveEndDate) <= 0)//Before
+                    {
+                        overlapCurrentRecord = true; //Record overlap the entire period
+                    }
+                    if (newAR.EffectiveStartDate.CompareTo(ar.EffectiveEndDate) <= 0)//Before
+                    {
+                        overlapCurrentRecord = true; // Record overlap front of period
+                    }
+
+                }
+                else//Before
+                {
+                    if (newAR.EffectiveEndDate.CompareTo(ar.EffectiveEndDate) >= 0)//After
+                    {
+                        overlapCurrentRecord = true; //Record is encapulated by period
+                    }
+                    if (newAR.EffectiveEndDate.CompareTo(ar.EffectiveStartDate) <= 0)//Before
+                    {
+                        overlapCurrentRecord = true; //Record over back of period
+                    }
+                }
+            }
+
+            
         }
 
         // PUT api/<controller>/5

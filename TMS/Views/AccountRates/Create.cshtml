@@ -1,0 +1,216 @@
+﻿<nav aria-label="breadcrumb">
+    <ol class="breadcrumb ">
+        <li class="breadcrumb-item font-small">
+            <a asp-controller="CustomerAccounts" asp-action="Index">Manage Customer Accounts</a>
+        </li>
+        <li class="breadcrumb-item font-small">
+            <a href="/AccountRates/Index/" class="aARIndex">Manage Account Rates</a>
+        </li>
+        <li class="breadcrumb-item font-small active">Create Account Rate</li>
+    </ol>
+</nav>
+<div class="card">
+    <div class="card-header stylish-color-dark white-text">
+        <h4 class="one" style="padding-top:1.8%;">Create Account Rate for <span id="accountNameTitle">Account Name</span></h4>
+    </div>
+    <div class="card-body" style="padding:3% 6%">
+
+        <form name="createAccountRateForm" novalidate>
+            <p style="padding-top:2%"><strong>General information</strong></p>
+            <p class="font-small float-right">* indicates required fields</p>
+            <div class="form-group">
+                <label for="accountRate">Account Rate*</label><br>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"> $</span>
+                    </div>
+                    <input type="number" class="form-control" name="accountRate" id="accountRate" placeholder="Enter rate per hour" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label for="startDate">Pick a Start Date*</label><br>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-calendar-day"></i></span>
+                            </div>
+                            <input type="text" class="form-control" name="startDate" id="startDate" data-toggle="datepicker" placeholder="Pick date" />
+                            <div data-toggle="datepicker"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="endDate">Pick a End Date*</label><br>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-calendar-day"></i></span>
+                            </div>
+                            <input type="text" class="form-control" name="endDate" id="endDate" data-toggle="datepicker" placeholder="Pick date" />
+                            <div data-toggle="datepicker"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group" style="display:flex;justify-content:flex-end;">
+                <input type="button" name="submitBtn" id="submitBtn" value="Submit" class="btn btn-primary">
+                <a href="/AccountRates/Index/" class="aARIndex btn btn-light">Back</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+@section Scripts{
+    <link href="~/lib/datepicker/datepicker.min.css" rel="stylesheet" />
+    <script src="~/lib/datepicker/datepicker.min.js"></script>
+    <style>
+        .error {
+            color: red;
+        }
+
+        .valid {
+            color: forestgreen;
+        }
+    </style>
+    <script>
+        $(document).ready(function () {
+            const customerID = getIdFromAddressBar();
+            function getIdFromAddressBar() {
+                let urlArray = window.location.href.split('/');
+                return urlArray[urlArray.length - 1];
+            }
+
+            $('.aARIndex').attr('href','/AccountRates/Index/'+customerID)
+
+            $.ajax({
+                url: '/API/CustomerAccounts/' + customerID,
+                method: 'GET'
+            }).done(function (data) {
+                $('#accountNameTitle').text(data.accountName);
+            }).fail(function (editData) {
+                new Noty({ text: editData.responseJSON.message, type: 'error', timeout: 3000 }).show();
+            });
+
+            $('[data-toggle="datepicker"]').datepicker({ format: 'DD/MM/YYYY' });
+            (function () {
+                $.validator.addMethod('validDate', function (value, element) {
+                    //http://stackoverflow.com/questions/24380305/validate-date-in-dd-mm-yyyy-format-usingjquery-validate
+                    return this.optional(element) || moment(value, 'DD/MM/YYYY').isValid() && moment(value, 'DD/MM/YYYY').format('DD/MM/YYYY') === value;
+                }, 'Please enter a valid date in the format DD/MM/YYYY.');
+                $.validator.addMethod('startDateEmpty', function (value, element) {
+                    return this.optional(element) || moment($("#startDate").val(), 'DD/MM/YYYY').isValid();
+                }, 'Please enter a valid date in Start Date field before filling this field.');
+                $.validator.addMethod('afterStartDate', function (value, element) {
+                    return this.optional(element) || moment(value, 'DD/MM/YYYY').isSameOrAfter(moment($("#startDate").val(), 'DD/MM/YYYY'));
+                }, 'Please enter a date later than or same as the start date.');
+                $.validator.addMethod("validDecimal", function (value, element) {
+                    return this.optional(element) || /^(\d{0,4})(\.\d{0,2})?$/gm.test(value);
+                }, "Please enter a rate between $0 to $10000 with a maximum of 2 decimal place.");
+
+                $("form[name='createAccountRateForm']").validate({
+                    success: 'valid',
+                    //focusCleanup: true,
+                    rules: {
+                        accountRate: {
+                            required: true,
+                            number: true,
+                            min: 0,
+                            max: 9999.99,
+                            validDecimal: true
+
+                        },
+                        startDate: {
+                            required: true,
+                            validDate: true
+                        },
+                        endDate: {
+                            required: true,
+                            startDateEmpty: true,
+                            validDate: true,
+                            afterStartDate: true
+                        }
+                    },
+                    messages: {
+                        accountRate: {
+                            required: 'Please enter the rate.',
+                            number: 'Please enter a valid amount.',
+                            min: 'Please enter a rate greater than $0.',
+                            max: 'Please enter a rate smaller than $10000.'
+                        },
+                        startDate: {
+                            required: 'Please pick a start date.',
+                            validDate: 'Please enter a valid start date in the format DD/MM/YYYY.'
+                        },
+                        endDate: {
+                            required: 'Please pick a end date.',
+                            validDate: 'Please enter a valid end date in the format DD/MM/YYYY.',
+                            afterStartDate: 'Please enter a end date later than or same as the start date.'
+                        }
+                    },
+                    errorPlacement: function (error, element) {
+                        if (element.parent().is($('div.input-group'))) {
+                            error.appendTo(element.parent().parent());
+                        }
+                        else {
+                            error.appendTo(element.parent());
+                        }
+
+                    }
+                });
+
+                $('#startDate').datepicker({
+                    autoclose: true,
+                }).on('change', function () {
+                    $(this).valid(); // Triggers a validation test
+                });
+                $('#endDate').datepicker({
+                    autoclose: true,
+                }).on('change', function () {
+                    $(this).valid(); // Triggers a validation test
+                });
+
+            })();
+            $('#submitBtn').on('click', function (event) {
+                event.preventDefault();
+                if ($("form[name='createAccountRateForm']").valid() == true) {
+                    //new Noty({ text: 'Valid Form', type: 'info' }).show();
+                    let cAccountRate = $('#accountRate').val();
+                    let cRateStartDate = $('#startDate').val();
+                    let cRateEndDate = $('#endDate').val();
+
+                    function WebFormData( iAccountRate, iRateStartDate, iRateEndDate) {
+                        this.accountRate = iAccountRate;
+                        this.rateStartDate = iRateStartDate;
+                        this.rateEndDate = iRateEndDate;
+                    }
+
+                    let webFormData = new WebFormData(cAccountRate, cRateStartDate, cRateEndDate);
+                    console.dir(webFormData)
+
+                    $.ajax({
+                        url: '/API/AccountRates/Create/'+customerID,
+                        method: 'POST',
+                        data: webFormData,
+                        contentType: 'application/x-www-form-urlencoded',
+                        datatype: 'application/json'
+                    }).done(function (data) {
+                        console.dir(data);
+                        new Noty({ text: data.message, type: 'success', timeout: 5000 }).show();
+
+                    }).fail(function (data) {
+                        console.dir(data);
+                        new Noty({ text: `An error has occured: ${data.responseJSON.message}`, type: 'error', timeout: 2000 }).show();
+
+                    })
+
+                } else {
+                    new Noty({ text: `Form has errors`, type: 'error', timeout: 2000 }).show();
+
+                }
+
+            });
+        });
+
+    </script>
+}
