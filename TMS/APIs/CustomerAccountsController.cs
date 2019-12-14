@@ -399,6 +399,6 @@ namespace TMS.APIs
             public string sort_column { get; set; }
             public string search_filter { get; set; }
 
-        }//end of QueryPagingParametersForNotes class
+        }//end of QueryPagingParametersForCustomers class
     }
 }
