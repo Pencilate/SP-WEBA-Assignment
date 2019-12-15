@@ -250,7 +250,12 @@
         const customerID = getIdFromAddressBar();
         function getIdFromAddressBar() {
             let urlArray = window.location.href.split('/');
-            return urlArray[urlArray.length - 1];
+            let url = urlArray[urlArray.length - 1];
+            if ((url.includes('#')) == true) {
+                return url.substring(0, url.indexOf('#'));
+            } else {
+                return url
+            }
         }
 
         $('#accountRateAddBtn').attr('href', '/AccountRates/Create/' + customerID);
@@ -386,16 +391,7 @@
             $navElm.append($liNext);
         }
 
-        $('[data-toggle="datepicker"]').datepicker({ format: 'DD/MM/YYYY' });
-
-        $('#startDate').on('focus', function () {
-            $('.datepicker-container').css('z-index', 10000);
-        })
-        $('#endDate').on('focus', function () {
-            $('.datepicker-container').css('z-index', 10000);
-        })
-
-
+        $('[data-toggle="datepicker"]').datepicker({ format: 'DD/MM/YYYY', zIndex: 2048 });
 
         $('#editAccountRateModal').on('show.bs.modal', function (event) {
 
@@ -403,7 +399,7 @@
             accountRateID = $button.data('rateid'); // Extract info from data-* attributes
             console.dir(accountRateID + " of Modal");
 
-            new Noty({ text: `Edit Button Pressed for ${accountRateID}`, type: 'info', timeout: 1000 }).show();//For Debug
+            //new Noty({ text: `Edit Button Pressed for ${accountRateID}`, type: 'info', timeout: 1000 }).show();//For Debug
 
             var modal = $(this);
             $.ajax({
@@ -412,8 +408,10 @@
             }).done(function (editData) {
                 modal.find('.modal-body input#accountRate').val(editData.rate);
                 modal.find('.modal-body input#startDate').val(moment(editData.startDate).format('DD/MM/YYYY'));
-                modal.find('.modal-body input#endDate').val(moment(editData.endDate).format('DD/MM/YYYY'));
+                $('#startDate').datepicker('update');
 
+                modal.find('.modal-body input#endDate').val(moment(editData.endDate).format('DD/MM/YYYY'));
+                $('#endDate').datepicker('update');
             }).fail(function (editData) {
                 new Noty({ text: editData.responseJSON.message, type: 'error', timeout: 3000 }).show();
                 $('#editAccountRateModal').modal('hide');
@@ -472,7 +470,7 @@
 
             $("form[name='editAccountRateForm']").validate({
                 success: 'valid',
-                //focusCleanup: true,
+                focusCleanup: true,
                 rules: {
                     accountRate: {
                         required: true,
@@ -525,6 +523,7 @@
                 autoclose: true,
             }).on('change', function () {
                 $(this).valid(); // Triggers a validation test
+                $('#endDate').datepicker('setStartDate', $('#startDate').datepicker('getDate'));
             });
             $('#endDate').datepicker({
                 autoclose: true,
@@ -547,7 +546,7 @@
             accountRateID = $button.data('rateid'); // Extract info from data-* attributes
             console.dir(accountRateID + " of Modal");
 
-            new Noty({ text: `Edit Button Pressed for ${accountRateID}`, type: 'info', timeout: 1000 }).show();//For Debug
+            //new Noty({ text: `Edit Button Pressed for ${accountRateID}`, type: 'info', timeout: 1000 }).show();//For Debug
 
             var modal = $(this);
 

@@ -114,7 +114,7 @@
                 
                 $("form[name='createAccountForm']").validate({
                     success: 'valid',
-                    //focusCleanup: true,
+                    focusCleanup: true,
                     rules: {
                         accountName: {
                             required: true,
@@ -182,6 +182,7 @@
                     autoclose: true,
                 }).on('change', function () {
                     $(this).valid(); // Triggers a validation test
+                    $('#endDate').datepicker('setStartDate', $('#startDate').datepicker('getDate'));
                 });
                 $('#endDate').datepicker({
                     autoclose: true,

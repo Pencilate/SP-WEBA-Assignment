@@ -78,7 +78,12 @@
             const customerID = getIdFromAddressBar();
             function getIdFromAddressBar() {
                 let urlArray = window.location.href.split('/');
-                return urlArray[urlArray.length - 1];
+                let url = urlArray[urlArray.length - 1];
+                if ((url.includes('#')) == true) {
+                    return url.substring(0, url.indexOf('#'));
+                } else {
+                    return url
+                }
             }
 
             $('.aARIndex').attr('href','/AccountRates/Index/'+customerID)
@@ -93,6 +98,7 @@
             });
 
             $('[data-toggle="datepicker"]').datepicker({ format: 'DD/MM/YYYY' });
+
             (function () {
                 $.validator.addMethod('validDate', function (value, element) {
                     //http://stackoverflow.com/questions/24380305/validate-date-in-dd-mm-yyyy-format-usingjquery-validate
@@ -110,7 +116,7 @@
 
                 $("form[name='createAccountRateForm']").validate({
                     success: 'valid',
-                    //focusCleanup: true,
+                    focusCleanup: true,
                     rules: {
                         accountRate: {
                             required: true,
@@ -163,6 +169,7 @@
                     autoclose: true,
                 }).on('change', function () {
                     $(this).valid(); // Triggers a validation test
+                    $('#endDate').datepicker('setStartDate', $('#startDate').datepicker('getDate'));
                 });
                 $('#endDate').datepicker({
                     autoclose: true,
