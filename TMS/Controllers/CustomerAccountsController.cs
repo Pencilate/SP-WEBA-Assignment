@@ -21,5 +21,11 @@ namespace TMS.Controllers
         {
             return View();
         }
-	}
+
+        [Authorize("ADMIN")]
+        public IActionResult ViewAddCustomerAccountComments()
+        {
+            return View();
+        }
+    }
 }

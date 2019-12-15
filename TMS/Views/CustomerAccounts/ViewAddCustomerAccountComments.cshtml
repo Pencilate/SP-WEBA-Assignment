@@ -1,0 +1,104 @@
+﻿<nav aria-label="breadcrumb">
+    <ol class="breadcrumb ">
+        <li class="breadcrumb-item font-small">
+            <a asp-controller="CustomerAccounts" asp-action="Index">Manage Customer Accounts</a>
+        </li>
+        <li class="breadcrumb-item font-small active">Comments</li>
+    </ol>
+</nav>
+
+<div class="card">
+    <div class="card-header stylish-color-dark white-text">
+        <div class="container-fluid d-flex">
+            <h4 class="one" style="padding-top:1.8%;width:80%">Comments for <span id="accountNameTitle">Account Name</span></h4>
+        </div>
+    </div>
+    <div class="card-body col-12" style="padding:1% 3%">
+        <div id="comments-container" class="jquery-comments"></div>
+    </div>
+
+</div>
+@section Scripts{
+    <link rel="stylesheet" type="text/css" href="~/lib/jquery-comments/css/jquery-comments.css">
+    <script type="text/javascript" src="~/lib/jquery-comments/js/jquery-comments.js"></script>
+
+    <script>
+        const customerID = getIdFromAddressBar();
+        function getIdFromAddressBar() {
+            let urlArray = window.location.href.split('/');
+            let url = urlArray[urlArray.length - 1];
+            if ((url.includes('#')) == true) {
+                return url.substring(0, url.indexOf('#'));
+            } else {
+                return url
+            }
+        }
+
+        $.ajax({
+            url: '/API/CustomerAccounts/' + customerID,
+            method: 'GET'
+        }).done(function (data) {
+            $('#accountNameTitle').text(data.accountName);
+        }).fail(function (editData) {
+            new Noty({ text: editData.responseJSON.message, type: 'error', timeout: 3000 }).show();
+        });
+
+        $('#comments-container').comments({
+            textareaPlaceholderText: 'Leave comment',
+            enableEditing: true,
+            enableUpvoting: false,
+            enableDeleting: true,
+            enableDeletingCommentWithReplies: false,
+            enableAttachments: false,
+            enableHashtags: false,
+            enablePinging: false,
+            postCommentOnEnter: false,
+            forceResponsive: true,
+            readOnly: false,
+            newestText: 'Lastest',
+            oldestText: 'Earliest',
+            sendText: 'Post New Comment',
+            replyText: 'Repond to comment',
+            editText: 'Modify',
+            saveText: 'Update',
+            deleteText: 'Remove',
+            viewAllRepliesText: 'Show all replies (__replyCount__)',
+            hideRepliesText: 'Hide',
+            getComments: function (success, error) {
+                $.ajax({
+                    url: '/API/CustomerAccounts/Comments/' + customerID,
+                    method: 'GET'
+                }).done(function (data) {
+                    success(data);
+                }).fail(function (data) {
+                    new Noty({ text: "Fail to load customer comment data. " + data.responseJSON.message, type: 'error', timeout: 7000 }).show();
+                    error;
+                });
+
+            },
+            postComment: function (commentJSON, success, error) {
+                console.dir(commentJSON);
+                //Insert additional property into the JSON object which
+                //has been prepared by the jquery-comments internal logic.
+                //Hint: Check the database table CustomerAccountComment table
+                //commentJSON["whatIsTheAdditionalPropertyYouNeed"] = ID;
+                $.ajax({
+                    method: 'POST',
+                    url: '/API/CustomerAccounts/Comments/' + customerID,
+                    data: commentJSON,
+                    contentType: 'application/x-www-form-urlencoded',
+                    datatype: 'application/json'
+                }).done(function (data) {
+                    new Noty({ text: data.message, type: 'success', timeout: 2000 }).show();
+                    success(data);
+                }).fail(function (data) {
+                    new Noty({ text: "Fail to save customer comment data. " + data.responseJSON.message, type: 'error', timeout: 7000 }).show();
+                    error;
+                });
+            }
+        });
+
+
+
+    </script>
+}
