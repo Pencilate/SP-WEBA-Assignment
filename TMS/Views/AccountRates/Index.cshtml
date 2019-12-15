@@ -91,10 +91,10 @@
             </div>
             <div class="modal-body">
                 <p class="font-small float-right">* indicates required fields</p>
-                <form name="editAccountForm" novalidate>
+                <form name="editAccountRateForm" novalidate>
 
                     <div class="form-group">
-                        <label for="accountName"> Enter Rate per Hour*</label><br>
+                        <label for="accountRate"> Enter Rate per Hour*</label><br>
                         <input type="number" class="form-control" name="accountRate" id="accountRate" placeholder="Enter amount" />
                     </div>
                     <div class="form-group">
@@ -168,28 +168,14 @@
                 <div style="text-align:center;">
                     <p>The following will be deleted:</p>
                 </div>
-                <div class="row" id="accSummary">
+                <div class="row" id="accAffectSummary">
                     <div class="col">
                         <div class="card h-100 text-white bg-warning mb-3">
                             <i class="fas fa-table"></i>
                             <p class="card-title text-uppercase">TimeTable Record</p>
-                            <p class="card-text" id="accountRateDetail">0</p>
+                            <p class="card-text" id="accountRateTTDetail">0</p>
                         </div>
                     </div>
-                    <!--<div class="col">
-                        <div class="card h-100 text-white bg-warning mb-3">
-                            <i class="fas fa-comment-alt"></i>
-                            <p class="card-title text-uppercase">Comments</p>
-                            <p class="card-text" id="accountCommentsDetail">0</p>
-                        </div>
-                        </div>
-                        <div class="col">
-                            <div class="card h-100 text-white bg-warning mb-3">
-                            <i class="fas fa-link"></i>
-                            <p class="card-title text-uppercase">Instructor Relationship Record</p>
-                            <p class="card-text" id="accountInstructorRelDetail">0</p>
-                        </div>
-                    </div>-->
                 </div>
 
             </div>
@@ -212,31 +198,35 @@
             padding-right: 0.2rem;
         }
 
-            table.table th, table.table td.col-md-1, table.table td.col-md-2 {
-                padding-left: 0.2rem;
-                padding-right: 0.2rem;
-                text-align: center;
-            }
+        table.table th, table.table td.col-md-1, table.table td.col-md-2 {
+            padding-left: 0.2rem;
+            padding-right: 0.2rem;
+            text-align: center;
+        }
 
         .error {
             color: red;
+        }
+
+        .valid {
+            color: forestgreen;
         }
 
         .pagination .page-item.disabled .page-link {
             color: white;
         }
 
-        div#deleteAccountRateModal div#accSummary .card-title {
+        div#deleteAccountRateModal div#accAffectSummary .card-title {
             text-align: center;
             font-size: 12px;
         }
 
-        div#deleteAccountRateModal div#accSummary .card-text {
+        div#deleteAccountRateModal div#accAffectSummary .card-text {
             text-align: center;
             font-size: 2em;
         }
 
-        div#deleteAccountRateModal div#accSummary .card i {
+        div#deleteAccountRateModal div#accAffectSummary .card i {
             text-align: center;
             font-size: 1.5em;
             padding: 0.5em;
@@ -255,8 +245,6 @@
             text-align: center;
             font-size: 1.2em;
         }
-
-
     </style>
     <script>
         const customerID = getIdFromAddressBar();
@@ -265,7 +253,7 @@
             return urlArray[urlArray.length - 1];
         }
 
-        $('#accountRateAddBtn').attr('href','/AccountRates/Create/' + customerID);
+        $('#accountRateAddBtn').attr('href', '/AccountRates/Create/' + customerID);
 
         var accountRateID;
 
@@ -325,13 +313,13 @@
                 $cusTR.append($("<td></td>", { text: moment(oneRate.effectiveStartDate).format('DD/MM/YYYY') }).addClass("col-md-2"));
                 $cusTR.append($("<td></td>", { text: moment(oneRate.effectiveEndDate).format('DD/MM/YYYY') }).addClass("col-md-2"));
 
-                let $btnEdit = $('<button type="button"><i class="far fa-edit"></i> Edit</button>').addClass('btn-sm btn-outline-primary').attr('data-toggle', 'modal').attr('data-target', `#editAccountRateModal`).attr('data-customerid', oneRate.id);
+                let $btnEdit = $('<button type="button"><i class="far fa-edit"></i> Edit</button>').addClass('btn-sm btn-outline-primary').attr('data-toggle', 'modal').attr('data-target', `#editAccountRateModal`).attr('data-rateid', oneRate.id);
                 $cusTR.append($("<td></td>").addClass("col-md-1").append($btnEdit));
 
                 let $btnTimetable = $('<a><button class="btn-sm btn-outline-secondary"><i class="fas fa-calendar-day"></i> Timetable</button></a>').attr('href', '/AccountTimeTable/' + oneRate.id);
                 $cusTR.append($("<td></td>").addClass("col-md-2").append($btnTimetable));
-                //append(`<a href=${"CustomerAccounts/Edit/" + oneAccount.id} class="btn-sm btn-outline-primary"><i class="far fa-edit"></i> Edit</a>`
-                let $btnDelete = $('<button type="button"><i class="fas fa-trash"></i> Delete</button>').addClass('btn-sm btn-outline-danger').attr('data-toggle', 'modal').attr('data-target', `#deleteAccountRateModal`).attr('data-customerId', oneRate.id);
+
+                let $btnDelete = $('<button type="button"><i class="fas fa-trash"></i> Delete</button>').addClass('btn-sm btn-outline-danger').attr('data-toggle', 'modal').attr('data-target', `#deleteAccountRateModal`).attr('data-rateId', oneRate.id);
                 $cusTR.append($("<td></td>").addClass("col-md-2").append($btnDelete));
 
                 $tableBodyElement.append($cusTR);
@@ -409,147 +397,196 @@
 
 
 
-                    //$('#editCustomerModal').on('show.bs.modal', function (event) {
+        $('#editAccountRateModal').on('show.bs.modal', function (event) {
 
-                    //    let $button = $(event.relatedTarget); // Button that triggered the modal
-                    //    cusID = $button.data('customerid'); // Extract info from data-* attributes
-                    //    console.dir(cusID + " of Modal");
+            let $button = $(event.relatedTarget); // Button that triggered the modal
+            accountRateID = $button.data('rateid'); // Extract info from data-* attributes
+            console.dir(accountRateID + " of Modal");
 
-                    //    //new Noty({ text: `Edit Button Pressed for ${cusID}`, type: 'info', timeout: 1000 }).show();//For Debug
+            new Noty({ text: `Edit Button Pressed for ${accountRateID}`, type: 'info', timeout: 1000 }).show();//For Debug
 
-                    //    var modal = $(this);
-                    //    $.ajax({
-                    //        url: '/API/CustomerAccounts/' + cusID,
-                    //        method: 'GET'
-                    //    }).done(function (editData) {
-                    //        modal.find('.modal-body input#accountName').val(editData.accountName);
-                    //        if (editData.visibility == true) {
-                    //            //modal.find('.modal-body input#accountVisibilityToggle').prop('checked',true);
-                    //            modal.find('.modal-body input#accountVisibilityToggle').bootstrapToggle('on');
-                    //        }
-                    //        modal.find('.modal-body p#editCreateTS').text(`Creation timestamp: ${moment(editData.createdAt).format('DD/MM/YYYY HH:ss')} by ${editData.createdBy}`);
-                    //        modal.find('.modal-body p#editModifiedTS').text(`Last modified timestamp: ${moment(editData.updatedAt).format('DD/MM/YYYY HH:ss')} by ${editData.updatedBy}`);
+            var modal = $(this);
+            $.ajax({
+                url: '/API/AccountRates/' + customerID + '/' + accountRateID,
+                method: 'GET'
+            }).done(function (editData) {
+                modal.find('.modal-body input#accountRate').val(editData.rate);
+                modal.find('.modal-body input#startDate').val(moment(editData.startDate).format('DD/MM/YYYY'));
+                modal.find('.modal-body input#endDate').val(moment(editData.endDate).format('DD/MM/YYYY'));
 
-                    //    }).fail(function (editData) {
-                    //        new Noty({ text: editData.responseJSON.message, type: 'error', timeout: 3000 }).show();
-                    //        $('#editCustomerModal').modal('hide');
-                    //    });
-                    //});
+            }).fail(function (editData) {
+                new Noty({ text: editData.responseJSON.message, type: 'error', timeout: 3000 }).show();
+                $('#editAccountRateModal').modal('hide');
+            });
+        });
 
-                    //$('input#editSubmitBtn').on('click', function () {
-                    //    if ($("form[name='editAccountForm']").valid() == true) {
-                    //        console.dir(cusID + " of PUT Method");
-                    //        let cAccountName = $('#accountName').val();
-                    //        let cVisibility = $('#accountVisibilityToggle').prop('checked');
+        $('input#editSubmitBtn').on('click', function () {
+            if ($("form[name='editAccountRateForm']").valid() == true) {
+                console.dir(accountRateID + " of PUT Method");
+                let cAccountRate = $('#accountRate').val();
+                let cRateStartDate = $('#startDate').val();
+                let cRateEndDate = $('#endDate').val();
 
-                    //        function WebFormData(iAccountName, iVisibility) {
-                    //            this.accountName = iAccountName;
-                    //            this.visibility = iVisibility;
-                    //        }
+                function WebFormData(iAccountRate, iRateStartDate, iRateEndDate) {
+                    this.accountRate = iAccountRate;
+                    this.rateStartDate = iRateStartDate;
+                    this.rateEndDate = iRateEndDate;
+                }
 
-                    //        let webformData = new WebFormData(cAccountName, cVisibility);
-                    //        console.dir(webformData);
+                let webformData = new WebFormData(cAccountRate, cRateStartDate, cRateEndDate);
+                console.dir(webformData);
 
-                    //        $.ajax({
-                    //            url: '/API/CustomerAccounts/Update/' + cusID,
-                    //            method: 'PUT',
-                    //            data: webformData,
-                    //            contentType: 'application/x-www-form-urlencoded',
-                    //            datatype: 'application/json'
+                $.ajax({
+                    url: '/API/AccountRates/Update/' + customerID + '/' + accountRateID,
+                    method: 'PUT',
+                    data: webformData,
+                    contentType: 'application/x-www-form-urlencoded',
+                    datatype: 'application/json'
 
-                    //        }).done(function (editResult) {
-                    //            new Noty({ text: editResult.message, type: 'success', timeout: 3000 }).show();
-                    //            $('#editCustomerModal').modal('hide');
-                    //            loadData(currentPage, pageSize, sortOrder, sortColumn, searchFilter)
-                    //        }).fail(function (editResult) {
-                    //            new Noty({ text: editResult.responseJSON.message, type: 'error', timeout: 3000 }).show();
-                    //        });
+                }).done(function (editResult) {
+                    new Noty({ text: editResult.message, type: 'success', timeout: 3000 }).show();
+                    $('#editAccountRateModal').modal('hide');
+                    loadData(currentPage, pageSize, sortOrder)
+                }).fail(function (editResult) {
+                    new Noty({ text: editResult.responseJSON.message, type: 'error', timeout: 5000 }).show();
+                });
 
 
-                    //    }
-                    //});
+            }
+        });
 
-                    //(function () {
-                    //    $.validator.addMethod("alphanumeric", function (value, element) {
-                    //        return this.optional(element) || /^[\w.' ]+$/i.test(value);
-                    //    }, "Please enter valid name with alphanumeric characters or _ or . or ' or ' ' only.");
+        (function () {
+            $.validator.addMethod('validDate', function (value, element) {
+                //http://stackoverflow.com/questions/24380305/validate-date-in-dd-mm-yyyy-format-usingjquery-validate
+                return this.optional(element) || moment(value, 'DD/MM/YYYY').isValid() && moment(value, 'DD/MM/YYYY').format('DD/MM/YYYY') === value;
+            }, 'Please enter a valid date in the format DD/MM/YYYY.');
+            $.validator.addMethod('startDateEmpty', function (value, element) {
+                return this.optional(element) || moment($("#startDate").val(), 'DD/MM/YYYY').isValid();
+            }, 'Please enter a valid date in Start Date field before filling this field.');
+            $.validator.addMethod('afterStartDate', function (value, element) {
+                return this.optional(element) || moment(value, 'DD/MM/YYYY').isSameOrAfter(moment($("#startDate").val(), 'DD/MM/YYYY'));
+            }, 'Please enter a date later than or same as the start date.');
+            $.validator.addMethod("validDecimal", function (value, element) {
+                return this.optional(element) || /^(\d{0,4})(\.\d{0,2})?$/gm.test(value);
+            }, "Please enter a rate between $0 to $10000 with a maximum of 2 decimal place.");
 
-                    //    $("form[name='editAccountForm']").validate({
-                    //        success: 'valid',
-                    //        //focusCleanup: true,
-                    //        rules: {
-                    //            accountName: {
-                    //                required: true,
-                    //                alphanumeric: true,
-                    //                maxlength: 100
-                    //            }
-                    //        },
-                    //        messages: {
-                    //            accountName: {
-                    //                required: 'Please enter name of customer.',
-                    //                maxlength: 'Please shorten the account name to less than 100 characters.'
-                    //            }
-                    //        }
-                    //    });
-                    //})();
+            $("form[name='editAccountRateForm']").validate({
+                success: 'valid',
+                //focusCleanup: true,
+                rules: {
+                    accountRate: {
+                        required: true,
+                        number: true,
+                        min: 0,
+                        max: 9999.99,
+                        validDecimal: true
 
-                    //$('#editCustomerModal').on('hidden.bs.modal', function () {
-                    //    var modal = $(this);
-                    //    modal.find('.modal-body input#accountName').val('');
-                    //    let $toggle = modal.find('.modal-body input#accountVisibilityToggle');
-                    //    if ($toggle.prop('checked') == true) {
-                    //        //$toggle.removeAttr('checked');
-                    //        $toggle.bootstrapToggle('off');
-                    //    }
+                    },
+                    startDate: {
+                        required: true,
+                        validDate: true
+                    },
+                    endDate: {
+                        required: true,
+                        startDateEmpty: true,
+                        validDate: true,
+                        afterStartDate: true
+                    }
+                },
+                messages: {
+                    accountRate: {
+                        required: 'Please enter the rate.',
+                        number: 'Please enter a valid amount.',
+                        min: 'Please enter a rate greater than $0.',
+                        max: 'Please enter a rate smaller than $10000.'
+                    },
+                    startDate: {
+                        required: 'Please pick a start date.',
+                        validDate: 'Please enter a valid start date in the format DD/MM/YYYY.'
+                    },
+                    endDate: {
+                        required: 'Please pick a end date.',
+                        validDate: 'Please enter a valid end date in the format DD/MM/YYYY.',
+                        afterStartDate: 'Please enter a end date later than or same as the start date.'
+                    }
+                },
+                errorPlacement: function (error, element) {
+                    if (element.parent().is($('div.input-group'))) {
+                        error.appendTo(element.parent().parent());
+                    }
+                    else {
+                        error.appendTo(element.parent());
+                    }
 
-                    //    modal.find('.modal-body p#editCreateTS').text(`Creation timestamp:`);
-                    //    modal.find('.modal-body p#editModifiedTS').text(`Last modified timestamp:`);
-                    //});
+                }
+            });
 
-                    //$('#deleteCustomerModal').on('show.bs.modal', function (event) {
+            $('#startDate').datepicker({
+                autoclose: true,
+            }).on('change', function () {
+                $(this).valid(); // Triggers a validation test
+            });
+            $('#endDate').datepicker({
+                autoclose: true,
+            }).on('change', function () {
+                $(this).valid(); // Triggers a validation test
+            });
 
-                    //    let $button = $(event.relatedTarget); // Button that triggered the modal
-                    //    cusID = $button.data('customerid'); // Extract info from data-* attributes
-                    //    console.dir(cusID + " of Modal");
+        })();
 
-                    //    //new Noty({ text: `Edit Button Pressed for ${cusID}`, type: 'info', timeout: 1000 }).show();//For Debug
+        $('#editAccountRateModal').on('hidden.bs.modal', function () {
+            var modal = $(this);
+            modal.find('.modal-body input#accountRate').val('');
+            modal.find('.modal-body input#startDate').val('');
+            modal.find('.modal-body input#endDate').val('');
+        });
 
-                    //    var modal = $(this);
+        $('#deleteAccountRateModal').on('show.bs.modal', function (event) {
 
-                    //    $.ajax({
-                    //        url: '/API/CustomerAccounts/GetCustomerAccountSummary/' + cusID,
-                    //        method: 'GET'
-                    //    }).done(function (delData) {
-                    //        modal.find('.modal-body p#delAccountNameTxt').text(`Delete ${delData.accountName}?`);
-                    //        modal.find('.modal-body .card p#accountRateDetail').text(delData.accountRateCount);
-                    //        modal.find('.modal-body .card p#accountCommentsDetail').text(delData.accountCommentCount);
-                    //        modal.find('.modal-body .card p#accountInstructorRelDetail').text(delData.accountInstructorCount);
-                    //    }).fail(function (delData) {
-                    //        new Noty({ text: delData.responseJSON.message, type: 'error', timeout: 3000 }).show();
-                    //        $('#deleteCustomerModal').modal('hide');
-                    //    });
-                    //})
+            let $button = $(event.relatedTarget); // Button that triggered the modal
+            accountRateID = $button.data('rateid'); // Extract info from data-* attributes
+            console.dir(accountRateID + " of Modal");
 
-                    //$('input#deleteSubmitBtn').on('click', function () {
-                    //    console.dir(cusID + " of DELETE Method");
-                    //    $.ajax({
-                    //        url: '/API/CustomerAccounts/Delete/' + cusID,
-                    //        method: 'DELETE'
-                    //    }).done(function (delResult) {
-                    //        new Noty({ text: delResult.message, type: 'success', timeout: 3000 }).show();
-                    //        $('#deleteCustomerModal').modal('hide');
-                    //        loadData(1, pageSize, sortOrder, sortColumn, searchFilter)
-                    //    }).fail(function (delResult) {
-                    //        new Noty({ text: delResult.responseJSON.message, type: 'error', timeout: 3000 }).show();
-                    //    });
-                    //})
+            new Noty({ text: `Edit Button Pressed for ${accountRateID}`, type: 'info', timeout: 1000 }).show();//For Debug
 
-                    //$('#deleteCustomerModal').on('hidden.bs.modal', function () {
-                    //    var modal = $(this);
-                    //    modal.find('.modal-body p#delAccountNameTxt').text(`Delete?`);
-                    //    modal.find('.modal-body .card p#accountRateDetail').html('<i class="fas fa-circle-notch"></i>');
-                    //    modal.find('.modal-body .card p#accountCommentsDetail').html('<i class="fas fa-circle-notch"></i>');
-                    //    modal.find('.modal-body .card p#accountInstructorRelDetail').html('<i class="fas fa-circle-notch"></i>');
-                    //});
+            var modal = $(this);
+
+            $.ajax({
+                url: '/API/AccountRates/RateSummary/' + customerID + '/' + accountRateID,
+                method: 'GET'
+            }).done(function (delData) {
+                console.dir(delData);
+                modal.find('.modal-body .rateDetail p#accountRateRateDetail').text(delData.rate);
+                modal.find('.modal-body .rateDetail p#accountRateStartDateDetail').text(moment(delData.startDate).format('DD/MM/YYYY'));
+                modal.find('.modal-body .rateDetail p#accountRateEndDateDetail').text(moment(delData.endDate).format('DD/MM/YYYY'));
+                modal.find('.modal-body #accAffectSummary p#accountRateTTDetail').text(delData.ttCount);
+                }).fail(function (delData) {
+                console.dir(delData);
+                new Noty({ text: delData.responseJSON.message, type: 'error', timeout: 3000 }).show();
+                $('#deleteAccountRateModal').modal('hide');
+            });
+        })
+
+        $('input#deleteSubmitBtn').on('click', function () {
+            console.dir(accountRateID + " of DELETE Method");
+            $.ajax({
+                url: '/API/AccountRates/Delete/' + customerID + '/' + accountRateID,
+                method: 'DELETE'
+            }).done(function (delResult) {
+                new Noty({ text: delResult.message, type: 'success', timeout: 3000 }).show();
+                $('#deleteAccountRateModal').modal('hide');
+                loadData(1, pageSize, sortOrder)
+            }).fail(function (delResult) {
+                new Noty({ text: delResult.responseJSON.message, type: 'error', timeout: 3000 }).show();
+            });
+        })
+
+        $('#deleteCustomerModal').on('hidden.bs.modal', function () {
+            var modal = $(this);
+            modal.find('.modal-body .retailDetail p#accountRateRateDetail').html('<i class="fas fa-circle-notch"></i>');
+            modal.find('.modal-body .retailDetail p#accountRateStartDateDetail').html('<i class="fas fa-circle-notch"></i>');
+            modal.find('.modal-body .retailDetail p#accountRateEndDateDetail').html('<i class="fas fa-circle-notch"></i>');
+            modal.find('.modal-body #accAffectSummary p#accountRateTTDetail').html('<i class="fas fa-circle-notch"></i>');
+        });
     </script>
 }

@@ -294,7 +294,7 @@ namespace TMS.APIs
 
         // PUT api/<controller>/5
         [Authorize("ADMIN")]
-        [HttpPut("{cusId}/{rateId}")]
+        [HttpPut("Update/{cusId}/{rateId}")]
         public IActionResult UpdateCustomerAccountRate(int cusId, int rateId, [FromForm]IFormCollection data)
         {
             try
@@ -386,7 +386,7 @@ namespace TMS.APIs
 
         // DELETE api/<controller>/5
         [Authorize("ADMIN")]
-        [HttpDelete("{cusId}/{rateId}")]
+        [HttpDelete("Delete/{cusId}/{rateId}")]
         public IActionResult Delete(int cusId, int rateId)
         {
             try
@@ -396,8 +396,12 @@ namespace TMS.APIs
                 {
                     return NotFound(new { message = "Customer account rate could not be found" });
                 }
-                List<AccountTimeTable> tt = Database.AccountTimeTable.Where(t => t.AccountRateId == rateId).ToList();
-                Database.AccountTimeTable.RemoveRange(tt);
+                if(Database.AccountTimeTable.Where(t => t.AccountRateId == rateId).Count() > 0) //This was done as the name of EffectiveStartDate/EffectiveEndDate in the AccountTimeTable model and The AccountTimeTable Table in the database do not match
+                {
+                    List<AccountTimeTable> tt = Database.AccountTimeTable.Where(t => t.AccountRateId == rateId).ToList();
+                    Database.AccountTimeTable.RemoveRange(tt);
+                }
+                
                 Database.AccountRates.Remove(ar);
                 Database.SaveChanges();
                 return Ok(new { message = "Successfully Deleted Account Rate record with acommpanying TimeTable records" });
