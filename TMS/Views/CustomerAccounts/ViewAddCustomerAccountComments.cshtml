@@ -82,10 +82,13 @@
                 //has been prepared by the jquery-comments internal logic.
                 //Hint: Check the database table CustomerAccountComment table
                 //commentJSON["whatIsTheAdditionalPropertyYouNeed"] = ID;
+                
+                //Reason for creating a smaller data packet is due to: https://www.safnet.com/writing/tech/2016/12/api-calls-from-postman-work-but-not-from-the-browsers.html
+                let webFormData = new WebFormData(commentJSON.parent, commentJSON.content, commentJSON.created, commentJSON.modified); 
                 $.ajax({
+                    url: '/API/CustomerAccounts/Comments/' + customerID ,
                     method: 'POST',
-                    url: '/API/CustomerAccounts/Comments/' + customerID,
-                    data: commentJSON,
+                    data: webFormData,
                     contentType: 'application/x-www-form-urlencoded',
                     datatype: 'application/json'
                 }).done(function (data) {
@@ -98,7 +101,12 @@
             }
         });
 
-
+        function WebFormData(parent, content, created, modified) {
+            this.parent = parent;
+            this.content = content;
+            this.created = created;
+            this.modified = modified;
+        }
 
     </script>
 }
