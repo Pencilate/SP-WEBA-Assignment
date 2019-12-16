@@ -14,7 +14,8 @@
         </div>
     </div>
     <div class="card-body col-12" style="padding:1% 3%">
-        <div id="comments-container" class="jquery-comments"></div>
+        @*<div id="comments-container" class="jquery-comments"></div>*@
+        <div id="comments-container"></div>
     </div>
 
 </div>
@@ -55,15 +56,15 @@
             postCommentOnEnter: false,
             forceResponsive: true,
             readOnly: false,
-            newestText: 'Lastest',
-            oldestText: 'Earliest',
-            sendText: 'Post New Comment',
-            replyText: 'Repond to comment',
-            editText: 'Modify',
-            saveText: 'Update',
-            deleteText: 'Remove',
-            viewAllRepliesText: 'Show all replies (__replyCount__)',
-            hideRepliesText: 'Hide',
+            //newestText: 'Lastest',
+            //oldestText: 'Earliest',
+            //sendText: 'Post New Comment',
+            //replyText: 'Repond to comment',
+            //editText: 'Modify',
+            //saveText: 'Update',
+            //deleteText: 'Remove',
+            //viewAllRepliesText: 'Show all replies (__replyCount__)',
+            //hideRepliesText: 'Hide',
             getComments: function (success, error) {
                 $.ajax({
                     url: '/API/CustomerAccounts/Comments/' + customerID,
@@ -71,7 +72,7 @@
                 }).done(function (data) {
                     success(data);
                 }).fail(function (data) {
-                    new Noty({ text: "Fail to load customer comment data. " + data.responseJSON.message, type: 'error', timeout: 7000 }).show();
+                    //new Noty({ text: "Fail to load customer comment data. " + data.responseJSON.message, type: 'error', timeout: 7000 }).show();
                     error;
                 });
 
@@ -90,13 +91,21 @@
                     method: 'POST',
                     data: webFormData,
                     contentType: 'application/x-www-form-urlencoded',
-                    datatype: 'application/json'
-                }).done(function (data) {
-                    new Noty({ text: data.message, type: 'success', timeout: 2000 }).show();
-                    success(data);
-                }).fail(function (data) {
-                    new Noty({ text: "Fail to save customer comment data. " + data.responseJSON.message, type: 'error', timeout: 7000 }).show();
-                    error;
+                    datatype: 'application/json',
+                    success: function (comment) {
+                        
+                        location.reload(true);
+                        //window.location.href = '/CustomerAccounts/ViewAddCustomerAccountComments/' + customerID;
+                        success(comment);
+                    },
+                    error: error
+                //}).done(function (data) {
+                //    //new Noty({ text: data.message, type: 'success', timeout: 2000 }).show();
+                    
+                //    window.location.href = '/CustomerAccounts/ViewAddCustomerAccountComments/' + customerID;
+                //}).fail(function (data) {
+                //    //new Noty({ text: "Fail to save customer comment data. " + data.responseJSON.message, type: 'error', timeout: 7000 }).show();
+                //    error();
                 });
             }
         });
