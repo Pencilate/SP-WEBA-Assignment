@@ -144,7 +144,7 @@
 </div>
 
 <div class="modal fade" id="deleteCustomerModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
 
@@ -158,7 +158,7 @@
                     <p class="card-title" id="delAccountNameTxt">Delete Company Name?</p>
                     <p>The following will be deleted:</p>
                 </div>
-                <div class="row" id="accSummary">
+                <div class="row accSummary">
                     <div class="col">
                         <div class="card h-100 text-white bg-warning mb-3">
                             <i class="fas fa-dollar-sign"></i>
@@ -168,21 +168,28 @@
                     </div>
                     <div class="col">
                         <div class="card h-100 text-white bg-warning mb-3">
-                            <i class="fas fa-comment-alt"></i>
-                            <p class="card-title text-uppercase">Comments</p>
-                            <p class="card-text" id="accountCommentsDetail">0</p>
+                            <i class="fas fa-table"></i>
+                            <p class="card-title text-uppercase">Account TimeTable Record</p>
+                            <p class="card-text" id="accountTimeTableDetail">0</p>
                         </div>
                     </div>
-                    <div class="col">
-                        <div class="card h-100 text-white bg-warning mb-3">
-                            <i class="fas fa-link"></i>
-                            <p class="card-title text-uppercase">Instructor Relationship Record</p>
-                            <p class="card-text" id="accountInstructorRelDetail">0</p>
+                        <div class="col">
+                            <div class="card h-100 text-white bg-warning mb-3">
+                                <i class="fas fa-comment-alt"></i>
+                                <p class="card-title text-uppercase">Comments</p>
+                                <p class="card-text" id="accountCommentsDetail">0</p>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100 text-white bg-warning mb-3">
+                                <i class="fas fa-link"></i>
+                                <p class="card-title text-uppercase">Instructor Relationship Record</p>
+                                <p class="card-text" id="accountInstructorRelDetail">0</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-            </div>
             <div class="modal-footer" style="justify-content:center">
                 <div class="form-group" style="display:flex;">
                     <input type="button" name="deleteSubmitBtn" id="deleteSubmitBtn" value="Yes" class="btn btn-danger">
@@ -215,17 +222,17 @@
             color: white;
         }
 
-        div#deleteCustomerModal div#accSummary .card-title {
+        div#deleteCustomerModal div.accSummary .card-title {
             text-align: center;
             min-height: 5em;
             font-size: 12px;
         }
 
-        div#deleteCustomerModal div#accSummary .card-text {
+        div#deleteCustomerModal div.accSummary .card-text {
             text-align: center;
             font-size: 2em;
         }
-        div#deleteCustomerModal div#accSummary .card i {
+        div#deleteCustomerModal div.accSummary .card i {
             text-align: center;
             font-size: 1.5em;
             padding: 0.5em;
@@ -559,6 +566,7 @@
             }).done(function (delData) {
                 modal.find('.modal-body p#delAccountNameTxt').text(`Delete ${delData.accountName}?`);
                 modal.find('.modal-body .card p#accountRateDetail').text(delData.accountRateCount);
+                modal.find('.modal-body .card p#accountTimeTableDetail').text(delData.accountTimeTableCount);
                 modal.find('.modal-body .card p#accountCommentsDetail').text(delData.accountCommentCount);
                 modal.find('.modal-body .card p#accountInstructorRelDetail').text(delData.accountInstructorCount);
             }).fail(function (delData) {
@@ -585,6 +593,7 @@
             var modal = $(this);
             modal.find('.modal-body p#delAccountNameTxt').text(`Delete?`);
             modal.find('.modal-body .card p#accountRateDetail').html('<i class="fas fa-circle-notch"></i>');
+            modal.find('.modal-body .card p#accountTimeTableDetail').html('<i class="fas fa-circle-notch"></i>');
             modal.find('.modal-body .card p#accountCommentsDetail').html('<i class="fas fa-circle-notch"></i>');
             modal.find('.modal-body .card p#accountInstructorRelDetail').html('<i class="fas fa-circle-notch"></i>');
         });

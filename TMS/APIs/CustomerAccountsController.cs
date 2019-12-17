@@ -249,14 +249,27 @@ namespace TMS.APIs
                     return NotFound(new { message = "Customer could not be found" });
                 }
                 int accRateCount = Database.AccountRates.Where(ar => ar.CustomerAccountId == id).Count();
+
+                int accRateATTCount = 0;
+                if (accRateCount > 0)
+                {
+                    List<AccountRate> carList = Database.AccountRates.Where(r => r.CustomerAccountId == id).ToList();
+                    foreach(AccountRate ar in carList)
+                    {
+                        accRateATTCount += Database.AccountTimeTable.Where(r => r.AccountRateId == ar.AccountRateId).Count();
+                    }
+                }
+
                 int accCommentCount = Database.CustomerAccountComments.Where(cac => cac.CustomerAccountId == id).Count();
                 int accInstructorRelationCount = Database.InstructorAccounts.Where(ia => ia.CustomerAccountId == id).Count();
                 object summary = new
                 {
                     accountName = ca.AccountName,
                     accountRateCount = accRateCount,
+                    accountTimeTableCount = accRateATTCount,
                     accountCommentCount = accCommentCount,
                     accountInstructorCount = accInstructorRelationCount
+                   
                 };
                 return Ok(summary);
             }
@@ -452,13 +465,26 @@ namespace TMS.APIs
                 {
                     return NotFound(new { message = "Customer could not be found." });
                 }
+                //List<AccountTimeTable> collatedATT = new Account
 
                 List<AccountRate> car = Database.AccountRates.Where(r => r.CustomerAccountId == id).ToList();
-                List<CustomerAccountComment> cac = Database.CustomerAccountComments.Where(c => c.CustomerAccountId == id).ToList();
+                List<CustomerAccountComment> cacChild = Database.CustomerAccountComments.Where(c => c.CustomerAccountId == id).Where(r => r.ParentId != null).ToList();
+                List<CustomerAccountComment> cacParent = Database.CustomerAccountComments.Where(c => c.CustomerAccountId == id).Where(r => r.ParentId == null).ToList();
                 List<InstructorAccount> cia = Database.InstructorAccounts.Where(a => a.CustomerAccountId == id).ToList();
 
+                List<AccountTimeTable> catt = new List<AccountTimeTable>();
+                if (car.Count > 0)//This was done as the name of EffectiveStartDate/EffectiveEndDate in the AccountTimeTable model and The AccountTimeTable Table in the database do not match
+                {
+                    foreach (AccountRate ar in car)
+                    {
+                        //catt.AddRange(Database.AccountTimeTable.Where(r => r.AccountRateId == ar.AccountRateId).ToList());
+                    }
+                }
+
+                //Database.AccountTimeTable.RemoveRange(catt);
                 Database.AccountRates.RemoveRange(car);
-                Database.CustomerAccountComments.RemoveRange(cac);
+                Database.CustomerAccountComments.RemoveRange(cacChild);
+                Database.CustomerAccountComments.RemoveRange(cacParent);
                 Database.InstructorAccounts.RemoveRange(cia);
                 Database.CustomerAccounts.Remove(ca);
                 Database.SaveChanges();

@@ -106,7 +106,7 @@ namespace TMS.APIs
                     }
                     else if (sortOrder.Equals("DESC"))
                     {
-                        recordNo = endRecord - i;
+                        recordNo = totalRecords - i;
                     }
                     cusAccountRateByPage.Add(new {
                         no = recordNo,
@@ -398,8 +398,8 @@ namespace TMS.APIs
                 }
                 if(Database.AccountTimeTable.Where(t => t.AccountRateId == rateId).Count() > 0) //This was done as the name of EffectiveStartDate/EffectiveEndDate in the AccountTimeTable model and The AccountTimeTable Table in the database do not match
                 {
-                    List<AccountTimeTable> tt = Database.AccountTimeTable.Where(t => t.AccountRateId == rateId).ToList();
-                    Database.AccountTimeTable.RemoveRange(tt);
+                    //List<AccountTimeTable> tt = Database.AccountTimeTable.Where(t => t.AccountRateId == rateId).ToList();
+                    //Database.AccountTimeTable.RemoveRange(tt);
                 }
                 
                 Database.AccountRates.Remove(ar);
