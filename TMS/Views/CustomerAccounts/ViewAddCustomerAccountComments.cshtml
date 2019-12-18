@@ -1,6 +1,9 @@
 ﻿<nav aria-label="breadcrumb">
     <ol class="breadcrumb ">
         <li class="breadcrumb-item font-small">
+            <a asp-controller="Home" asp-action="Index">Home</a>
+        </li>
+        <li class="breadcrumb-item font-small">
             <a asp-controller="CustomerAccounts" asp-action="Index">Manage Customer Accounts</a>
         </li>
         <li class="breadcrumb-item font-small active">Comments</li>
@@ -67,7 +70,7 @@
             //hideRepliesText: 'Hide',
             getComments: function (success, error) {
                 $.ajax({
-                    url: '/API/CustomerAccounts/Comments/' + customerID,
+                    url: '/API/CustomerAccountComments/' + customerID,
                     method: 'GET'
                 }).done(function (data) {
                     success(data);
@@ -87,16 +90,16 @@
                 //Reason for creating a smaller data packet is due to: https://www.safnet.com/writing/tech/2016/12/api-calls-from-postman-work-but-not-from-the-browsers.html
                 let webFormData = new WebFormData(commentJSON.parent, commentJSON.content, commentJSON.created, commentJSON.modified); 
                 $.ajax({
-                    url: '/API/CustomerAccounts/Comments/' + customerID ,
+                    url: '/API/CustomerAccountComments/' + customerID ,
                     method: 'POST',
                     data: webFormData,
                     contentType: 'application/x-www-form-urlencoded',
                     datatype: 'application/json',
-                    success: function (comment) {
+                    success: function (data) {
                         
-                        location.reload(true);
+                        //location.reload(true);
                         //window.location.href = '/CustomerAccounts/ViewAddCustomerAccountComments/' + customerID;
-                        success(comment);
+                        success(data.comment);
                     },
                     error: error
                 //}).done(function (data) {

@@ -20,8 +20,8 @@ namespace TMS.Models
         //for the user to "select" to generate the "actual schedule" for that respective month.
         //To create the timesheet data. The server side logic will heavily rely on EffectiveStartDate
         //and EffectiveEndDate
-        public DateTime EffectiveStartDate { get; set; }
-        public DateTime EffectiveEndDate { get; set; }
+        public DateTime EffectiveStartDateTime { get; set; }
+        public DateTime EffectiveEndDateTime { get; set; }
         //There may be special situations that the admin need to set an AccountTimeTable record as "not visible" (false)
         //. By setting IsVisible property to false, the record will not be used by the Instructor to see any dates
         //which can be generated from the respective AccountTimeTable record.

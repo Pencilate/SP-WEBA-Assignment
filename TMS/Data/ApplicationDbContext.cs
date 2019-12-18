@@ -190,7 +190,11 @@ namespace TMS.Data
                 .WithMany(input => input.AppNotes)
                 .HasForeignKey(input => input.AppNotePriorityLevelId);
 
-
+            modelBuilder.Entity<CustomerAccountComment>()
+             .HasOne(input => input.Parent)
+             .WithMany(input => input.Child)
+             .HasForeignKey(input => input.ParentId)
+             .OnDelete(DeleteBehavior.Cascade);
         }//End of OnModelCreating
 
     }

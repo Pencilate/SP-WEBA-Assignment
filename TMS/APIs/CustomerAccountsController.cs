@@ -281,49 +281,7 @@ namespace TMS.APIs
 
         }
 
-        [Authorize("ADMIN")]
-        [HttpGet("Comments/{id}")]
-        public IActionResult GetCustomerComments(int id)
-        {
-            int userId = int.Parse(User.FindFirst("userid").Value);
-
-            try
-            {
-                List<CustomerAccountComment> cacList = Database.CustomerAccountComments.Include(c => c.CreatedBy).Where(c => c.CustomerAccountId == id).ToList();
-                List<object> commentData = new List<object>();
-                foreach (CustomerAccountComment cac in cacList)
-                {
-                    string FullName = "";
-                    bool CreatedByCurrentUsr = false;
-                    if (cac.CreatedById == userId)
-                    {
-                        FullName = "You";
-                        CreatedByCurrentUsr = true;
-                    }
-                    else
-                    {
-                        FullName = cac.CreatedBy.FullName;
-                    }
-                    commentData.Add(new
-                    {
-                        id = cac.CustomerAccountCommentId,
-                        parent = cac.ParentId,
-                        content = cac.Comment,
-                        fullname = FullName,
-                        modified = cac.UpdatedAt,
-                        created = cac.CreatedAt,
-                        creator = cac.CreatedBy.FullName,
-                        createdByCurrentUser = CreatedByCurrentUsr
-                    });
-
-                }
-                return Ok(commentData);
-            }
-            catch (SqlException ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." });
-            }
-        }
+        
 
         // POST api/<controller>
         [Authorize("ADMIN")]
@@ -386,42 +344,7 @@ namespace TMS.APIs
 
         }
 
-        [Authorize("ADMIN")]
-        [HttpPost("Comments/{id}")]
-        public IActionResult CreateCustomerComments(int id, [FromForm]IFormCollection data)
-        {
-            int userId = int.Parse(User.FindFirst("userid").Value);
-
-            try
-            {
-                CustomerAccountComment cac = new CustomerAccountComment();
-                cac.CustomerAccountId = id;
-                cac.Comment = data["content"].ToString();
-                if(String.IsNullOrEmpty(data["parent"]))
-                {
-                    cac.ParentId = null;
-                }
-                else
-                {
-                    cac.ParentId = int.Parse(data["parent"].ToString());
-                }
-                cac.UpdatedAt = DateTime.ParseExact(data["modified"], "yyyy-MM-ddTHH:mm:ss.fffZ", System.Globalization.CultureInfo.InvariantCulture);
-                cac.CreatedById = userId;
-                cac.CreatedAt = DateTime.ParseExact(data["created"], "yyyy-MM-ddTHH:mm:ss.fffZ", System.Globalization.CultureInfo.InvariantCulture);
-
-                Database.CustomerAccountComments.Add(cac);
-                Database.SaveChanges();
-                return Ok(new { message = "Successfully added comments" });
-            }
-            catch (SqlException ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
+        
 
         // PUT api/<controller>/5
         [Authorize("ADMIN")]
@@ -468,23 +391,27 @@ namespace TMS.APIs
                 //List<AccountTimeTable> collatedATT = new Account
 
                 List<AccountRate> car = Database.AccountRates.Where(r => r.CustomerAccountId == id).ToList();
-                List<CustomerAccountComment> cacChild = Database.CustomerAccountComments.Where(c => c.CustomerAccountId == id).Where(r => r.ParentId != null).ToList();
-                List<CustomerAccountComment> cacParent = Database.CustomerAccountComments.Where(c => c.CustomerAccountId == id).Where(r => r.ParentId == null).ToList();
+                List<CustomerAccountComment> cac = Database.CustomerAccountComments.Where(c => c.CustomerAccountId == id).ToList();
+
+                //List<CustomerAccountComment> cacChild = Database.CustomerAccountComments.Where(c => c.CustomerAccountId == id).Where(r => r.ParentId != null).ToList();
+                //List<CustomerAccountComment> cacParent = Database.CustomerAccountComments.Where(c => c.CustomerAccountId == id).Where(r => r.ParentId == null).ToList();
                 List<InstructorAccount> cia = Database.InstructorAccounts.Where(a => a.CustomerAccountId == id).ToList();
 
                 List<AccountTimeTable> catt = new List<AccountTimeTable>();
-                if (car.Count > 0)//This was done as the name of EffectiveStartDate/EffectiveEndDate in the AccountTimeTable model and The AccountTimeTable Table in the database do not match
+                if (car.Count > 0)
                 {
                     foreach (AccountRate ar in car)
                     {
-                        //catt.AddRange(Database.AccountTimeTable.Where(r => r.AccountRateId == ar.AccountRateId).ToList());
+                        catt.AddRange(Database.AccountTimeTable.Where(r => r.AccountRateId == ar.AccountRateId).ToList());
                     }
+                    Database.AccountTimeTable.RemoveRange(catt);
                 }
 
-                //Database.AccountTimeTable.RemoveRange(catt);
+                
                 Database.AccountRates.RemoveRange(car);
-                Database.CustomerAccountComments.RemoveRange(cacChild);
-                Database.CustomerAccountComments.RemoveRange(cacParent);
+                Database.CustomerAccountComments.RemoveRange(cac);
+                //Database.CustomerAccountComments.RemoveRange(cacChild);
+                //Database.CustomerAccountComments.RemoveRange(cacParent);
                 Database.InstructorAccounts.RemoveRange(cia);
                 Database.CustomerAccounts.Remove(ca);
                 Database.SaveChanges();

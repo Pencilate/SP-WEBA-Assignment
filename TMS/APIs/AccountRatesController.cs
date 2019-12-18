@@ -396,10 +396,10 @@ namespace TMS.APIs
                 {
                     return NotFound(new { message = "Customer account rate could not be found" });
                 }
-                if(Database.AccountTimeTable.Where(t => t.AccountRateId == rateId).Count() > 0) //This was done as the name of EffectiveStartDate/EffectiveEndDate in the AccountTimeTable model and The AccountTimeTable Table in the database do not match
+                if(Database.AccountTimeTable.Where(t => t.AccountRateId == rateId).Count() > 0)
                 {
-                    //List<AccountTimeTable> tt = Database.AccountTimeTable.Where(t => t.AccountRateId == rateId).ToList();
-                    //Database.AccountTimeTable.RemoveRange(tt);
+                    List<AccountTimeTable> tt = Database.AccountTimeTable.Where(t => t.AccountRateId == rateId).ToList();
+                    Database.AccountTimeTable.RemoveRange(tt);
                 }
                 
                 Database.AccountRates.Remove(ar);

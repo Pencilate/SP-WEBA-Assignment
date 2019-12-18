@@ -16,5 +16,8 @@ namespace TMS.Models
         public AppUser CreatedBy { get; set;}
         public int? ParentId { get; set; }
         public DateTime UpdatedAt { get; set; }
+
+        public CustomerAccountComment Parent { get; set; }
+        public List<CustomerAccountComment> Child { get; set; }
     }
 }

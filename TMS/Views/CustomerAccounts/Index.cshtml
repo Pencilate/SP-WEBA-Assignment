@@ -8,6 +8,9 @@
 </ul>-->
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb ">
+        <li class="breadcrumb-item font-small">
+            <a asp-controller="Home" asp-action="Index">Home</a>
+        </li>
         <li class="breadcrumb-item font-small active">Manage Customer Accounts</li>
     </ol>
 
@@ -515,7 +518,7 @@
 
         (function () {
             $.validator.addMethod("alphanumeric", function (value, element) {
-                return this.optional(element) || /^[\w.' ]+$/i.test(value);
+                return this.optional(element) || /^[\w.' &-]+$/i.test(value);
             }, "Please enter valid name with alphanumeric characters or _ or . or ' or ' ' only.");
 
             $("form[name='editAccountForm']").validate({
