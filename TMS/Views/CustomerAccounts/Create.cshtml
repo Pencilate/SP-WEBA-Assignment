@@ -18,7 +18,7 @@
         <form name="createAccountForm" novalidate>
             <p style="padding-top:2%"><strong>General information</strong></p>
             <p class="font-small float-right">* indicates required fields</p>
-            <div class="form-group">
+            <div class="form-group formheight">
                 <label for="accountName">Account Name*</label><br>
                 <input type="text" class="form-control" name="accountName" id="accountName" placeholder="Enter name" />
             </div>
@@ -32,7 +32,7 @@
             </div>
             <hr>
             <p style="padding-top:2%"><strong>Account information</strong></p>
-            <div class="form-group">
+            <div class="form-group formheight">
                 <label for="accountRate">Account Rate*</label><br>
                 <div class="input-group">
                     <div class="input-group-prepend">
@@ -93,6 +93,9 @@
             .valid{
                 color:forestgreen;
             }
+        .formheight {
+            min-height: 6.5em;
+        }
     </style>
     <script>
         $(document).ready(function () {

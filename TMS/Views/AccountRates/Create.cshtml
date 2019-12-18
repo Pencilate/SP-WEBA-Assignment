@@ -21,7 +21,7 @@
         <form name="createAccountRateForm" novalidate>
             <p style="padding-top:2%"><strong>General information</strong></p>
             <p class="font-small float-right">* indicates required fields</p>
-            <div class="form-group">
+            <div class="form-group formheight">
                 <label for="accountRate">Account Rate*</label><br>
                 <div class="input-group">
                     <div class="input-group-prepend">
@@ -74,6 +74,9 @@
 
         .valid {
             color: forestgreen;
+        }
+        .formheight{
+            min-height: 6.5em;
         }
     </style>
     <script>
@@ -171,6 +174,7 @@
                 $('#startDate').datepicker({
                     autoclose: true,
                 }).on('change', function () {
+
                     $(this).valid(); // Triggers a validation test
                     $('#endDate').datepicker('setStartDate', $('#startDate').datepicker('getDate'));
                 });

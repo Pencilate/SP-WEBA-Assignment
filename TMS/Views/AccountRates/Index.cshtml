@@ -96,11 +96,11 @@
                 <p class="font-small float-right">* indicates required fields</p>
                 <form name="editAccountRateForm" novalidate>
 
-                    <div class="form-group">
+                    <div class="form-group formheight">
                         <label for="accountRate"> Enter Rate per Hour*</label><br>
                         <input type="number" class="form-control" name="accountRate" id="accountRate" placeholder="Enter amount" />
                     </div>
-                    <div class="form-group">
+                    <div class="form-group formheight">
                         <label for="startDate">Pick a Start Date*</label><br>
                         <div class="input-group">
                             <div class="input-group-prepend">
@@ -110,7 +110,7 @@
                             <div data-toggle="datepicker"></div>
                         </div>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group formheight">
                         <label for="endDate">Pick a End Date*</label><br>
                         <div class="input-group">
                             <div class="input-group-prepend">
@@ -247,6 +247,9 @@
         div#deleteAccountRateModal .rateDetail .card-text {
             text-align: center;
             font-size: 1.2em;
+        }
+        .formheight {
+            min-height: 6.5em;
         }
     </style>
     <script>
