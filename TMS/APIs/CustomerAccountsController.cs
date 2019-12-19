@@ -39,16 +39,17 @@ namespace TMS.APIs
             List<Object> cusAccList = new List<object>();
             try
             {
-                List<CustomerAccount> cusAccQueryList = Database.CustomerAccounts.Include(c => c.CreatedBy).Include(c => c.UpdatedBy).ToList();
+                List<CustomerAccount> cusAccQueryList = Database.CustomerAccounts.Include(c => c.CreatedBy).Include(c => c.UpdatedBy).ToList();//Query DB for all the customer accounts
 
 
-                foreach (CustomerAccount ca in cusAccQueryList)
+                foreach (CustomerAccount ca in cusAccQueryList)//Loop through each customer account in the queried customer account list
                 {
+                    //Cherry pick specific information to return as a response
                     cusAccList.Add(new
                     {
                         id = ca.CustomerAccountId,
                         accountName = ca.AccountName,
-                        //comments = ca.Comments.Count,
+                        //Query the Customer Account Comments table to retrieve the number of comments recorded in the last 3 days
                         comments = Database.CustomerAccountComments.Where(c => c.UpdatedAt.CompareTo(_appDateTimeService.GetCurrentDateTime().Date.AddDays(-3)) > 0).Count(c => c.CustomerAccountId == ca.CustomerAccountId),
                         visibility = ca.IsVisible,
                         createdBy = ca.CreatedBy.FullName,
@@ -71,7 +72,7 @@ namespace TMS.APIs
         public IActionResult GetCustomersPageByPage([FromQuery]QueryPagingParametersForCustomers inParameters)
         {
             List<Object> cusAccList = new List<Object>();
-
+            //Pagination parameters
             int pageSize = 10;
             int currentPage = 0;
             string sortColumn = "";
@@ -82,7 +83,7 @@ namespace TMS.APIs
             int startRecord = 0;
             int endRecord = 0;
             int totalRecords = 0;
-            if (ModelState.IsValid)
+            if (ModelState.IsValid) //if query params is valid load the data into pagination parameters
             {
                 currentPage = Int32.Parse(inParameters.page_number.ToString());
                 pageSize = Int32.Parse(inParameters.per_page.ToString());
@@ -98,7 +99,7 @@ namespace TMS.APIs
                 sortOrder = "ASC";
                 searchFilter = "";
             }
-            if (currentPage == 1)
+            if (currentPage == 1)//Calculate the page's first record's index
             {
                 startRecord = 1;
             }
@@ -107,7 +108,7 @@ namespace TMS.APIs
                 startRecord = ((currentPage - 1) * pageSize) + 1;
             }
             //endRecord = pageSize * currentPage;
-            try
+            try//Query the stored procedure in the database
             {
                 DbCommand cmd = Database.Database.GetDbConnection().CreateCommand();
 
@@ -141,7 +142,7 @@ namespace TMS.APIs
                 parameter.ParameterName = "sortOrder";
                 parameter.Value = sortOrder;
                 cmd.Parameters.Add(parameter);
-                if (!String.IsNullOrEmpty(searchFilter))
+                if (!String.IsNullOrEmpty(searchFilter))//If search is not blank add the #customerName parameter to the query
                 {
                     //Pass the page size value to the stored procedure's @customerName parameter
                     parameter = cmd.CreateParameter();
@@ -152,7 +153,7 @@ namespace TMS.APIs
                 }
 
                 DbDataReader dr = cmd.ExecuteReader();//This is the part where SQL is sent to DB
-                if (dr.HasRows)
+                if (dr.HasRows)//If the stored procedure results has records
                 {
                     while (dr.Read())
                     {
@@ -183,9 +184,9 @@ namespace TMS.APIs
                     }
                 }
                 cmd.Connection.Close();
-                totalPage = (int)Math.Ceiling((double)totalRecords / pageSize);
-
-                endRecord = startRecord + cusAccList.Count - 1;
+                totalPage = (int)Math.Ceiling((double)totalRecords / pageSize); //Calculate total number of pages
+                
+                endRecord = startRecord + cusAccList.Count - 1; //Calculate index of last record on current page
                 object result = new
                 {
                     totalRecordCount = totalRecords,

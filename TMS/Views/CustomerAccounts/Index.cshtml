@@ -247,50 +247,6 @@
     </style>
 
     <script>
-        //Code wihtou pagination
-        //$.ajax({
-        //    url: '/API/CustomerAccounts/',
-        //    method: 'GET'
-        //}).done(function (data) {
-        //    $tableBodyElement = $('#tableBodyElement');
-        //    for (let i = 0; i < data.length; i++) {
-        //        oneAccount = data[i];
-        //        let $cusTR = $("<tr></tr");
-        //        $cusTR.addClass("row m-0");
-
-        //        $cusTR.append($("<td></td>", { text: oneAccount.accountName }).addClass("col-md-3"));
-        //        $cusTR.append($("<td></td>", { text: oneAccount.comments }).addClass("col-md-1"));
-        //        //$cusTR.append($("<td></td>", { text: oneAccount.visibility }).addClass("col-md-1"));
-        //        if (oneAccount.visibility == true) {
-        //            $cusTR.append($("<td></td>").addClass("col-md-1").append('<i class="fas fa-check" style="color:#61d800;"></i>'));
-        //        }
-        //        else {
-        //            $cusTR.append($("<td></td>").addClass("col-md-1").append('<i class="fas fa-times" style="color:#ff2410;"></i>'));
-        //        }
-        //        $cusTR.append($("<td></td>", { text: oneAccount.createdBy }).addClass("col-md-1"));
-        //        $cusTR.append($("<td></td>", { text: oneAccount.updatedBy }).addClass("col-md-1"));
-        //        $cusTR.append($("<td></td>", { text: moment(oneAccount.updatedAt).format('DD/MM/YYYY') }).addClass("col-md-1"));
-        //        $cusTR.append($("<td></td>").addClass("col-md-1").append(`<a href=${"CustomerAccounts/Edit/" + oneAccount.id} class="btn-sm btn-outline-primary"><i class="far fa-edit"></i> Edit</a>`));
-        //        $cusTR.append($("<td></td>").addClass("col-md-1").append(`<a class="btn-sm btn-outline-danger"><i class="fas fa-trash"></i> Delete</a>`));
-        //        $cusTR.append($("<td></td>").addClass("col-md-2").append(`
-        //                            <div class="dropdown show">
-        //                                <a class="btn-sm btn-outline-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        //                                    <i class="fas fa-user-cog"></i> Manage
-        //                                </a>
-        //                                <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-        //                                    <a class="dropdown-item" href=${"CustomerAccounts/ManageRates/" + oneAccount.id}>Manage rates</a>
-        //                                    <a class="dropdown-item" href=${"CustomerAccounts/Comments/" + oneAccount.id}>Comments</a>
-        //                                    <a class="dropdown-item" href="#">Assign instructors</a>
-        //                                </div>
-        //                            </div>
-        //                         `));
-
-        //        $tableBodyElement.append($cusTR);
-
-        //    }
-        //    }).fail(function (data) {
-        //        new Noty({ text: "Fail to load customer data. " + data.responseJSON.message, type: 'error' }).show();
-        //});
 
         var customerID;
 
