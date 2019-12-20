@@ -94,9 +94,9 @@ namespace TMS.APIs
                 {
                     cac.ParentId = int.Parse(data["parent"].ToString());
                 }
-                cac.UpdatedAt = DateTime.ParseExact(data["modified"], "yyyy-MM-ddTHH:mm:ss.fffZ", System.Globalization.CultureInfo.InvariantCulture);
+                cac.UpdatedAt = _appDateTimeService.GetCurrentDateTime();
                 cac.CreatedById = userId;
-                cac.CreatedAt = DateTime.ParseExact(data["created"], "yyyy-MM-ddTHH:mm:ss.fffZ", System.Globalization.CultureInfo.InvariantCulture);
+                cac.CreatedAt = _appDateTimeService.GetCurrentDateTime();
 
                 Database.CustomerAccountComments.Add(cac);
                 Database.SaveChanges();
