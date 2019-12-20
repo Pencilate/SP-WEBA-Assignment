@@ -339,7 +339,16 @@ namespace TMS.APIs
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.InnerException.Message });
+                string customMessage = "";
+                if (ex.InnerException.Message.Contains("CustomerAccount_AccountName_UniqueConstraint") == true)
+                {
+                    customMessage = data["accountName"] + " already exists as a customer account name.";
+                }
+                else
+                {
+                    customMessage = "There are issues with the request.";
+                }
+                return BadRequest(new { message = customMessage });
             }
             
 
@@ -372,7 +381,16 @@ namespace TMS.APIs
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = "There are issues with the request." });
+                string customMessage = "";
+                if (ex.InnerException.Message.Contains("CustomerAccount_AccountName_UniqueConstraint") == true)
+                {
+                    customMessage = data["accountName"] + " already exists as a customer account name.";
+                }
+                else
+                {
+                    customMessage = "There are issues with the request.";
+                }
+                    return BadRequest(new { message = customMessage});
             }
             
         }
