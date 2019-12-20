@@ -75,8 +75,8 @@ namespace TMS.APIs
 
         // POST api/<controller>
         [Authorize("ADMIN")]
-        [HttpPost("{id}")]
-        public IActionResult CreateCustomerComments(int id, [FromForm]IFormCollection data)
+        [HttpPost]
+        public IActionResult CreateCustomerComments([FromForm]IFormCollection data)
         {
             int userId = int.Parse(User.FindFirst("userid").Value);
 
@@ -84,7 +84,7 @@ namespace TMS.APIs
 
             try
             {
-                cac.CustomerAccountId = id;
+                cac.CustomerAccountId = int.Parse(data["customerAccountId"]);
                 cac.Comment = data["content"].ToString();
                 if (String.IsNullOrEmpty(data["parent"]))
                 {

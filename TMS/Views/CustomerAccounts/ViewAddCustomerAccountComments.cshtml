@@ -87,11 +87,11 @@
                 //commentJSON["whatIsTheAdditionalPropertyYouNeed"] = ID;
                 
                 //Reason for creating a smaller data packet is due to: https://www.safnet.com/writing/tech/2016/12/api-calls-from-postman-work-but-not-from-the-browsers.html
-                let webFormData = new WebFormData(commentJSON.parent, commentJSON.content, commentJSON.created, commentJSON.modified); 
+                commentJSON['customerAccountId'] = customerID
                 $.ajax({
-                    url: '/API/CustomerAccountComments/' + customerID ,
+                    url: '/API/CustomerAccountComments' ,
                     method: 'POST',
-                    data: webFormData,
+                    data: commentJSON,
                     contentType: 'application/x-www-form-urlencoded',
                     datatype: 'application/json',
                     success: function (data) {
@@ -101,23 +101,9 @@
                         success(data.comment);
                     },
                     error: error
-                //}).done(function (data) {
-                //    //new Noty({ text: data.message, type: 'success', timeout: 2000 }).show();
-                    
-                //    window.location.href = '/CustomerAccounts/ViewAddCustomerAccountComments/' + customerID;
-                //}).fail(function (data) {
-                //    //new Noty({ text: "Fail to save customer comment data. " + data.responseJSON.message, type: 'error', timeout: 7000 }).show();
-                //    error();
                 });
             }
         });
-
-        function WebFormData(parent, content, created, modified) {
-            this.parent = parent;
-            this.content = content;
-            this.created = created;
-            this.modified = modified;
-        }
 
     </script>
 }
