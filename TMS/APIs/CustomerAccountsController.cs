@@ -183,7 +183,7 @@ namespace TMS.APIs
 
                     }
                 }
-                cmd.Connection.Close();
+                cmd.Connection.Close();//Close connection
                 totalPage = (int)Math.Ceiling((double)totalRecords / pageSize); //Calculate total number of pages
                 
                 endRecord = startRecord + cusAccList.Count - 1; //Calculate index of last record on current page
@@ -214,13 +214,13 @@ namespace TMS.APIs
         {
             try
             {
-                CustomerAccount ca = Database.CustomerAccounts.Include(c => c.CreatedBy).Include(c => c.UpdatedBy).SingleOrDefault(c => c.CustomerAccountId == id);
+                CustomerAccount ca = Database.CustomerAccounts.Include(c => c.CreatedBy).Include(c => c.UpdatedBy).SingleOrDefault(c => c.CustomerAccountId == id);//Query Database for the specifc customer
                 if (ca == null)
                 {
-                    return NotFound(new { message = "Customer could not be found" });
+                    return NotFound(new { message = "Customer could not be found" });//Throw Not found if customer is not found
                 }
                 else
-                {
+                {//Cherry pick information to return
                     object cusAccObj = new
                     {
                         id = ca.CustomerAccountId,
@@ -231,11 +231,11 @@ namespace TMS.APIs
                         updatedAt = ca.UpdatedAt,
                         updatedBy = ca.UpdatedBy.FullName
                     };
-                    return Ok(cusAccObj);
+                    return Ok(cusAccObj);//Retuenr response with customer information
                 }
             }catch(SqlException ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." }); //If any database related operation occur, return ISE
             }
         }
 
@@ -244,12 +244,12 @@ namespace TMS.APIs
         public IActionResult GetCustomerAccountSummary(int id){
             try
             {
-                CustomerAccount ca = Database.CustomerAccounts.SingleOrDefault(c => c.CustomerAccountId == id);
-                if(ca == null)
+                CustomerAccount ca = Database.CustomerAccounts.SingleOrDefault(c => c.CustomerAccountId == id);//Query Database for the specifc customer
+                if (ca == null)
                 {
-                    return NotFound(new { message = "Customer could not be found" });
+                    return NotFound(new { message = "Customer could not be found" });//Throw Not found if customer is not found
                 }
-                int accRateCount = Database.AccountRates.Where(ar => ar.CustomerAccountId == id).Count();
+                int accRateCount = Database.AccountRates.Where(ar => ar.CustomerAccountId == id).Count();//Retrieve the number of AccountRates records related to the customer
 
                 int accRateATTCount = 0;
                 if (accRateCount > 0)
@@ -257,12 +257,12 @@ namespace TMS.APIs
                     List<AccountRate> carList = Database.AccountRates.Where(r => r.CustomerAccountId == id).ToList();
                     foreach(AccountRate ar in carList)
                     {
-                        accRateATTCount += Database.AccountTimeTable.Where(r => r.AccountRateId == ar.AccountRateId).Count();
+                        accRateATTCount += Database.AccountTimeTable.Where(r => r.AccountRateId == ar.AccountRateId).Count();//Retrieve the number of AccountTimeTable records related to the customer
                     }
                 }
 
-                int accCommentCount = Database.CustomerAccountComments.Where(cac => cac.CustomerAccountId == id).Count();
-                int accInstructorRelationCount = Database.InstructorAccounts.Where(ia => ia.CustomerAccountId == id).Count();
+                int accCommentCount = Database.CustomerAccountComments.Where(cac => cac.CustomerAccountId == id).Count();//Retrieve the number of CustomerAccountComments records related to the customer
+                int accInstructorRelationCount = Database.InstructorAccounts.Where(ia => ia.CustomerAccountId == id).Count();//Retrieve the number of InstructorAccounts records related to the customer
                 object summary = new
                 {
                     accountName = ca.AccountName,
@@ -276,7 +276,7 @@ namespace TMS.APIs
             }
             catch (SqlException ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." }); //If any database related operation occur, return ISE
 
             }
 
@@ -289,13 +289,13 @@ namespace TMS.APIs
         [HttpPost("Create")]
         public IActionResult Post([FromForm] IFormCollection data)
         {
-            int userId = int.Parse(User.FindFirst("userid").Value);
+            int userId = int.Parse(User.FindFirst("userid").Value); //Retireve the user id of the current logged in user
 
             CustomerAccount ca = new CustomerAccount()
             {
                 Comments = new List<CustomerAccountComment>(),
                 AccountRates = new List<AccountRate>()
-            };
+            };//Initailise the empty 
             try
             {
                 ca.AccountName = data["accountName"];
