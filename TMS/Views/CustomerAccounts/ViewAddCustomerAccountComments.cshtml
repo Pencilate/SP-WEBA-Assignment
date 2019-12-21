@@ -26,6 +26,7 @@
     <script type="text/javascript" src="~/lib/jquery-comments/js/jquery-comments.js"></script>
 
     <script>
+        //Retrieve customer ID from url
         const customerID = getIdFromAddressBar();
         function getIdFromAddressBar() {
             let urlArray = window.location.href.split('/');
@@ -37,6 +38,7 @@
             }
         }
 
+        //Call AJAX Method to get the customer name for the title of the page.
         $.ajax({
             url: '/API/CustomerAccounts/' + customerID,
             method: 'GET'
@@ -46,6 +48,7 @@
             new Noty({ text: editData.responseJSON.message, type: 'error', timeout: 3000 }).show();
         });
 
+        //jQuery-comment library function
         $('#comments-container').comments({
             textareaPlaceholderText: 'Leave comment',
             enableEditing: true,
@@ -68,6 +71,7 @@
             viewAllRepliesText: 'Show all (__replyCount__) replies',
             hideRepliesText: 'Hide',
             getComments: function (success, error) {
+                //Call AJAX to retrieve the CustomerAccountComments record in database related to the customerID
                 $.ajax({
                     url: '/API/CustomerAccountComments/' + customerID,
                     method: 'GET'
@@ -85,8 +89,7 @@
                 //has been prepared by the jquery-comments internal logic.
                 //Hint: Check the database table CustomerAccountComment table
                 //commentJSON["whatIsTheAdditionalPropertyYouNeed"] = ID;
-                
-                //Reason for creating a smaller data packet is due to: https://www.safnet.com/writing/tech/2016/12/api-calls-from-postman-work-but-not-from-the-browsers.html
+                //Call AJAX to create a new CustomerAccountComments record in database related to the customerID
                 commentJSON['customerAccountId'] = customerID
                 $.ajax({
                     url: '/API/CustomerAccountComments' ,
@@ -95,9 +98,6 @@
                     contentType: 'application/x-www-form-urlencoded',
                     datatype: 'application/json',
                     success: function (data) {
-                        
-                        //location.reload(true);
-                        //window.location.href = '/CustomerAccounts/ViewAddCustomerAccountComments/' + customerID;
                         success(data.comment);
                     },
                     error: error
