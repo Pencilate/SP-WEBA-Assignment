@@ -295,9 +295,10 @@ namespace TMS.APIs
             {
                 Comments = new List<CustomerAccountComment>(),
                 AccountRates = new List<AccountRate>()
-            };//Initailise the empty 
+            };//Initailise a empty CustomerAccount object
             try
             {
+                //Populating the empty CustomerAccount object
                 ca.AccountName = data["accountName"];
                 ca.IsVisible = Boolean.Parse(data["visibility"]);
                 ca.CreatedAt = _appDateTimeService.GetCurrentDateTime();
@@ -305,8 +306,9 @@ namespace TMS.APIs
                 ca.UpdatedAt = _appDateTimeService.GetCurrentDateTime();
                 ca.UpdatedById = userId;
 
-                if (!String.IsNullOrEmpty(data["accountComments"]))
+                if (!String.IsNullOrEmpty(data["accountComments"]))//Check if the comment portion of the webFormData is not null or empty
                 {
+                    //Populating the empty CustomerAccountComment object
                     CustomerAccountComment cac = new CustomerAccountComment();
                     cac.Comment = data["accountComments"].ToString().Trim();
                     cac.CustomerAccountId = ca.CustomerAccountId;
@@ -314,10 +316,10 @@ namespace TMS.APIs
                     cac.CreatedById = userId;
                     cac.ParentId = null;
                     cac.UpdatedAt = _appDateTimeService.GetCurrentDateTime();
-                    ca.Comments.Add(cac);
+                    ca.Comments.Add(cac); //Add the populated CustomerAccountComments to the CustomerAccount object.
                 }
 
-                AccountRate ar = new AccountRate();
+                AccountRate ar = new AccountRate(); //Populating the empty AccountRate object
                 ar.CustomerAccountId = ca.CustomerAccountId;
                 ar.RatePerHour = decimal.Parse(data["accountRate"]);
                 ar.EffectiveStartDate = DateTime.ParseExact(data["rateStartDate"], "d/M/yyyy", System.Globalization.CultureInfo.InvariantCulture);
@@ -326,25 +328,25 @@ namespace TMS.APIs
                 ar.CreatedById = userId;
                 ar.UpdatedAt = _appDateTimeService.GetCurrentDateTime();
                 ar.UpdatedById = userId;
-                ca.AccountRates.Add(ar);
+                ca.AccountRates.Add(ar); //Add the populated AccountRate to the CustomerAccount object.
 
 
-                Database.CustomerAccounts.Add(ca);
-                Database.SaveChanges();
+                Database.CustomerAccounts.Add(ca); //Add the Customer Account record to the database
+                Database.SaveChanges(); 
                 return Ok(new { message = "Successfully Registered " + ca.AccountName });
             }
             catch (SqlException ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." }); //If any database related operation occur, return ISE
             }
             catch (Exception ex)
             {
                 string customMessage = "";
-                if (ex.InnerException.Message.Contains("CustomerAccount_AccountName_UniqueConstraint") == true)
+                if (ex.InnerException.Message.Contains("CustomerAccount_AccountName_UniqueConstraint") == true) //If Account name already exist in the database already, return Bad request specifying that the customer name already exist
                 {
                     customMessage = data["accountName"] + " already exists as a customer account name.";
                 }
-                else
+                else //If the database is unable to save the record, return Bad request
                 {
                     customMessage = "There are issues with the request.";
                 }
@@ -361,32 +363,33 @@ namespace TMS.APIs
         [HttpPut("Update/{id}")]
         public IActionResult UpdateCustomerAccount(int id, [FromForm] IFormCollection data)
         {
-            int userId = int.Parse(User.FindFirst("userid").Value);
+            int userId = int.Parse(User.FindFirst("userid").Value); //Get the current user logged in.
             CustomerAccount ca;
             try
             {
-                ca = Database.CustomerAccounts.SingleOrDefault(c => c.CustomerAccountId == id);
+                ca = Database.CustomerAccounts.SingleOrDefault(c => c.CustomerAccountId == id); //Find the CustomerAccount object with the specified customer ID
+                //Update the account name and visibility in the found CustomerAccount object as well as last modified time and person
                 ca.AccountName = data["accountName"].ToString();
                 ca.IsVisible = bool.Parse(data["visibility"].ToString());
                 ca.UpdatedById = userId;
                 ca.UpdatedAt = _appDateTimeService.GetCurrentDateTime();
-            
+                //Update the record in the database
                 Database.CustomerAccounts.Update(ca);
                 Database.SaveChanges();
                 return Ok(new { message = "Successfully Updated " + ca.AccountName });
             }
             catch (SqlException ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." }); //If any database related operation occur, return ISE
             }
             catch (Exception ex)
             {
                 string customMessage = "";
-                if (ex.InnerException.Message.Contains("CustomerAccount_AccountName_UniqueConstraint") == true)
+                if (ex.InnerException.Message.Contains("CustomerAccount_AccountName_UniqueConstraint") == true) //If Account name already exist in the database already, return Bad request specifying that the customer name already exist
                 {
                     customMessage = data["accountName"] + " already exists as a customer account name.";
                 }
-                else
+                else //If the database is unable to save the record, return Bad request
                 {
                     customMessage = "There are issues with the request.";
                 }
@@ -402,18 +405,14 @@ namespace TMS.APIs
         {
             try
             {
-                CustomerAccount ca = Database.CustomerAccounts.SingleOrDefault(c => c.CustomerAccountId == id);
-               if(ca == null)
+                CustomerAccount ca = Database.CustomerAccounts.SingleOrDefault(c => c.CustomerAccountId == id); //Find the CustomerAccount object with the specified customer ID
+                if (ca == null) //Return 404 Not Found if the CustomerAccountObject could not be found.
                 {
                     return NotFound(new { message = "Customer could not be found." });
                 }
-                //List<AccountTimeTable> collatedATT = new Account
-
+                //Retrieve the records related to the CustomerAccount in the respective tables in the database.
                 List<AccountRate> car = Database.AccountRates.Where(r => r.CustomerAccountId == id).ToList();
                 List<CustomerAccountComment> cac = Database.CustomerAccountComments.Where(c => c.CustomerAccountId == id).ToList();
-
-                //List<CustomerAccountComment> cacChild = Database.CustomerAccountComments.Where(c => c.CustomerAccountId == id).Where(r => r.ParentId != null).ToList();
-                //List<CustomerAccountComment> cacParent = Database.CustomerAccountComments.Where(c => c.CustomerAccountId == id).Where(r => r.ParentId == null).ToList();
                 List<InstructorAccount> cia = Database.InstructorAccounts.Where(a => a.CustomerAccountId == id).ToList();
 
                 List<AccountTimeTable> catt = new List<AccountTimeTable>();
@@ -423,27 +422,26 @@ namespace TMS.APIs
                     {
                         catt.AddRange(Database.AccountTimeTable.Where(r => r.AccountRateId == ar.AccountRateId).ToList());
                     }
-                    Database.AccountTimeTable.RemoveRange(catt);
+                    Database.AccountTimeTable.RemoveRange(catt); //Remove all AccountTimeTables record related to the customer
                 }
 
-                
+                //Remove all record from the respective tables related to the customer
                 Database.AccountRates.RemoveRange(car);
                 Database.CustomerAccountComments.RemoveRange(cac);
-                //Database.CustomerAccountComments.RemoveRange(cacChild);
-                //Database.CustomerAccountComments.RemoveRange(cacParent);
                 Database.InstructorAccounts.RemoveRange(cia);
                 Database.CustomerAccounts.Remove(ca);
                 Database.SaveChanges();
-                return Ok(new { message = "Successfully Deleted: "+ca.AccountName });
+                return Ok(new { message = "Successfully Deleted: "+ca.AccountName }); //Return Ok 200 to tell the user the records has been successfully deleted.
             }
             catch (SqlException ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." });//If any database related operation occur, return ISE
             }
         }
 
         public class QueryPagingParametersForCustomers
         {
+            //Query parameters for pagination
             [BindRequired]
             public int page_number { get; set; }
             public int per_page { get; set; }
