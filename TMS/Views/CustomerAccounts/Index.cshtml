@@ -288,6 +288,7 @@
                 method: 'GET'
             }).done(function (data) {
                 console.dir(data);
+                //Data required for pagination
                 let totalRecCount = data.totalRecordCount;
                 let totalCurrentPageRecord = data.totalCurrentPgRec;
                 currentPage = data.currentPage;
