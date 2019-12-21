@@ -33,17 +33,17 @@ namespace TMS.APIs
         [HttpGet("{id}")]
         public IActionResult GetCustomerComments(int id)
         {
-            int userId = int.Parse(User.FindFirst("userid").Value);
+            int userId = int.Parse(User.FindFirst("userid").Value); //Retireve the user id of the current logged in user
 
             try
             {
-                List<CustomerAccountComment> cacList = Database.CustomerAccountComments.Include(c => c.CreatedBy).Where(c => c.CustomerAccountId == id).ToList();
-                List<object> commentData = new List<object>();
-                foreach (CustomerAccountComment cac in cacList)
+                List<CustomerAccountComment> cacList = Database.CustomerAccountComments.Include(c => c.CreatedBy).Where(c => c.CustomerAccountId == id).ToList(); //Retrieve all CustomerAccountComments records related to the customer from the database
+                List<object> commentData = new List<object>(); //Response comment object list
+                foreach (CustomerAccountComment cac in cacList) //Iterate through the list of CustomerAccountComments to cherry pick information to send to the client
                 {
                     string FullName = "";
                     bool CreatedByCurrentUsr = false;
-                    if (cac.CreatedById == userId)
+                    if (cac.CreatedById == userId) //If comment is created by current user
                     {
                         FullName = "You";
                         CreatedByCurrentUsr = true;
@@ -65,11 +65,11 @@ namespace TMS.APIs
                     });
 
                 }
-                return Ok(commentData);
+                return Ok(commentData); //Return Ok 200 response with comment data
             }
             catch (SqlException ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." }); //If any database related operation occur, return ISE
             }
         }
 
@@ -78,12 +78,13 @@ namespace TMS.APIs
         [HttpPost]
         public IActionResult CreateCustomerComments([FromForm]IFormCollection data)
         {
-            int userId = int.Parse(User.FindFirst("userid").Value);
+            int userId = int.Parse(User.FindFirst("userid").Value); //Retireve the user id of the current logged in user
 
-            CustomerAccountComment cac = new CustomerAccountComment();
+            CustomerAccountComment cac = new CustomerAccountComment(); //Initialise empty CustomerAccountComments object
 
             try
             {
+                //Populate the empty CustomerAccountCommetns object
                 cac.CustomerAccountId = int.Parse(data["customerAccountId"]);
                 cac.Comment = data["content"].ToString();
                 if (String.IsNullOrEmpty(data["parent"]))
@@ -98,24 +99,25 @@ namespace TMS.APIs
                 cac.CreatedById = userId;
                 cac.CreatedAt = _appDateTimeService.GetCurrentDateTime();
 
+                //Save the new CustomerAccountComments object to database.
                 Database.CustomerAccountComments.Add(cac);
                 Database.SaveChanges();
             }
             catch (SqlException ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." }); //If any database related operation occur, return ISE
             }
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
 
-            AppUser commentCreator = Database.AppUsers.Single(user => user.Id == cac.CreatedById);
+            AppUser commentCreator = Database.AppUsers.Single(user => user.Id == cac.CreatedById); //Retireve the user object of the creator of current comment
 
             string FullName = "";
             bool CreatedByCurrentUsr = false;
 
-            if (cac.CreatedById == userId)
+            if (cac.CreatedById == userId) // If comment is created by current user
             {
                 FullName = "You";
                 CreatedByCurrentUsr = true;
@@ -125,7 +127,7 @@ namespace TMS.APIs
                 FullName = commentCreator.FullName;
             }
 
-
+            //Craft reponse object to return to the jQuery-comment library and send it.
             var commentObject = new
             {
                 id = cac.CustomerAccountCommentId,
