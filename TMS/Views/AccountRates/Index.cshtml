@@ -297,7 +297,10 @@
                 method: 'GET'
             }).done(function (data) {
                 console.dir(data);
+                //Set title of page
                 $('#accountNameTitle').text(data.accountName);
+
+                //Data required for pagination
                 let totalRecCount = data.totalRecordCount;
                 let totalCurrentPageRecord = data.totalCurrentPgRec;
                 currentPage = data.currentPage;
