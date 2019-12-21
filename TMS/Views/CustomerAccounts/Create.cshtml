@@ -77,6 +77,7 @@
 </div>
 
 @section Scripts{
+    //Datepicker library
     <link href="~/lib/datepicker/datepicker.min.css" rel="stylesheet" />
     <script src="~/lib/datepicker/datepicker.min.js"></script>
     <style>
@@ -99,21 +100,27 @@
     </style>
     <script>
         $(document).ready(function () {
+            //Initialise datepicker
             $('[data-toggle="datepicker"]').datepicker({ format: 'DD/MM/YYYY' });
+            //IIFE function for jQuery-validation
             (function () {
                 $.validator.addMethod('validDate', function (value, element) {
                     //http://stackoverflow.com/questions/24380305/validate-date-in-dd-mm-yyyy-format-usingjquery-validate
                     return this.optional(element) || moment(value, 'DD/MM/YYYY').isValid() && moment(value, 'DD/MM/YYYY').format('DD/MM/YYYY') === value;
                 }, 'Please enter a valid date in the format DD/MM/YYYY.');
+                //Check if startDate is not empty
                 $.validator.addMethod('startDateEmpty', function (value, element){
                     return this.optional(element) || moment($("#startDate").val(), 'DD/MM/YYYY').isValid();
                 }, 'Please enter a valid date in Start Date field before filling this field.');
+                //Check if the end date is after start date
                 $.validator.addMethod('afterStartDate', function (value, element) {
                     return this.optional(element) || moment(value, 'DD/MM/YYYY').isSameOrAfter(moment($("#startDate").val(), 'DD/MM/YYYY'));
                 }, 'Please enter a date later than or same as the start date.');
+                //Check if accountName field contains valid characters
                 $.validator.addMethod("alphanumeric", function (value, element) {
                     return this.optional(element) || /^[\w.' &-]+$/i.test(value);
                 }, "Please enter valid name with alphanumeric characters or _ or . or ' or ' ' only.");
+                //Check if the rate has 2 decimal places
                 $.validator.addMethod("validDecimal", function (value, element) {
                     return this.optional(element) || /^(\d{0,4})(\.\d{0,2})?$/gm.test(value);
                 }, "Please enter a rate between $0 to $10000 with a maximum of 2 decimal place.");
@@ -183,12 +190,12 @@
 
                     }
                 });
-
+                //Immediate validation upon datepicker losing focus
                 $('#startDate').datepicker({
                     autoclose: true,
                 }).on('change', function () {
                     $(this).valid(); // Triggers a validation test
-                    $('#endDate').datepicker('setStartDate', $('#startDate').datepicker('getDate'));
+                    $('#endDate').datepicker('setStartDate', $('#startDate').datepicker('getDate')); //Restrict value that endDate datepicker can choose
                 });
                 $('#endDate').datepicker({
                     autoclose: true,
@@ -199,9 +206,11 @@
             })();
             $('#submitBtn').on('click', function (event) {
                 event.preventDefault();
+                //Check if form is valid
                 if ($("form[name='createAccountForm']").valid() == true) {
                     //new Noty({ text: 'Valid Form', type: 'info' }).show();
 
+                    //Retrieve valid from form
                     let cAccountName = $('#accountName').val();
                     let cAccountComments = $('#accountComments').val();
                     let cVisibility = $('#accountVisibilityToggle').prop('checked');
@@ -209,6 +218,7 @@
                     let cRateStartDate = $('#startDate').val();
                     let cRateEndDate = $('#endDate').val();
 
+                    //WebFormData constructor
                     function WebFormData(iAccountName, iAccountComments, iVisibility, iAccountRate, iRateStartDate, iRateEndDate) {
                         this.accountName = iAccountName;
                         this.accountComments = iAccountComments;
@@ -218,9 +228,10 @@
                         this.rateEndDate = iRateEndDate;
                     }
 
+                    //create webFormData object
                     let webFormData = new WebFormData(cAccountName, cAccountComments, cVisibility, cAccountRate, cRateStartDate, cRateEndDate);
                     console.dir(webFormData)
-
+                    //Call AJAX with webFormData to create the record in database
                     $.ajax({
                         url: '/API/CustomerAccounts/Create',
                         method: 'POST',
