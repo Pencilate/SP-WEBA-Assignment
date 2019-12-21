@@ -17,7 +17,7 @@ namespace TMS.Models
         public int? ParentId { get; set; }
         public DateTime UpdatedAt { get; set; }
 
-        public CustomerAccountComment Parent { get; set; }
-        public List<CustomerAccountComment> Child { get; set; }
+        public CustomerAccountComment Parent { get; set; }//Singular Navigation Property for ParentId
+        public List<CustomerAccountComment> Child { get; set; } //Plural Navigation Property for children comments
     }
 }
