@@ -81,6 +81,7 @@
     </style>
     <script>
         $(document).ready(function () {
+            //Get custoemrID from URL
             const customerID = getIdFromAddressBar();
             function getIdFromAddressBar() {
                 let urlArray = window.location.href.split('/');
@@ -92,8 +93,9 @@
                 }
             }
 
-            $('.aARIndex').attr('href','/AccountRates/Index/'+customerID)
+            $('.aARIndex').attr('href', '/AccountRates/Index/' + customerID) //Append customerID to the end of manage account rate and back button anchor href
 
+            //Call AJAX Method to get the customer name for the title of the page.
             $.ajax({
                 url: '/API/CustomerAccounts/' + customerID,
                 method: 'GET'
@@ -103,19 +105,24 @@
                 new Noty({ text: editData.responseJSON.message, type: 'error', timeout: 3000 }).show();
             });
 
+            //Initialise datepicker
             $('[data-toggle="datepicker"]').datepicker({ format: 'DD/MM/YYYY' });
 
+            //IIFE function for jQuery-validation
             (function () {
                 $.validator.addMethod('validDate', function (value, element) {
                     //http://stackoverflow.com/questions/24380305/validate-date-in-dd-mm-yyyy-format-usingjquery-validate
                     return this.optional(element) || moment(value, 'DD/MM/YYYY').isValid() && moment(value, 'DD/MM/YYYY').format('DD/MM/YYYY') === value;
                 }, 'Please enter a valid date in the format DD/MM/YYYY.');
+                //Check if startDate is not empty
                 $.validator.addMethod('startDateEmpty', function (value, element) {
                     return this.optional(element) || moment($("#startDate").val(), 'DD/MM/YYYY').isValid();
                 }, 'Please enter a valid date in Start Date field before filling this field.');
+                //Check if the end date is after start date
                 $.validator.addMethod('afterStartDate', function (value, element) {
                     return this.optional(element) || moment(value, 'DD/MM/YYYY').isSameOrAfter(moment($("#startDate").val(), 'DD/MM/YYYY'));
                 }, 'Please enter a date later than or same as the start date.');
+                //Check if the rate has 2 decimal places
                 $.validator.addMethod("validDecimal", function (value, element) {
                     return this.optional(element) || /^(\d{0,4})(\.\d{0,2})?$/gm.test(value);
                 }, "Please enter a rate between $0 to $10000 with a maximum of 2 decimal place.");
@@ -170,7 +177,7 @@
 
                     }
                 });
-
+                //Immediate validation upon datepicker losing focus
                 $('#startDate').datepicker({
                     autoclose: true,
                 }).on('change', function () {
@@ -187,21 +194,26 @@
             })();
             $('#submitBtn').on('click', function (event) {
                 event.preventDefault();
+                //Check if form is valid
                 if ($("form[name='createAccountRateForm']").valid() == true) {
                     //new Noty({ text: 'Valid Form', type: 'info' }).show();
+
+                    //Retrieve valid from form
                     let cAccountRate = $('#accountRate').val();
                     let cRateStartDate = $('#startDate').val();
                     let cRateEndDate = $('#endDate').val();
 
+                    //WebFormData constructor
                     function WebFormData( iAccountRate, iRateStartDate, iRateEndDate) {
                         this.accountRate = iAccountRate;
                         this.rateStartDate = iRateStartDate;
                         this.rateEndDate = iRateEndDate;
                     }
 
+                    //Create webFormData object
                     let webFormData = new WebFormData(cAccountRate, cRateStartDate, cRateEndDate);
                     console.dir(webFormData)
-
+                    //Call AJAX with webFormData to create the record in database
                     $.ajax({
                         url: '/API/AccountRates/Create/'+customerID,
                         method: 'POST',
