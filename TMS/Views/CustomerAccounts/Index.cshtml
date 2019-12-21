@@ -261,7 +261,7 @@
             //Call loadData to load all CustomerAccountRecords
             loadData(1, pageSize, sortOrder, sortColumn, searchFilter);
 
-            //Set onClickListeners for filter options
+            //Set onChangeListeners for filter options
             $('#pageSizeSelection').on('change', function () {
                 pageSize = this.value;
                 loadData(1, pageSize, sortOrder, sortColumn, searchFilter)
@@ -512,7 +512,7 @@
 
             $("form[name='editAccountForm']").validate({
                 success: 'valid',
-                //focusCleanup: true,
+                focusCleanup: true,
                 rules: {
                     accountName: {
                         required: true,
