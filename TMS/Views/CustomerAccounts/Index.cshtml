@@ -250,6 +250,7 @@
 
         var customerID;
 
+        //Pagination parameters
         var pageSize = 5;
         var sortColumn = 'ACCOUNTNAME';
         var sortOrder = 'ASC';
@@ -257,8 +258,10 @@
         var searchFilter = '';
 
         (function () {
+            //Call loadData to load all CustomerAccountRecords
             loadData(1, pageSize, sortOrder, sortColumn, searchFilter);
 
+            //Set onClickListeners for filter options
             $('#pageSizeSelection').on('change', function () {
                 pageSize = this.value;
                 loadData(1, pageSize, sortOrder, sortColumn, searchFilter)
@@ -279,6 +282,7 @@
         })();
 
         function loadData(pageNo, perPageSize, prefSortOrder, prefSortColumn, prefSearchFilter) {
+            //Call AJAX to retrieve all CusotmerAccount data
             $.ajax({
                 url: `/API/CustomerAccounts/GetCustomersPaginated?page_number=${pageNo}&per_page=${perPageSize}&sort_column=${prefSortColumn}&sort_order=${prefSortOrder}&search_filter=${prefSearchFilter}`,
                 method: 'GET'
@@ -291,9 +295,12 @@
                 let fromRec = data.from;
                 let toRec = data.to;
 
+                //Call renderData function to populate the table body
                 renderData(data.records);
+                //Call function to create navigation properties
                 createPageNav($('#topNav'), currentPage, totalPages);
                 createPageNav($('#btmNav'), currentPage, totalPages);
+                //Populate the navigation state message
                 let $navInfo = $('#navInfo');
                 $navInfo.empty();
                 $navInfo.text(`Showing ${fromRec} to ${toRec} of ${totalRecCount} entries`);
@@ -304,9 +311,11 @@
 
         function renderData(data) {
             $tableBodyElement = $('#tableBodyElement');
-            $tableBodyElement.empty();
+            $tableBodyElement.empty();//Clear all html within the table body
             for (let i = 0; i < data.length; i++) {
                 oneAccount = data[i];
+
+                //Populating one table row
                 let $cusTR = $("<tr></tr");
                 $cusTR.addClass("row m-0");
 
@@ -323,12 +332,15 @@
                 $cusTR.append($("<td></td>", { text: oneAccount.updatedBy }).addClass("col-md-1"));
                 $cusTR.append($("<td></td>", { text: moment(oneAccount.updatedAt).format('DD/MM/YYYY') }).addClass("col-md-1"));
 
+                //Edit button
                 let $btnEdit = $('<button type="button"><i class="far fa-edit"></i> Edit</button>').addClass('btn-sm btn-outline-primary').attr('data-toggle', 'modal').attr('data-target', `#editCustomerModal`).attr('data-customerid', oneAccount.id);
                 $cusTR.append($("<td></td>").addClass("col-md-1").append($btnEdit));
 
+                //Delete button
                 let $btnDelete = $('<button type="button"><i class="fas fa-trash"></i> Delete</button>').addClass('btn-sm btn-outline-danger').attr('data-toggle', 'modal').attr('data-target', `#deleteCustomerModal`).attr('data-customerId', oneAccount.id);
                 $cusTR.append($("<td></td>").addClass("col-md-1").append($btnDelete));
 
+                //Manage dropdown
                 $cusTR.append($("<td></td>").addClass("col-md-2").append(`
                                                                     <div class="dropdown show">
                                                                         <button type="button" class="btn-sm btn-outline-secondary dropdown-toggle" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -342,19 +354,24 @@
                                                                     </div>
                                                                  `));
 
+                //Append populated table row into table body
                 $tableBodyElement.append($cusTR);
             }
         }
 
         function createPageNav($navElm, currentPage, totalPages) {
-            $navElm.empty();
+            $navElm.empty(); //Clear html within navigation element
+
+            //Previous button
             let $liPrev = $('<li></li>').addClass('page-item');
+            //Check if current page is first page
             if (currentPage == 1) {
                 $liPrev.addClass('disabled');
                 let $a = $('<a>Previous</a>').addClass('page-link').attr('href', '#').attr('tabindex', '-1');
                 $liPrev.append($a);
             }
             else {
+                //Set data of previous button as well as onClickListenser
                 let $a = $('<a>Previous</a>').addClass('page-link').attr('href', '#').attr('data-page-number', currentPage - 1).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder).attr('data-sort-column', sortColumn).attr("data-search-filter", searchFilter);
                 $a.on('click', function (event) {
                     let perPageSize = $(event.target).data('page-size');
@@ -368,14 +385,18 @@
             }
             $navElm.append($liPrev);
 
+            //Page buttons
+            //Create button for each page
             for (let i = 1; i <= totalPages; i++) {
                 let $li = $('<li></li>').addClass('page-item');
+                //If its current page make the page number disabled
                 if (i == currentPage) {
                     $li.addClass('active disabled');
                     let $a = $(`<a>${i}</a>`).addClass('page-link').attr('href', '#').attr('tabindex', '-1');
                     $li.append($a);
                 }
-                else {
+                else { //Other pages other than current page
+                    //Set data of the page button as well as onClickListenser
                     let $a = $(`<a>${i}</a>`).addClass('page-link').attr('href', '#').attr('data-page-number', i).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder).attr('data-sort-column', sortColumn).attr("data-search-filter", searchFilter);
                     $a.on('click', function (event) {
                         let perPageSize = $(event.target).data('page-size');
@@ -391,13 +412,16 @@
 
             }
 
+            //Next button
             let $liNext = $('<li></li>').addClass('page-item');
+            //Check if current page is last page
             if (currentPage == totalPages) {
                 $liNext.addClass('disabled');
                 let $a = $('<a>Next</a>').addClass('page-link').attr('href', '#').attr('tabindex', '-1');
                 $liNext.append($a);
             }
             else {
+                //Set data of the page button as well as onClickListenser
                 let $a = $('<a>Next</a>').addClass('page-link').attr('href', '#').attr('data-page-number', currentPage + 1).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder).attr('data-sort-column', sortColumn).attr("data-search-filter", searchFilter);
                 $a.on('click', function (event) {
                     let perPageSize = $(event.target).data('page-size');
@@ -415,16 +439,18 @@
         $('#editCustomerModal').on('show.bs.modal', function (event) {
 
             let $button = $(event.relatedTarget); // Button that triggered the modal
-            cusID = $button.data('customerid'); // Extract info from data-* attributes
+            cusID = $button.data('customerid'); // Extract info from data-* attributes and set the value of the global cusID variable
             console.dir(cusID + " of Modal");
 
             //new Noty({ text: `Edit Button Pressed for ${cusID}`, type: 'info', timeout: 1000 }).show();//For Debug
 
             var modal = $(this);
+            //Call AJAX to retrieve one customer account information
             $.ajax({
                 url: '/API/CustomerAccounts/' + cusID,
                 method: 'GET'
             }).done(function (editData) {
+                //Populating modal with data from AJAX
                 modal.find('.modal-body input#accountName').val(editData.accountName);
                 if (editData.visibility == true) {
                     //modal.find('.modal-body input#accountVisibilityToggle').prop('checked',true);
@@ -440,19 +466,24 @@
         });
 
         $('input#editSubmitBtn').on('click', function () {
+            //Check if the form is valid
             if ($("form[name='editAccountForm']").valid() == true) {
                 console.dir(cusID + " of PUT Method");
+                //Retrieve the values from the form
                 let cAccountName = $('#accountName').val();
                 let cVisibility = $('#accountVisibilityToggle').prop('checked');
 
+                //WebFormData constructor
                 function WebFormData(iAccountName, iVisibility) {
                     this.accountName = iAccountName;
                     this.visibility = iVisibility;
                 }
 
+                //Create webFormData object
                 let webformData = new WebFormData(cAccountName, cVisibility);
                 console.dir(webformData);
 
+                //Call AJAX with webFormData to update the record in database
                 $.ajax({
                     url: '/API/CustomerAccounts/Update/' + cusID,
                     method: 'PUT',
@@ -472,7 +503,9 @@
             }
         });
 
+        //jQuery validation
         (function () {
+            //Alphanumeric method
             $.validator.addMethod("alphanumeric", function (value, element) {
                 return this.optional(element) || /^[\w.' &-]+$/i.test(value);
             }, "Please enter valid name with alphanumeric characters or _ or . or ' or ' ' only.");
@@ -496,8 +529,10 @@
             });
         })();
 
+        //Reset Edit modal
         $('#editCustomerModal').on('hidden.bs.modal', function () {
             var modal = $(this);
+            //Resetting the form in the edit modal
             modal.find('.modal-body input#accountName').val('');
             let $toggle = modal.find('.modal-body input#accountVisibilityToggle');
             if ($toggle.prop('checked') == true) {
@@ -512,17 +547,18 @@
         $('#deleteCustomerModal').on('show.bs.modal', function (event) {
 
             let $button = $(event.relatedTarget); // Button that triggered the modal
-            cusID = $button.data('customerid'); // Extract info from data-* attributes
+            cusID = $button.data('customerid'); // Extract info from data-* attributes and set the value of the global cusID variable
             console.dir(cusID + " of Modal");
 
             //new Noty({ text: `Edit Button Pressed for ${cusID}`, type: 'info', timeout: 1000 }).show();//For Debug
 
             var modal = $(this);
-            
+            //Call AJAX to get account summary of the CustomerAccount with specified customer ID
             $.ajax({
                 url: '/API/CustomerAccounts/GetCustomerAccountSummary/' + cusID,
                 method: 'GET'
             }).done(function (delData) {
+                //Populating modal with data from AJAX
                 modal.find('.modal-body p#delAccountNameTxt').text(`Delete ${delData.accountName}?`);
                 modal.find('.modal-body .card p#accountRateDetail').text(delData.accountRateCount);
                 modal.find('.modal-body .card p#accountTimeTableDetail').text(delData.accountTimeTableCount);
@@ -536,6 +572,7 @@
 
         $('input#deleteSubmitBtn').on('click', function () {
             console.dir(cusID + " of DELETE Method");
+            //Call AJAX to delete the CustomerAccount with specified cusID
             $.ajax({
                 url: '/API/CustomerAccounts/Delete/' + cusID,
                 method: 'DELETE'
@@ -548,8 +585,10 @@
             });
         })
 
+        //Reset Delete modal
         $('#deleteCustomerModal').on('hidden.bs.modal', function () {
             var modal = $(this);
+            //Resetting the form in the delete modal
             modal.find('.modal-body p#delAccountNameTxt').text(`Delete?`);
             modal.find('.modal-body .card p#accountRateDetail').html('<i class="fas fa-circle-notch"></i>');
             modal.find('.modal-body .card p#accountTimeTableDetail').html('<i class="fas fa-circle-notch"></i>');
