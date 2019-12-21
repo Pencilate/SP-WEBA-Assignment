@@ -187,6 +187,7 @@ namespace TMS.APIs
                 totalPage = (int)Math.Ceiling((double)totalRecords / pageSize); //Calculate total number of pages
                 
                 endRecord = startRecord + cusAccList.Count - 1; //Calculate index of last record on current page
+                //Craft response object and return with Ok 200 response
                 object result = new
                 {
                     totalRecordCount = totalRecords,
@@ -202,7 +203,7 @@ namespace TMS.APIs
             }
             catch (SqlException ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." }); //If any database related operation occur, return ISE
             }
             
         }
@@ -231,7 +232,7 @@ namespace TMS.APIs
                         updatedAt = ca.UpdatedAt,
                         updatedBy = ca.UpdatedBy.FullName
                     };
-                    return Ok(cusAccObj);//Retuenr response with customer information
+                    return Ok(cusAccObj);//Return response with customer information
                 }
             }catch(SqlException ex)
             {
@@ -263,6 +264,7 @@ namespace TMS.APIs
 
                 int accCommentCount = Database.CustomerAccountComments.Where(cac => cac.CustomerAccountId == id).Count();//Retrieve the number of CustomerAccountComments records related to the customer
                 int accInstructorRelationCount = Database.InstructorAccounts.Where(ia => ia.CustomerAccountId == id).Count();//Retrieve the number of InstructorAccounts records related to the customer
+                //Craft response object and return with Ok 200 response
                 object summary = new
                 {
                     accountName = ca.AccountName,
