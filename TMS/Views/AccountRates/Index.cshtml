@@ -253,6 +253,7 @@
         }
     </style>
     <script>
+        //Get custoemrID from URL
         const customerID = getIdFromAddressBar();
         function getIdFromAddressBar() {
             let urlArray = window.location.href.split('/');
@@ -264,17 +265,20 @@
             }
         }
 
-        $('#accountRateAddBtn').attr('href', '/AccountRates/Create/' + customerID);
+        $('#accountRateAddBtn').attr('href', '/AccountRates/Create/' + customerID); //Append customerID to the end of create account rate anchor href
 
-        var accountRateID;
+        var accountRateID; //Global accountRateID variable
 
+        //Pagination parameters
         var pageSize = 5;
         var sortOrder = 'ASC';
         var currentPage;
 
         (function () {
+            //Call loadData to populate the page with data
             loadData(1, pageSize, sortOrder);
 
+            //Set onChangeListeners for filter options
             $('#pageSizeSelection').on('change', function () {
                 pageSize = this.value;
                 loadData(1, pageSize, sortOrder);
@@ -287,6 +291,7 @@
         })();
 
         function loadData(pageNo, perPageSize, prefSortOrder) {
+             //Call AJAX to retrieve all AccountRate data
             $.ajax({
                 url: `/API/AccountRates/GetAccountRatesPaginated/${customerID}?page_number=${pageNo}&per_page=${perPageSize}&sort_order=${prefSortOrder}`,
                 method: 'GET'
@@ -300,9 +305,12 @@
                 let fromRec = data.from;
                 let toRec = data.to;
 
+                //Call renderData function to populate the table body
                 renderData(data.records);
+                //Call function to create navigation properties
                 createPageNav($('#topNav'), currentPage, totalPages);
                 createPageNav($('#btmNav'), currentPage, totalPages);
+                //Populate the navigation state message
                 let $navInfo = $('#navInfo');
                 $navInfo.empty();
                 $navInfo.text(`Showing ${fromRec} to ${toRec} of ${totalRecCount} entries`);
@@ -313,9 +321,11 @@
 
         function renderData(data) {
             $tableBodyElement = $('#tableBodyElement');
-            $tableBodyElement.empty();
+            $tableBodyElement.empty();//Clear all html within the table body
             for (let i = 0; i < data.length; i++) {
                 oneRate = data[i];
+
+                //Populating one table row
                 let $cusTR = $("<tr></tr");
                 $cusTR.addClass("row m-0");
 
@@ -324,28 +334,36 @@
                 $cusTR.append($("<td></td>", { text: moment(oneRate.effectiveStartDate).format('DD/MM/YYYY') }).addClass("col-md-2"));
                 $cusTR.append($("<td></td>", { text: moment(oneRate.effectiveEndDate).format('DD/MM/YYYY') }).addClass("col-md-2"));
 
+                //Edit Button
                 let $btnEdit = $('<button type="button"><i class="far fa-edit"></i> Edit</button>').addClass('btn-sm btn-outline-primary').attr('data-toggle', 'modal').attr('data-target', `#editAccountRateModal`).attr('data-rateid', oneRate.id);
                 $cusTR.append($("<td></td>").addClass("col-md-1").append($btnEdit));
 
+                //TimeTable Button
                 let $btnTimetable = $('<a><button class="btn-sm btn-outline-secondary"><i class="fas fa-calendar-day"></i> Timetable</button></a>').attr('href', '/AccountTimeTable/' + oneRate.id);
                 $cusTR.append($("<td></td>").addClass("col-md-2").append($btnTimetable));
 
+                //Delete Button
                 let $btnDelete = $('<button type="button"><i class="fas fa-trash"></i> Delete</button>').addClass('btn-sm btn-outline-danger').attr('data-toggle', 'modal').attr('data-target', `#deleteAccountRateModal`).attr('data-rateId', oneRate.id);
                 $cusTR.append($("<td></td>").addClass("col-md-2").append($btnDelete));
 
+                //Append populated table row into table body
                 $tableBodyElement.append($cusTR);
             }
         }
 
         function createPageNav($navElm, currentPage, totalPages) {
-            $navElm.empty();
+            $navElm.empty(); //Clear html within navigation element
+
+            //Previous button
             let $liPrev = $('<li></li>').addClass('page-item');
+            //Check if current page is first page
             if (currentPage == 1) {
                 $liPrev.addClass('disabled');
                 let $a = $('<a>Previous</a>').addClass('page-link').attr('href', '#').attr('tabindex', '-1');
                 $liPrev.append($a);
             }
             else {
+                //Set data of previous button as well as onClickListenser
                 let $a = $('<a>Previous</a>').addClass('page-link').attr('href', '#').attr('data-page-number', currentPage - 1).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder);
                 $a.on('click', function (event) {
                     let perPageSize = $(event.target).data('page-size');
@@ -357,14 +375,18 @@
             }
             $navElm.append($liPrev);
 
+            //Page buttons
+            //Create button for each page
             for (let i = 1; i <= totalPages; i++) {
                 let $li = $('<li></li>').addClass('page-item');
+                //If its current page make the page number disabled
                 if (i == currentPage) {
                     $li.addClass('active disabled');
                     let $a = $(`<a>${i}</a>`).addClass('page-link').attr('href', '#').attr('tabindex', '-1');
                     $li.append($a);
                 }
-                else {
+                else {//Other pages other than current page
+                    //Set data of the page button as well as onClickListenser
                     let $a = $(`<a>${i}</a>`).addClass('page-link').attr('href', '#').attr('data-page-number', i).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder);
                     $a.on('click', function (event) {
                         let perPageSize = $(event.target).data('page-size');
@@ -378,13 +400,16 @@
 
             }
 
+            //Next button
             let $liNext = $('<li></li>').addClass('page-item');
+            //Check if current page is last page
             if (currentPage == totalPages) {
                 $liNext.addClass('disabled');
                 let $a = $('<a>Next</a>').addClass('page-link').attr('href', '#').attr('tabindex', '-1');
                 $liNext.append($a);
             }
             else {
+                //Set data of the page button as well as onClickListenser
                 let $a = $('<a>Next</a>').addClass('page-link').attr('href', '#').attr('data-page-number', currentPage + 1).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder);
                 $a.on('click', function (event) {
                     let perPageSize = $(event.target).data('page-size');
@@ -402,16 +427,18 @@
         $('#editAccountRateModal').on('show.bs.modal', function (event) {
 
             let $button = $(event.relatedTarget); // Button that triggered the modal
-            accountRateID = $button.data('rateid'); // Extract info from data-* attributes
+            accountRateID = $button.data('rateid'); // Extract info from data-* attributes and set the value of the global cusID variable
             console.dir(accountRateID + " of Modal");
 
             //new Noty({ text: `Edit Button Pressed for ${accountRateID}`, type: 'info', timeout: 1000 }).show();//For Debug
 
             var modal = $(this);
+            //Call AJAX to retrieve one customer account rate information
             $.ajax({
                 url: '/API/AccountRates/' + customerID + '/' + accountRateID,
                 method: 'GET'
             }).done(function (editData) {
+                //Populating modal with data from AJAX
                 modal.find('.modal-body input#accountRate').val(editData.rate);
                 modal.find('.modal-body input#startDate').val(moment(editData.startDate).format('DD/MM/YYYY'));
                 $('#startDate').datepicker('update');
@@ -425,21 +452,26 @@
         });
 
         $('input#editSubmitBtn').on('click', function () {
+            //Check if the form is valid
             if ($("form[name='editAccountRateForm']").valid() == true) {
                 console.dir(accountRateID + " of PUT Method");
+                //Retrieve the values from the form
                 let cAccountRate = $('#accountRate').val();
                 let cRateStartDate = $('#startDate').val();
                 let cRateEndDate = $('#endDate').val();
 
+                //WebFormData constructor
                 function WebFormData(iAccountRate, iRateStartDate, iRateEndDate) {
                     this.accountRate = iAccountRate;
                     this.rateStartDate = iRateStartDate;
                     this.rateEndDate = iRateEndDate;
                 }
 
+                //Create webFormData object
                 let webformData = new WebFormData(cAccountRate, cRateStartDate, cRateEndDate);
                 console.dir(webformData);
 
+                //Call AJAX with webFormData to update the record in database
                 $.ajax({
                     url: '/API/AccountRates/Update/' + customerID + '/' + accountRateID,
                     method: 'PUT',
@@ -459,17 +491,21 @@
             }
         });
 
+        //jQuery validation
         (function () {
             $.validator.addMethod('validDate', function (value, element) {
                 //http://stackoverflow.com/questions/24380305/validate-date-in-dd-mm-yyyy-format-usingjquery-validate
                 return this.optional(element) || moment(value, 'DD/MM/YYYY').isValid() && moment(value, 'DD/MM/YYYY').format('DD/MM/YYYY') === value;
             }, 'Please enter a valid date in the format DD/MM/YYYY.');
+            //Check if the startDate field is not empty
             $.validator.addMethod('startDateEmpty', function (value, element) {
                 return this.optional(element) || moment($("#startDate").val(), 'DD/MM/YYYY').isValid();
             }, 'Please enter a valid date in Start Date field before filling this field.');
+            //Check if the endDate field value is after the startDate field
             $.validator.addMethod('afterStartDate', function (value, element) {
                 return this.optional(element) || moment(value, 'DD/MM/YYYY').isSameOrAfter(moment($("#startDate").val(), 'DD/MM/YYYY'));
             }, 'Please enter a date later than or same as the start date.');
+            //Check if the rate is valid with 2 decimal place
             $.validator.addMethod("validDecimal", function (value, element) {
                 return this.optional(element) || /^(\d{0,4})(\.\d{0,2})?$/gm.test(value);
             }, "Please enter a rate between $0 to $10000 with a maximum of 2 decimal place.");
@@ -525,6 +561,7 @@
                 }
             });
 
+             //Immediate validation upon datepicker losing focus
             $('#startDate').datepicker({
                 autoclose: true,
             }).on('change', function () {
@@ -539,8 +576,10 @@
 
         })();
 
+        //Reset Edit modal
         $('#editAccountRateModal').on('hidden.bs.modal', function () {
             var modal = $(this);
+            //Resetting the form in the edit modal
             modal.find('.modal-body input#accountRate').val('');
             modal.find('.modal-body input#startDate').val('');
             modal.find('.modal-body input#endDate').val('');
@@ -549,17 +588,18 @@
         $('#deleteAccountRateModal').on('show.bs.modal', function (event) {
 
             let $button = $(event.relatedTarget); // Button that triggered the modal
-            accountRateID = $button.data('rateid'); // Extract info from data-* attributes
+            accountRateID = $button.data('rateid'); // Extract info from data-* attributes and set the value of the global cusID variable
             console.dir(accountRateID + " of Modal");
 
             //new Noty({ text: `Edit Button Pressed for ${accountRateID}`, type: 'info', timeout: 1000 }).show();//For Debug
 
             var modal = $(this);
-
+            //Call AJAX to get account summary of the AccountRate with specified accountRateID
             $.ajax({
                 url: '/API/AccountRates/RateSummary/' + customerID + '/' + accountRateID,
                 method: 'GET'
             }).done(function (delData) {
+                //Populating modal with data from AJAX
                 console.dir(delData);
                 modal.find('.modal-body .rateDetail p#accountRateRateDetail').text(delData.rate);
                 modal.find('.modal-body .rateDetail p#accountRateStartDateDetail').text(moment(delData.startDate).format('DD/MM/YYYY'));
@@ -574,6 +614,7 @@
 
         $('input#deleteSubmitBtn').on('click', function () {
             console.dir(accountRateID + " of DELETE Method");
+            //Call AJAX to delete the AccountRate record with specified accountRateID
             $.ajax({
                 url: '/API/AccountRates/Delete/' + customerID + '/' + accountRateID,
                 method: 'DELETE'
@@ -586,8 +627,10 @@
             });
         })
 
+        //Reset Delete modal
         $('#deleteCustomerModal').on('hidden.bs.modal', function () {
             var modal = $(this);
+            //Resetting the form in the delete modal
             modal.find('.modal-body .retailDetail p#accountRateRateDetail').html('<i class="fas fa-circle-notch"></i>');
             modal.find('.modal-body .retailDetail p#accountRateStartDateDetail').html('<i class="fas fa-circle-notch"></i>');
             modal.find('.modal-body .retailDetail p#accountRateEndDateDetail').html('<i class="fas fa-circle-notch"></i>');
