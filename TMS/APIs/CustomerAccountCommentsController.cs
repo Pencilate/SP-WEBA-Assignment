@@ -61,7 +61,7 @@ namespace TMS.APIs
                         modified = cac.UpdatedAt,
                         created = cac.CreatedAt,
                         creator = cac.CreatedBy.FullName,
-                        createdByCurrentUser = CreatedByCurrentUsr
+                        created_by_current_user = CreatedByCurrentUsr
                     });
 
                 }
@@ -137,7 +137,7 @@ namespace TMS.APIs
                 modified = cac.UpdatedAt,
                 created = cac.CreatedAt,
                 creator = commentCreator.FullName,
-                createdByCurrentUser = CreatedByCurrentUsr
+                created_by_current_user = CreatedByCurrentUsr
             };
 
             return Ok(new { message = "Successfully added comments", comment = commentObject });
@@ -145,14 +145,92 @@ namespace TMS.APIs
 
         // PUT api/<controller>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
+        public IActionResult Put(int id, [FromForm]IFormCollection data)
         {
+            int userId = int.Parse(User.FindFirst("userid").Value); //Retireve the user id of the current logged in user
+
+            CustomerAccountComment cac = Database.CustomerAccountComments.SingleOrDefault(c => c.CustomerAccountCommentId == id); //Initialise empty CustomerAccountComments object
+
+            try
+            {
+                //Update the CustomerAccountCommetns object
+                cac.Comment = data["content"].ToString();
+                //if (String.IsNullOrEmpty(data["parent"]))
+                //{
+                //    cac.ParentId = null;
+                //}
+                //else
+                //{
+                //    cac.ParentId = int.Parse(data["parent"].ToString());
+                //}
+                cac.UpdatedAt = _appDateTimeService.GetCurrentDateTime();
+
+                //Save the new CustomerAccountComments object to database.
+                Database.CustomerAccountComments.Update(cac);
+                Database.SaveChanges();
+            }
+            catch (SqlException ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." }); //If any database related operation occur, return ISE
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+
+            AppUser commentCreator = Database.AppUsers.Single(user => user.Id == cac.CreatedById); //Retireve the user object of the creator of current comment
+
+            string FullName = "";
+            bool CreatedByCurrentUsr = false;
+
+            if (cac.CreatedById == userId) // If comment is created by current user
+            {
+                FullName = "You";
+                CreatedByCurrentUsr = true;
+            }
+            else
+            {
+                FullName = commentCreator.FullName;
+            }
+
+            //Craft reponse object to return to the jQuery-comment library and send it.
+            var commentObject = new
+            {
+                id = cac.CustomerAccountCommentId,
+                parent = cac.ParentId,
+                content = cac.Comment,
+                fullname = FullName,
+                modified = cac.UpdatedAt,
+                created = cac.CreatedAt,
+                creator = commentCreator.FullName,
+                created_by_current_user = CreatedByCurrentUsr
+            };
+
+            return Ok(new { message = "Successfully updated comments", comment = commentObject });
         }
 
         // DELETE api/<controller>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public IActionResult Delete(int id)
         {
+
+            CustomerAccountComment cac = Database.CustomerAccountComments.SingleOrDefault(c => c.CustomerAccountCommentId == id); //Find the CustomerAccountComment record with the specified CustomreAccountCommentsId from the database
+
+            try
+            {
+                //Delete the CustomerAccountComments object to database.
+                Database.CustomerAccountComments.Remove(cac);
+                Database.SaveChanges();
+                return Ok(new { message = "Successfully deleted comments"});
+            }
+            catch (SqlException ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." }); //If any database related operation occur, return ISE
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }

@@ -58,8 +58,9 @@
             enableAttachments: false,
             enableHashtags: false,
             enablePinging: false,
+            roundProfilePictures: true,
             postCommentOnEnter: false,
-            forceResponsive: true,
+            //forceResponsive: true,
             readOnly: false,
             newestText: 'Lastest',
             oldestText: 'Earliest',
@@ -100,6 +101,25 @@
                     success: function (data) {
                         success(data.comment);
                     },
+                    error: error
+                });
+            },
+            putComment: function (commentJSON, success, error) {
+                $.ajax({
+                    type: 'PUT',
+                    url: '/API/CustomerAccountComments/' + commentJSON.id,
+                    data: commentJSON,
+                    success: function (data) {
+                        success(data.comment)
+                    },
+                    error: error
+                });
+            },
+            deleteComment: function (commentJSON, success, error) {
+                $.ajax({
+                    type: 'DELETE',
+                    url: '/API/CustomerAccountComments/' + commentJSON.id,
+                    success: success,
                     error: error
                 });
             }
