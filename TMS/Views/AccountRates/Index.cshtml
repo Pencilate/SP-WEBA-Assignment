@@ -311,8 +311,10 @@
                 //Call renderData function to populate the table body
                 renderData(data.records);
                 //Call function to create navigation properties
-                createPageNav($('#topNav'), currentPage, totalPages);
-                createPageNav($('#btmNav'), currentPage, totalPages);
+                if (totalPages != 0) {
+                    createPageNav($('#topNav'), currentPage, totalPages);
+                    createPageNav($('#btmNav'), currentPage, totalPages);
+                }
                 //Populate the navigation state message
                 let $navInfo = $('#navInfo');
                 $navInfo.empty();

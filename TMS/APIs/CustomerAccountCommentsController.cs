@@ -144,6 +144,7 @@ namespace TMS.APIs
         }
 
         // PUT api/<controller>/5
+        [Authorize("ADMIN")]
         [HttpPut("{id}")]
         public IActionResult Put(int id, [FromForm]IFormCollection data)
         {
@@ -210,6 +211,7 @@ namespace TMS.APIs
         }
 
         // DELETE api/<controller>/5
+        [Authorize("ADMIN")]
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {

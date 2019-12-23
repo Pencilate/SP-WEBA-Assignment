@@ -91,7 +91,22 @@ namespace TMS.APIs
                 totalRecords = cusAccountRate.Count; //Get the total no of AccountRate records from the datebase
 
                 totalPage = (int)Math.Ceiling((double)totalRecords / pageSize); //Calculate the total number of pages
+                if (totalRecords == 0)
+                {
+                    //If no records are found for the customer
+                    return Ok(new
+                    {
+                        accountName = Database.CustomerAccounts.SingleOrDefault(c => c.CustomerAccountId == id).AccountName,
+                        totalRecordCount = totalRecords,
+                        totalCurrentPgRec = 0,
+                        currentPage = 0,
+                        totalPage = 0,
+                        records = new List<object>(),
+                        from = 0,
+                        to = 0
 
+                    }); //Return the response object
+                } 
                 //Calculate the index of the last of the records on the current page
                 if((currentPage == totalPage) && (totalRecords % pageSize != 0)) 
                 {
