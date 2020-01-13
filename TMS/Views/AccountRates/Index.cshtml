@@ -344,7 +344,7 @@
                 $cusTR.append($("<td></td>").addClass("col-md-1").append($btnEdit));
 
                 //TimeTable Button
-                let $btnTimetable = $('<a><button class="btn-sm btn-outline-secondary"><i class="fas fa-calendar-day"></i> Timetable</button></a>').attr('href', '/AccountTimeTable/' + oneRate.id);
+                let $btnTimetable = $('<a><button class="btn-sm btn-outline-secondary"><i class="fas fa-calendar-day"></i> Timetable</button></a>').attr('href', '/AccountTimeTable/Index/' + customerID + '-' + oneRate.id);
                 $cusTR.append($("<td></td>").addClass("col-md-2").append($btnTimetable));
 
                 //Delete Button
@@ -633,7 +633,7 @@
         })
 
         //Reset Delete modal
-        $('#deleteCustomerModal').on('hidden.bs.modal', function () {
+        $('#deleteAccountRateModal').on('hidden.bs.modal', function () {
             var modal = $(this);
             //Resetting the form in the delete modal
             modal.find('.modal-body .retailDetail p#accountRateRateDetail').html('<i class="fas fa-circle-notch"></i>');
