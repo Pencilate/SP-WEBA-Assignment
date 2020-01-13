@@ -1,0 +1,658 @@
+﻿<nav aria-label="breadcrumb">
+    <ol class="breadcrumb ">
+        <li class="breadcrumb-item font-small">
+            <a asp-controller="Home" asp-action="Index">Home</a>
+        </li>
+        <li class="breadcrumb-item font-small">
+            <a asp-controller="CustomerAccounts" asp-action="Index">Manage Customer Accounts</a>
+        </li>
+        <li class="breadcrumb-item font-small">
+            <a href="/AccountRates/Index/" id="ARBreadcrumb">Manage Rates</a>
+        </li>
+        <li class="breadcrumb-item font-small active">Manage Timetable</li>
+    </ol>
+</nav>
+
+<div class="card">
+    <div class="card-header stylish-color-dark white-text">
+        <div class="container-fluid d-flex">
+            <h4 class="one" style="padding-top:1.8%;width:80%">Time table for <span id="accountNameTitle">Account Name</span></h4>
+            <a href="/AccountTimeTable/Create/" id="accountTTAddBtn" class="btn btn-primary" style="margin-left:auto"><i class="fas fa-plus" style="color:#FFF;"></i> Add</a>
+        </div>
+    </div>
+    <div class="card-body col-12" style="padding:1% 3%">
+        <div class="row justify-content-center" id="paginationOptions" style="padding: 0.5em 0;">
+            <div class="col d-inline">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <label class="input-group-text" for="pageSizeSelection">Show</label>
+                    </div>
+                    <select class="custom-select" name="pageSizeSelection" id="pageSizeSelection" style="width:30%;">
+                        <option value="5" selected>5</option>
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
+                    <div class="input-group-append">
+                        <label class="input-group-text" for="pageSizeSelection">entries</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <label class="input-group-text" for="sortOrderSelection">Order</label>
+                    </div>
+                    <select class="custom-select" name="sortOrderSelection" id="sortOrderSelection" style="width:60%;">
+                        <option value="ASC" selected>Ascending</option>
+                        <option value="DESC">Descending</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <nav>
+                <ul class="pagination" id="topNav"></ul>
+            </nav>
+        </div>
+        <div class="row">
+            <div class="table-responsive-md w-100">
+                <div id="topNavigationInterfaceContainer" class="btn-toolbar float-right" role="toolbar"></div>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr class="row m-0" style="vertical-align:central;">
+                            <th class="col-md-1">No.</th>
+                            <th class="col-md-2">Day</th>
+                            <th class="col-md-1">Start Time</th>
+                            <th class="col-md-1">End Time</th>
+                            <th class="col-md-2">Start Date</th>
+                            <th class="col-md-2">End Date</th>
+                            <th class="col-md-1">Visibility</th>
+                            <th class="col-md-1">Edit</th>
+                            <th class="col-md-1">Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBodyElement"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <p id="navInfo"></p>
+        </div>
+        <div class="row justify-content-center">
+            <nav>
+                <ul class="pagination" id="btmNav"></ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="editAccountTTModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Account Rate</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="font-small float-right">* indicates required fields</p>
+                <form name="editAccountRateForm" novalidate>
+
+                    <div class="form-group formheight">
+                        <label for="accountRate"> Enter Rate per Hour*</label><br>
+                        <input type="number" class="form-control" name="accountRate" id="accountRate" placeholder="Enter amount" />
+                    </div>
+                    <div class="form-group formheight">
+                        <label for="startDate">Pick a Start Date*</label><br>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-calendar-day"></i></span>
+                            </div>
+                            <input type="text" class="form-control" name="startDate" id="startDate" data-toggle="datepicker" placeholder="Pick date" />
+                            <div data-toggle="datepicker"></div>
+                        </div>
+                    </div>
+                    <div class="form-group formheight">
+                        <label for="endDate">Pick a End Date*</label><br>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-calendar-day"></i></span>
+                            </div>
+                            <input type="text" class="form-control" name="endDate" id="endDate" data-toggle="datepicker" placeholder="Pick date" />
+                            <div data-toggle="datepicker"></div>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <div class="form-group">
+                    <input type="button" name="editSubmitBtn" id="editSubmitBtn" value="Update" class="btn btn-primary">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteAccountTTModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+
+                <div>
+                    <h4 class="modal-title">Are you sure?</h4>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div style="text-align:center;">
+                    <i class="far fa-trash-alt" style="font-size: 2em; color: red;"></i>
+                    <p class="card-title">Delete account rate?</p>
+                    <p>Summary:</p>
+                </div>
+                <div class="card h-100 text-white bg-info mb-3 rateDetail">
+                    <div class=".d-inline-block">
+                        <i class="fas fa-dollar-sign"></i>
+                        <span class="card-title text-uppercase">Rate</span>
+                    </div>
+                    <p class="card-text" id="accountRateRateDetail">0</p>
+                </div>
+                <div class="card h-100 text-white bg-info mb-3 rateDetail">
+                    <div class=".d-inline-block">
+                        <i class="fas fa-calendar-day"></i>
+                        <span class="card-title text-uppercase">Start Date</span>
+                    </div>
+                    <p class="card-text" id="accountRateStartDateDetail">DD/MM/YYYY</p>
+                </div>
+                <div class="card h-100 text-white bg-info mb-3 rateDetail">
+                    <div class=".d-inline-block">
+                        <i class="fas fa-calendar-day"></i>
+                        <span class="card-title text-uppercase">End Date</span>
+                    </div>
+                    <p class="card-text" id="accountRateEndDateDetail">DD/MM/YYYY</p>
+                </div>
+                <div style="text-align:center;">
+                    <p>The following will be deleted:</p>
+                </div>
+                <div class="row" id="accAffectSummary">
+                    <div class="col">
+                        <div class="card h-100 text-white bg-warning mb-3">
+                            <i class="fas fa-table"></i>
+                            <p class="card-title text-uppercase">TimeTable Record</p>
+                            <p class="card-text" id="accountRateTTDetail">0</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer" style="justify-content:center">
+                <div class="form-group" style="display:flex;">
+                    <input type="button" name="deleteSubmitBtn" id="deleteSubmitBtn" value="Yes" class="btn btn-danger">
+                    <input type="button" value="No" class="btn btn-white" data-dismiss="modal">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <link href="~/lib/datepicker/datepicker.min.css" rel="stylesheet" />
+    <script src="~/lib/datepicker/datepicker.min.js"></script>
+    <style>
+        table.table td {
+            padding-left: 0.2rem;
+            padding-right: 0.2rem;
+        }
+
+            table.table th, table.table td.col-md-1, table.table td.col-md-2 {
+                padding-left: 0.2rem;
+                padding-right: 0.2rem;
+                text-align: center;
+            }
+
+        .error {
+            color: red;
+        }
+
+        .valid {
+            color: forestgreen;
+        }
+
+        .pagination .page-item.disabled .page-link {
+            color: white;
+        }
+
+        div#deleteAccountRateModal div#accAffectSummary .card-title {
+            text-align: center;
+            font-size: 12px;
+        }
+
+        div#deleteAccountRateModal div#accAffectSummary .card-text {
+            text-align: center;
+            font-size: 2em;
+        }
+
+        div#deleteAccountRateModal div#accAffectSummary .card i {
+            text-align: center;
+            font-size: 1.5em;
+            padding: 0.5em;
+        }
+
+        div#deleteAccountRateModal .card {
+            padding: 1em;
+        }
+
+        div#deleteAccountRateModal .rateDetail i {
+            font-size: 1em;
+            padding-right: 0.5em;
+        }
+
+        div#deleteAccountRateModal .rateDetail .card-text {
+            text-align: center;
+            font-size: 1.2em;
+        }
+
+        .formheight {
+            min-height: 6.5em;
+        }
+    </style>
+    <script>
+        //Get custoemrID from URL
+        const [customerID, accountRateID] = getIdFromAddressBar();
+        function getIdFromAddressBar() {
+            let urlArray = window.location.href.split('/');
+            let url = urlArray[urlArray.length - 1];
+            let IDs = "";
+            if ((url.includes('#')) == true) {
+                IDs = url.substring(0, url.indexOf('#'));
+            } else {
+                IDs = url
+            }
+            return IDs.split('-')
+        }
+        
+        $('#accountTTAddBtn').attr('href', '/AccountTimeTable/Create/' + customerID + '-' + accountRateID); //Append accountRateID to the end of account rate breadcrumb anchor href
+        $('#ARBreadcrumb').attr('href', '/AccountRates/Index/' + customerID); //Append accountRateID to the end of create account timetable anchor href
+
+        var accountTTID; //Global accountTTID variable
+
+        //Pagination parameters
+        var pageSize = 5;
+        var sortOrder = 'ASC';
+        var currentPage;
+
+        (function () {
+            //Call loadData to populate the page with data
+            loadData(1, pageSize, sortOrder);
+
+            //Set onChangeListeners for filter options
+            $('#pageSizeSelection').on('change', function () {
+                pageSize = this.value;
+                loadData(1, pageSize, sortOrder);
+            })
+            $('#sortOrderSelection').on('change', function () {
+                sortOrder = this.value;
+                loadData(currentPage, pageSize, sortOrder);
+            })
+
+        })();
+
+        function loadData(pageNo, perPageSize, prefSortOrder) {
+             //Call AJAX to retrieve all AccountRate data
+            $.ajax({
+                url: `/API/AccountTimeTable/GetAccountTimeTablePaginated/${customerID}/${accountRateID}?page_number=${pageNo}&per_page=${perPageSize}&sort_order=${prefSortOrder}`,
+                method: 'GET'
+            }).done(function (data) {
+                console.dir(data);
+                //Set title of page
+                $('#accountNameTitle').text(data.accountName+" rate/hour $"+data.accountRate);
+
+                //Data required for pagination
+                let totalRecCount = data.totalRecordCount;
+                let totalCurrentPageRecord = data.totalCurrentPgRec;
+                currentPage = data.currentPage;
+                let totalPages = data.totalPage;
+                let fromRec = data.from;
+                let toRec = data.to;
+
+                //Call renderData function to populate the table body
+                renderData(data.records);
+                //Call function to create navigation properties
+                if (totalPages != 0) {
+                    createPageNav($('#topNav'), currentPage, totalPages);
+                    createPageNav($('#btmNav'), currentPage, totalPages);
+                }
+                //Populate the navigation state message
+                let $navInfo = $('#navInfo');
+                $navInfo.empty();
+                $navInfo.text(`Showing ${fromRec} to ${toRec} of ${totalRecCount} entries`);
+            }).fail(function (data) {
+                new Noty({ text: "Fail to load customer account rate data. " + data.responseJSON.message, type: 'error', timeout: 3000 }).show();
+            });
+        }
+
+        function renderData(data) {
+            $tableBodyElement = $('#tableBodyElement');
+            $tableBodyElement.empty();//Clear all html within the table body
+            for (let i = 0; i < data.length; i++) {
+                oneATT = data[i];
+
+                //Populating one table row
+                let $cusTR = $("<tr></tr");
+                $cusTR.addClass("row m-0");
+
+                $cusTR.append($("<td></td>", { text: oneATT.no }).addClass("col-md-1"));
+                $cusTR.append($("<td></td>", { text: moment((oneATT.day)-1,'d').format('dddd') }).addClass("col-md-2"));
+                $cusTR.append($("<td></td>", { text: moment(oneATT.startTime,'HH:mm:ss').format('h:mm A') }).addClass("col-md-1"));
+                $cusTR.append($("<td></td>", { text: moment(oneATT.endTime, 'HH:mm:ss').format('h:mm A') }).addClass("col-md-1"));
+                $cusTR.append($("<td></td>", { text: moment(oneATT.startDate).format('DD/MM/YYYY') }).addClass("col-md-2"));
+                $cusTR.append($("<td></td>", { text: moment(oneATT.endDate).format('DD/MM/YYYY') }).addClass("col-md-2"));
+                if (oneATT.visibility == true) {
+                    $cusTR.append($("<td></td>").addClass("col-md-1").append('<i class="fas fa-check" style="color:#61d800;"></i>'));
+                }
+                else {
+                    $cusTR.append($("<td></td>").addClass("col-md-1").append('<i class="fas fa-times" style="color:#ff2410;"></i>'));
+                }
+
+                //Edit Button
+                let $btnEdit = $('<button type="button"><i class="far fa-edit"></i> Edit</button>').addClass('btn-sm btn-outline-primary').attr('data-toggle', 'modal').attr('data-target', `#editAccountTTModal`).attr('data-ttid', oneATT.id);
+                $cusTR.append($("<td></td>").addClass("col-md-1").append($btnEdit));
+
+                //Delete Button
+                let $btnDelete = $('<button type="button"><i class="fas fa-trash"></i> Delete</button>').addClass('btn-sm btn-outline-danger').attr('data-toggle', 'modal').attr('data-target', `#deleteAccountTTModal`).attr('data-ttId', oneATT.id);
+                $cusTR.append($("<td></td>").addClass("col-md-1").append($btnDelete));
+
+                //Append populated table row into table body
+                $tableBodyElement.append($cusTR);
+            }
+        }
+
+        function createPageNav($navElm, currentPage, totalPages) {
+            $navElm.empty(); //Clear html within navigation element
+
+            //Previous button
+            let $liPrev = $('<li></li>').addClass('page-item');
+            //Check if current page is first page
+            if (currentPage == 1) {
+                $liPrev.addClass('disabled');
+                let $a = $('<a>Previous</a>').addClass('page-link').attr('href', '#').attr('tabindex', '-1');
+                $liPrev.append($a);
+            }
+            else {
+                //Set data of previous button as well as onClickListenser
+                let $a = $('<a>Previous</a>').addClass('page-link').attr('href', '#').attr('data-page-number', currentPage - 1).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder);
+                $a.on('click', function (event) {
+                    let perPageSize = $(event.target).data('page-size');
+                    let pageNumber = $(event.target).data('page-number');
+                    let prefSortOrder = $(event.target).data('sort-order');
+                    loadData(pageNumber, perPageSize, prefSortOrder);
+                })
+                $liPrev.append($a);
+            }
+            $navElm.append($liPrev);
+
+            //Page buttons
+            //Create button for each page
+            for (let i = 1; i <= totalPages; i++) {
+                let $li = $('<li></li>').addClass('page-item');
+                //If its current page make the page number disabled
+                if (i == currentPage) {
+                    $li.addClass('active disabled');
+                    let $a = $(`<a>${i}</a>`).addClass('page-link').attr('href', '#').attr('tabindex', '-1');
+                    $li.append($a);
+                }
+                else {//Other pages other than current page
+                    //Set data of the page button as well as onClickListenser
+                    let $a = $(`<a>${i}</a>`).addClass('page-link').attr('href', '#').attr('data-page-number', i).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder);
+                    $a.on('click', function (event) {
+                        let perPageSize = $(event.target).data('page-size');
+                        let pageNumber = $(event.target).data('page-number');
+                        let prefSortOrder = $(event.target).data('sort-order');
+                        loadData(pageNumber, perPageSize, prefSortOrder);
+                    })
+                    $li.append($a);
+                }
+                $navElm.append($li);
+
+            }
+
+            //Next button
+            let $liNext = $('<li></li>').addClass('page-item');
+            //Check if current page is last page
+            if (currentPage == totalPages) {
+                $liNext.addClass('disabled');
+                let $a = $('<a>Next</a>').addClass('page-link').attr('href', '#').attr('tabindex', '-1');
+                $liNext.append($a);
+            }
+            else {
+                //Set data of the page button as well as onClickListenser
+                let $a = $('<a>Next</a>').addClass('page-link').attr('href', '#').attr('data-page-number', currentPage + 1).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder);
+                $a.on('click', function (event) {
+                    let perPageSize = $(event.target).data('page-size');
+                    let pageNumber = $(event.target).data('page-number');
+                    let prefSortOrder = $(event.target).data('sort-order');
+                    loadData(pageNumber, perPageSize, prefSortOrder);
+                })
+                $liNext.append($a);
+            }
+            $navElm.append($liNext);
+        }
+
+        $('[data-toggle="datepicker"]').datepicker({ format: 'DD/MM/YYYY', zIndex: 2048 });
+
+        $('#editAccountRateModal').on('show.bs.modal', function (event) {
+
+            let $button = $(event.relatedTarget); // Button that triggered the modal
+            accountTTID = $button.data('ttid'); // Extract info from data-* attributes and set the value of the global cusID variable
+            console.dir(accountTTID + " of Modal");
+
+            //new Noty({ text: `Edit Button Pressed for ${accountRateID}`, type: 'info', timeout: 1000 }).show();//For Debug
+
+            var modal = $(this);
+            //Call AJAX to retrieve one customer account rate information
+            $.ajax({
+                url: '/API/AccountRates/' + accountRateID + '/' + accountTTID,
+                method: 'GET'
+            }).done(function (editData) {
+                //Populating modal with data from AJAX
+                modal.find('.modal-body input#accountRate').val(editData.rate);
+                modal.find('.modal-body input#startDate').val(moment(editData.startDate).format('DD/MM/YYYY'));
+                $('#startDate').datepicker('update');
+
+                modal.find('.modal-body input#endDate').val(moment(editData.endDate).format('DD/MM/YYYY'));
+                $('#endDate').datepicker('update');
+            }).fail(function (editData) {
+                new Noty({ text: editData.responseJSON.message, type: 'error', timeout: 3000 }).show();
+                $('#editAccountRateModal').modal('hide');
+            });
+        });
+
+        $('input#editSubmitBtn').on('click', function () {
+            //Check if the form is valid
+            if ($("form[name='editAccountRateForm']").valid() == true) {
+                console.dir(accountRateID + " of PUT Method");
+                //Retrieve the values from the form
+                let cAccountRate = $('#accountRate').val();
+                let cRateStartDate = $('#startDate').val();
+                let cRateEndDate = $('#endDate').val();
+
+                //WebFormData constructor
+                function WebFormData(iAccountRate, iRateStartDate, iRateEndDate) {
+                    this.accountRate = iAccountRate;
+                    this.rateStartDate = iRateStartDate;
+                    this.rateEndDate = iRateEndDate;
+                }
+
+                //Create webFormData object
+                let webformData = new WebFormData(cAccountRate, cRateStartDate, cRateEndDate);
+                console.dir(webformData);
+
+                //Call AJAX with webFormData to update the record in database
+                $.ajax({
+                    url: '/API/AccountRates/Update/' + customerID + '/' + accountRateID,
+                    method: 'PUT',
+                    data: webformData,
+                    contentType: 'application/x-www-form-urlencoded',
+                    datatype: 'application/json'
+
+                }).done(function (editResult) {
+                    new Noty({ text: editResult.message, type: 'success', timeout: 3000 }).show();
+                    $('#editAccountRateModal').modal('hide');
+                    loadData(currentPage, pageSize, sortOrder)
+                }).fail(function (editResult) {
+                    new Noty({ text: editResult.responseJSON.message, type: 'error', timeout: 5000 }).show();
+                });
+
+
+            }
+        });
+
+        //jQuery validation
+        (function () {
+            $.validator.addMethod('validDate', function (value, element) {
+                //http://stackoverflow.com/questions/24380305/validate-date-in-dd-mm-yyyy-format-usingjquery-validate
+                return this.optional(element) || moment(value, 'DD/MM/YYYY').isValid() && moment(value, 'DD/MM/YYYY').format('DD/MM/YYYY') === value;
+            }, 'Please enter a valid date in the format DD/MM/YYYY.');
+            //Check if the startDate field is not empty
+            $.validator.addMethod('startDateEmpty', function (value, element) {
+                return this.optional(element) || moment($("#startDate").val(), 'DD/MM/YYYY').isValid();
+            }, 'Please enter a valid date in Start Date field before filling this field.');
+            //Check if the endDate field value is after the startDate field
+            $.validator.addMethod('afterStartDate', function (value, element) {
+                return this.optional(element) || moment(value, 'DD/MM/YYYY').isSameOrAfter(moment($("#startDate").val(), 'DD/MM/YYYY'));
+            }, 'Please enter a date later than or same as the start date.');
+            //Check if the rate is valid with 2 decimal place
+            $.validator.addMethod("validDecimal", function (value, element) {
+                return this.optional(element) || /^(\d{0,4})(\.\d{0,2})?$/gm.test(value);
+            }, "Please enter a rate between $0 to $10000 with a maximum of 2 decimal place.");
+
+            $("form[name='editAccountRateForm']").validate({
+                success: 'valid',
+                focusCleanup: true,
+                rules: {
+                    accountRate: {
+                        required: true,
+                        number: true,
+                        min: 0,
+                        max: 9999.99,
+                        validDecimal: true
+
+                    },
+                    startDate: {
+                        required: true,
+                        validDate: true
+                    },
+                    endDate: {
+                        required: true,
+                        startDateEmpty: true,
+                        validDate: true,
+                        afterStartDate: true
+                    }
+                },
+                messages: {
+                    accountRate: {
+                        required: 'Please enter the rate.',
+                        number: 'Please enter a valid amount.',
+                        min: 'Please enter a rate greater than $0.',
+                        max: 'Please enter a rate smaller than $10000.'
+                    },
+                    startDate: {
+                        required: 'Please pick a start date.',
+                        validDate: 'Please enter a valid start date in the format DD/MM/YYYY.'
+                    },
+                    endDate: {
+                        required: 'Please pick a end date.',
+                        validDate: 'Please enter a valid end date in the format DD/MM/YYYY.',
+                        afterStartDate: 'Please enter a end date later than or same as the start date.'
+                    }
+                },
+                errorPlacement: function (error, element) {
+                    if (element.parent().is($('div.input-group'))) {
+                        error.appendTo(element.parent().parent());
+                    }
+                    else {
+                        error.appendTo(element.parent());
+                    }
+
+                }
+            });
+
+             //Immediate validation upon datepicker losing focus
+            $('#startDate').datepicker({
+                autoclose: true,
+            }).on('change', function () {
+                $(this).valid(); // Triggers a validation test
+                $('#endDate').datepicker('setStartDate', $('#startDate').datepicker('getDate'));
+            });
+            $('#endDate').datepicker({
+                autoclose: true,
+            }).on('change', function () {
+                $(this).valid(); // Triggers a validation test
+            });
+
+        })();
+
+        //Reset Edit modal
+        $('#editAccountTTModal').on('hidden.bs.modal', function () {
+            var modal = $(this);
+            //Resetting the form in the edit modal
+            modal.find('.modal-body input#accountRate').val('');
+            modal.find('.modal-body input#startDate').val('');
+            modal.find('.modal-body input#endDate').val('');
+        });
+
+        $('#deleteAccountTTModal').on('show.bs.modal', function (event) {
+
+            let $button = $(event.relatedTarget); // Button that triggered the modal
+            accountRateID = $button.data('rateid'); // Extract info from data-* attributes and set the value of the global cusID variable
+            console.dir(accountRateID + " of Modal");
+
+            //new Noty({ text: `Edit Button Pressed for ${accountRateID}`, type: 'info', timeout: 1000 }).show();//For Debug
+
+            var modal = $(this);
+            //Call AJAX to get account summary of the AccountRate with specified accountRateID
+            $.ajax({
+                url: '/API/AccountRates/RateSummary/' + customerID + '/' + accountRateID,
+                method: 'GET'
+            }).done(function (delData) {
+                //Populating modal with data from AJAX
+                console.dir(delData);
+                modal.find('.modal-body .rateDetail p#accountRateRateDetail').text(delData.rate);
+                modal.find('.modal-body .rateDetail p#accountRateStartDateDetail').text(moment(delData.startDate).format('DD/MM/YYYY'));
+                modal.find('.modal-body .rateDetail p#accountRateEndDateDetail').text(moment(delData.endDate).format('DD/MM/YYYY'));
+                modal.find('.modal-body #accAffectSummary p#accountRateTTDetail').text(delData.ttCount);
+                }).fail(function (delData) {
+                console.dir(delData);
+                new Noty({ text: delData.responseJSON.message, type: 'error', timeout: 3000 }).show();
+                $('#deleteAccountRateModal').modal('hide');
+            });
+        })
+
+        $('input#deleteSubmitBtn').on('click', function () {
+            console.dir(accountRateID + " of DELETE Method");
+            //Call AJAX to delete the AccountRate record with specified accountRateID
+            $.ajax({
+                url: '/API/AccountRates/Delete/' + customerID + '/' + accountRateID,
+                method: 'DELETE'
+            }).done(function (delResult) {
+                new Noty({ text: delResult.message, type: 'success', timeout: 3000 }).show();
+                $('#deleteAccountRateModal').modal('hide');
+                loadData(1, pageSize, sortOrder)
+            }).fail(function (delResult) {
+                new Noty({ text: delResult.responseJSON.message, type: 'error', timeout: 3000 }).show();
+            });
+        })
+
+        //Reset Delete modal
+        $('#deleteAccountTTModal').on('hidden.bs.modal', function () {
+            var modal = $(this);
+            //Resetting the form in the delete modal
+            modal.find('.modal-body .retailDetail p#accountRateRateDetail').html('<i class="fas fa-circle-notch"></i>');
+            modal.find('.modal-body .retailDetail p#accountRateStartDateDetail').html('<i class="fas fa-circle-notch"></i>');
+            modal.find('.modal-body .retailDetail p#accountRateEndDateDetail').html('<i class="fas fa-circle-notch"></i>');
+            modal.find('.modal-body #accAffectSummary p#accountRateTTDetail').html('<i class="fas fa-circle-notch"></i>');
+        });
+    </script>
+}
