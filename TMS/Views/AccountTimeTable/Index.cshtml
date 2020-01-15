@@ -200,6 +200,8 @@
 @section Scripts{
     <link href="~/lib/datepicker/datepicker.min.css" rel="stylesheet" />
     <script src="~/lib/datepicker/datepicker.min.js"></script>
+    <script src="~/lib/timedropper/timedropper.js"></script>
+    <link rel="stylesheet" type="text/css" href="~/lib/timedropper/timedropper.css">
     <style>
         table.table td {
             padding-left: 0.2rem;
@@ -272,7 +274,7 @@
             }
             return IDs.split('-')
         }
-        
+
         $('#accountTTAddBtn').attr('href', '/AccountTimeTable/Create/' + customerID + '-' + accountRateID); //Append accountRateID to the end of account rate breadcrumb anchor href
         $('#ARBreadcrumb').attr('href', '/AccountRates/Index/' + customerID); //Append accountRateID to the end of create account timetable anchor href
 
@@ -300,14 +302,14 @@
         })();
 
         function loadData(pageNo, perPageSize, prefSortOrder) {
-             //Call AJAX to retrieve all AccountRate data
+            //Call AJAX to retrieve all AccountRate data
             $.ajax({
                 url: `/API/AccountTimeTable/GetAccountTimeTablePaginated/${customerID}/${accountRateID}?page_number=${pageNo}&per_page=${perPageSize}&sort_order=${prefSortOrder}`,
                 method: 'GET'
             }).done(function (data) {
                 console.dir(data);
                 //Set title of page
-                $('#accountNameTitle').text(data.accountName+" rate/hour $"+data.accountRate);
+                $('#accountNameTitle').text(data.accountName + " rate/hour $" + data.accountRate);
 
                 //Data required for pagination
                 let totalRecCount = data.totalRecordCount;
@@ -340,12 +342,12 @@
                 oneATT = data[i];
 
                 //Populating one table row
-                let $cusTR = $("<tr></tr");
+                let $cusTR = $("<tr></tr>");
                 $cusTR.addClass("row m-0");
 
                 $cusTR.append($("<td></td>", { text: oneATT.no }).addClass("col-md-1"));
-                $cusTR.append($("<td></td>", { text: moment((oneATT.day)-1,'d').format('dddd') }).addClass("col-md-2"));
-                $cusTR.append($("<td></td>", { text: moment(oneATT.startTime,'HH:mm:ss').format('h:mm A') }).addClass("col-md-1"));
+                $cusTR.append($("<td></td>", { text: moment((oneATT.day) - 1, 'd').format('dddd') }).addClass("col-md-2"));
+                $cusTR.append($("<td></td>", { text: moment(oneATT.startTime, 'HH:mm:ss').format('h:mm A') }).addClass("col-md-1"));
                 $cusTR.append($("<td></td>", { text: moment(oneATT.endTime, 'HH:mm:ss').format('h:mm A') }).addClass("col-md-1"));
                 $cusTR.append($("<td></td>", { text: moment(oneATT.startDate).format('DD/MM/YYYY') }).addClass("col-md-2"));
                 $cusTR.append($("<td></td>", { text: moment(oneATT.endDate).format('DD/MM/YYYY') }).addClass("col-md-2"));
@@ -441,6 +443,9 @@
         }
 
         $('[data-toggle="datepicker"]').datepicker({ format: 'DD/MM/YYYY', zIndex: 2048 });
+        //Initialise timedroppers
+        $("#startTime").timeDropper({ autoswitch: true, mousewheel: false, meridians: true, format: 'h:mm A', setCurrentTime: true });
+        $("#endTime").timeDropper({ autoswitch: true, mousewheel: false, meridians: true, format: 'h:mm A', setCurrentTime: true });
 
         $('#editAccountRateModal').on('show.bs.modal', function (event) {
 
@@ -579,7 +584,7 @@
                 }
             });
 
-             //Immediate validation upon datepicker losing focus
+            //Immediate validation upon datepicker losing focus
             $('#startDate').datepicker({
                 autoclose: true,
             }).on('change', function () {
@@ -623,7 +628,7 @@
                 modal.find('.modal-body .rateDetail p#accountRateStartDateDetail').text(moment(delData.startDate).format('DD/MM/YYYY'));
                 modal.find('.modal-body .rateDetail p#accountRateEndDateDetail').text(moment(delData.endDate).format('DD/MM/YYYY'));
                 modal.find('.modal-body #accAffectSummary p#accountRateTTDetail').text(delData.ttCount);
-                }).fail(function (delData) {
+            }).fail(function (delData) {
                 console.dir(delData);
                 new Noty({ text: delData.responseJSON.message, type: 'error', timeout: 3000 }).show();
                 $('#deleteAccountRateModal').modal('hide');

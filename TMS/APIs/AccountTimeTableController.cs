@@ -203,21 +203,101 @@ namespace TMS.APIs
         }
 
         // POST api/<controller>
-        [HttpPost]
-        public void Post([FromBody]string value)
+        [Authorize("ADMIN")]
+        [HttpPost("Create")]
+        public IActionResult Post([FromForm]IFormCollection data)
         {
+            int userId = int.Parse(User.FindFirst("userid").Value); //Retireve the user id of the current logged in user
+            try
+            {
+
+                AccountTimeTable newATT = new AccountTimeTable();
+                newATT.AccountRateId = int.Parse(data["id"]);
+                newATT.DayOfWeekNumber = int.Parse(data["dayOfWeek"]);
+                newATT.EffectiveStartDateTime = DateTime.ParseExact(data["startDateTime"], "d/M/yyyy h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
+                newATT.EffectiveEndDateTime = DateTime.ParseExact(data["endDateTime"], "d/M/yyyy h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
+                newATT.IsVisible = Boolean.Parse(data["visibility"]);
+                newATT.CreatedAt = _appDateTimeService.GetCurrentDateTime();
+                newATT.CreatedById = userId;
+                newATT.UpdatedAt = _appDateTimeService.GetCurrentDateTime();
+                newATT.UpdatedById = userId;
+
+                Database.AccountTimeTable.Add(newATT);
+                Database.SaveChanges();
+                return Ok(new { message = "Successfully added record." });
+
+            }
+            catch (SqlException ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." }); //If any database related operation occur, return ISE
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "There are issues with the request." });
+            }
         }
 
         // PUT api/<controller>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
+        [Authorize("ADMIN")]
+        [HttpPut("Update/{id}")]
+        public IActionResult Put(int id, [FromForm]IFormCollection data)
         {
+            int userId = int.Parse(User.FindFirst("userid").Value); //Retireve the user id of the current logged in user
+            try
+            {
+                AccountTimeTable att = Database.AccountTimeTable.SingleOrDefault(tt => tt.AccountTimeTableId == id);
+                if (att == null) //If AccountRate record is not found return NotFound response
+                {
+                    return NotFound(new { message = "Customer account timetable could not be found" });
+                }
+
+                att.AccountRateId = int.Parse(data["id"]);
+                att.DayOfWeekNumber = int.Parse(data["dayOfWeek"]);
+                att.EffectiveStartDateTime = DateTime.ParseExact(data["startDateTime"], "d/M/yyyy h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
+                att.EffectiveEndDateTime = DateTime.ParseExact(data["endDateTime"], "d/M/yyyy h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
+                att.IsVisible = Boolean.Parse(data["visibility"]);
+                att.CreatedAt = _appDateTimeService.GetCurrentDateTime();
+                att.CreatedById = userId;
+                att.UpdatedAt = _appDateTimeService.GetCurrentDateTime();
+                att.UpdatedById = userId;
+
+                Database.AccountTimeTable.Update(att);
+                Database.SaveChanges();
+                return Ok(new { message = "Successfully updated record." });
+
+            }
+            catch (SqlException ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." }); //If any database related operation occur, return ISE
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "There are issues with the request." });
+            }
         }
 
         // DELETE api/<controller>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [Authorize("ADMIN")]
+        [HttpDelete("Delete/{id}")]
+        public IActionResult Delete(int id)
         {
+            try
+            {
+                AccountTimeTable att = Database.AccountTimeTable.SingleOrDefault(tt => tt.AccountTimeTableId == id);
+                if (att == null) //If AccountTimeTable record is not found return NotFound response
+                {
+                    return NotFound(new { message = "Customer account timetable could not be found" });
+                }
+
+                //Remove all record from the AccountTimeTable tables
+                Database.AccountTimeTable.Remove(att);
+                Database.SaveChanges();
+                return Ok(new { message = "Successfully Deleted Account TimeTable record" }); //Return Ok 200 to tell the user the records has been successfully deleted.
+            }
+            catch (SqlException ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." });  //If any database related operation occur, return ISE
+            }
         }
     }
 
