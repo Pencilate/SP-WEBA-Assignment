@@ -44,5 +44,10 @@ namespace TMS.Controllers
 			return View();
 
 		}
-	}//End of action controller class
+        public IActionResult ExperimentJavaScript()
+        {
+            return View();
+
+        }
+    }//End of action controller class
 }//End of namespace
