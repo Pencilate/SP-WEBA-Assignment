@@ -15,9 +15,12 @@
         <li class="breadcrumb-item font-small active">Create Timetable</li>
     </ol>
 </nav>
-<div class="card">
+<div class="card" id="createCard">
     <div class="card-header stylish-color-dark white-text">
-        <h4 class="one" style="padding-top:1.8%;">Create Time table for <span id="accountNameTitle">Account Name</span></h4>
+        <div class="container-fluid d-flex">
+            <h4 class="one" style="padding-top:1.8%;">Create Time table for <span class="accountNameTitle">Account Name</span></h4>
+            <button type="button" class="btn btn-primary" id="recordToggle" style="margin-left:auto;height: fit-content;"> <span id="recordToggleTxt">Show</span> Existing Records</button>
+        </div>
     </div>
     <div class="card-body" style="padding:3% 6%">
 
@@ -103,6 +106,79 @@
     </div>
 </div>
 
+<hr id="spacer" />
+
+<div class="card" style="display:none;" id="listCard">
+    <div class="card-header stylish-color-dark white-text">
+        <div class="float-right" style="padding-top:1.2em;">
+            <input type="checkbox" name="fixRecordTable" id="fixRecordTable" /> Fix to Bottom
+        </div>
+        <h4 class="one" style="padding-top:1.8%;">Existing Timetable for <span class="accountNameTitle">Account Name</span></h4>
+    </div>
+    <div class="card-body col-12" style="padding:1% 3%">
+        @*<div class="row justify-content-center" id="paginationOptions" style="padding: 0.5em 0;">
+            <div class="col d-inline">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <label class="input-group-text" for="pageSizeSelection">Show</label>
+                    </div>
+                    <select class="custom-select" name="pageSizeSelection" id="pageSizeSelection" style="width:30%;">
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="20" selected>20</option>
+                        <option value="50">50</option>
+                    </select>
+                    <div class="input-group-append">
+                        <label class="input-group-text" for="pageSizeSelection">entries</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <label class="input-group-text" for="sortOrderSelection">Order</label>
+                    </div>
+                    <select class="custom-select" name="sortOrderSelection" id="sortOrderSelection" style="width:60%;">
+                        <option value="ASC" selected>Ascending</option>
+                        <option value="DESC">Descending</option>
+                    </select>
+                </div>
+            </div>
+        </div>*@
+        <div class="row justify-content-center">
+            <nav>
+                <ul class="pagination" id="topNav"></ul>
+            </nav>
+        </div>
+        <div class="row">
+            <div class="table-responsive-md w-100">
+                <div id="topNavigationInterfaceContainer" class="btn-toolbar float-right" role="toolbar"></div>
+                <table class="table table-bordered table-sm">
+                    <thead>
+                        <tr class="row m-0" style="vertical-align:central;">
+                            <th class="col-md-2">Day</th>
+                            <th class="col-md-2">Start Time</th>
+                            <th class="col-md-2">End Time</th>
+                            <th class="col-md-2">Start Date</th>
+                            <th class="col-md-2">End Date</th>
+                            <th class="col-md-2">Visibility</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBodyElement"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <p id="navInfo"></p>
+        </div>
+        <div class="row justify-content-center">
+            <nav>
+                <ul class="pagination" id="btmNav"></ul>
+            </nav>
+        </div>
+    </div>
+ </div>
+
 <div class="modal fade" id="timetableConflictModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -182,7 +258,7 @@
                 url: '/API/CustomerAccounts/' + customerID,
                 method: 'GET'
             }).done(function (data) {
-                $('#accountNameTitle').text(data.accountName);
+                $('.accountNameTitle').text(data.accountName);
             }).fail(function (editData) {
                 new Noty({ text: editData.responseJSON.message, type: 'error', timeout: 3000 }).show();
             });
@@ -355,7 +431,7 @@
                     }).done(function (data) {
                         console.dir(data);
                         new Noty({ text: data.message, type: 'success', timeout: 5000 }).show();
-
+                        loadData(currentPage, pageSize, sortOrder);
                     }).fail(function (conflictdata) {
                         console.dir(conflictdata);
                         new Noty({ text: `An error has occured: ${conflictdata.responseJSON.message}`, type: 'error', timeout: 7000 }).show();
@@ -441,8 +517,9 @@
                     datatype: 'application/json'
                 }).done(function (data) {
                     console.dir(data);
+                    $('#timetableConflictModal').modal('hide')
                     new Noty({ text: data.message, type: 'success', timeout: 5000 }).show();
-
+                    loadData(currentPage, pageSize, sortOrder);
                 }).fail(function (data) {
                     new Noty({ text: `An error has occured: ${data.responseJSON.message}`, type: 'error', timeout: 7000 }).show();
                 });
@@ -453,6 +530,185 @@
                 $('#timetableConflictModal .modal-header').removeClass('bg-warning');
                 $('#timetableConflictModal .modal-title').removeClass('text-white');
             });
+
+
+            //Pagination parameters
+            var pageSize = 2;
+            var sortOrder = 'ASC';
+            var currentPage;
+
+            (function () {
+                //Call loadData to populate the page with data
+                loadData(1, pageSize, sortOrder);
+
+                //Set onChangeListeners for filter options
+                $('#pageSizeSelection').on('change', function () {
+                    pageSize = this.value;
+                    loadData(1, pageSize, sortOrder);
+                })
+                $('#sortOrderSelection').on('change', function () {
+                    sortOrder = this.value;
+                    loadData(currentPage, pageSize, sortOrder);
+                })
+
+            })();
+
+            function loadData(pageNo, perPageSize, prefSortOrder) {
+                //Call AJAX to retrieve all AccountRate data
+                $.ajax({
+                    url: `/API/AccountTimeTable/GetAccountTimeTablePaginated/${customerID}/${accountRateID}?page_number=${pageNo}&per_page=${perPageSize}&sort_order=${prefSortOrder}`,
+                    method: 'GET'
+                }).done(function (data) {
+                    console.dir(data);
+
+                    //Data required for pagination
+                    let totalRecCount = data.totalRecordCount;
+                    let totalCurrentPageRecord = data.totalCurrentPgRec;
+                    currentPage = data.currentPage;
+                    let totalPages = data.totalPage;
+                    let fromRec = data.from;
+                    let toRec = data.to;
+
+                    //Call renderData function to populate the table body
+                    renderData(data.records);
+                    //Call function to create navigation properties
+                    if (totalPages != 0) {
+                        //createPageNav($('#topNav'), currentPage, totalPages);
+                        createPageNav($('#btmNav'), currentPage, totalPages);
+                    }
+                    //Populate the navigation state message
+                    let $navInfo = $('#navInfo');
+                    $navInfo.empty();
+                    $navInfo.text(`Showing ${fromRec} to ${toRec} of ${totalRecCount} entries`);
+                }).fail(function (data) {
+                    new Noty({ text: "Fail to load customer account rate data. " + data.responseJSON.message, type: 'error', timeout: 3000 }).show();
+                });
+            }
+
+            function renderData(data) {
+                $tableBodyElement = $('#tableBodyElement');
+                $tableBodyElement.empty();//Clear all html within the table body
+                for (let i = 0; i < data.length; i++) {
+                    oneATT = data[i];
+
+                    //Populating one table row
+                    let $cusTR = $("<tr></tr>");
+                    $cusTR.addClass("row m-0");
+
+                    $cusTR.append($("<td></td>", { text: moment((oneATT.day) - 1, 'd').format('dddd') }).addClass("col-md-2"));
+                    $cusTR.append($("<td></td>", { text: moment(oneATT.startTime, 'HH:mm:ss').format('h : mm A') }).addClass("col-md-2"));
+                    $cusTR.append($("<td></td>", { text: moment(oneATT.endTime, 'HH:mm:ss').format('h : mm A') }).addClass("col-md-2"));
+                    $cusTR.append($("<td></td>", { text: moment(oneATT.startDate).format('DD/MM/YYYY') }).addClass("col-md-2"));
+                    $cusTR.append($("<td></td>", { text: moment(oneATT.endDate).format('DD/MM/YYYY') }).addClass("col-md-2"));
+                    if (oneATT.visibility == true) {
+                        $cusTR.append($("<td></td>").addClass("col-md-2").append('<i class="fas fa-check" style="color:#61d800;"></i>'));
+                    }
+                    else {
+                        $cusTR.append($("<td></td>").addClass("col-md-2").append('<i class="fas fa-times" style="color:#ff2410;"></i>'));
+                    }
+
+                    //Append populated table row into table body
+                    $tableBodyElement.append($cusTR);
+                }
+            }
+
+            function createPageNav($navElm, currentPage, totalPages) {
+                $navElm.empty(); //Clear html within navigation element
+
+                //Previous button
+                let $liPrev = $('<li></li>').addClass('page-item');
+                //Check if current page is first page
+                if (currentPage == 1) {
+                    $liPrev.addClass('disabled');
+                    let $a = $('<a>Previous</a>').addClass('page-link').attr('href', '#').attr('tabindex', '-1');
+                    $liPrev.append($a);
+                }
+                else {
+                    //Set data of previous button as well as onClickListenser
+                    let $a = $('<a>Previous</a>').addClass('page-link').attr('href', '#').attr('data-page-number', currentPage - 1).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder);
+                    $a.on('click', function (event) {
+                        let perPageSize = $(event.target).data('page-size');
+                        let pageNumber = $(event.target).data('page-number');
+                        let prefSortOrder = $(event.target).data('sort-order');
+                        loadData(pageNumber, perPageSize, prefSortOrder);
+                    })
+                    $liPrev.append($a);
+                }
+                $navElm.append($liPrev);
+
+                //Page buttons
+                //Create button for each page
+                for (let i = 1; i <= totalPages; i++) {
+                    let $li = $('<li></li>').addClass('page-item');
+                    //If its current page make the page number disabled
+                    if (i == currentPage) {
+                        $li.addClass('active disabled');
+                        let $a = $(`<a>${i}</a>`).addClass('page-link').attr('href', '#').attr('tabindex', '-1');
+                        $li.append($a);
+                    }
+                    else {//Other pages other than current page
+                        //Set data of the page button as well as onClickListenser
+                        let $a = $(`<a>${i}</a>`).addClass('page-link').attr('href', '#').attr('data-page-number', i).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder);
+                        $a.on('click', function (event) {
+                            let perPageSize = $(event.target).data('page-size');
+                            let pageNumber = $(event.target).data('page-number');
+                            let prefSortOrder = $(event.target).data('sort-order');
+                            loadData(pageNumber, perPageSize, prefSortOrder);
+                        })
+                        $li.append($a);
+                    }
+                    $navElm.append($li);
+
+                }
+
+                //Next button
+                let $liNext = $('<li></li>').addClass('page-item');
+                //Check if current page is last page
+                if (currentPage == totalPages) {
+                    $liNext.addClass('disabled');
+                    let $a = $('<a>Next</a>').addClass('page-link').attr('href', '#').attr('tabindex', '-1');
+                    $liNext.append($a);
+                }
+                else {
+                    //Set data of the page button as well as onClickListenser
+                    let $a = $('<a>Next</a>').addClass('page-link').attr('href', '#').attr('data-page-number', currentPage + 1).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder);
+                    $a.on('click', function (event) {
+                        let perPageSize = $(event.target).data('page-size');
+                        let pageNumber = $(event.target).data('page-number');
+                        let prefSortOrder = $(event.target).data('sort-order');
+                        loadData(pageNumber, perPageSize, prefSortOrder);
+                    })
+                    $liNext.append($a);
+                }
+                $navElm.append($liNext);
+            }
+
+            $('#recordToggle').on('click', function () {
+                if ($('#listCard').css('display') == 'none') {
+                    $('#listCard').css('display', 'block');
+                    $('#recordToggleTxt').text('Hide');
+                }
+                else {
+                    $('#listCard').css('display', 'none');
+                    $('#recordToggleTxt').text('Show');
+                }
+            })
+
+            $('#fixRecordTable').on('change', function () {
+                if ($('#fixRecordTable').prop('checked') == true) {
+                    $('#listCard').css('position', 'fixed');
+                    $('#listCard').css('bottom', '0');
+                    $('#listCard').css('z-index', '10');
+                    $('#listCard').width($('#createCard').width());
+                    $('#spacer').css('padding-bottom', '20em');
+                } else {
+                    $('#listCard').css('position', '');
+                    $('#listCard').css('bottom', '');
+                    $('#listCard').css('width', '');
+                    $('#listCard').css('z-index', '');
+                    $('#spacer').css('padding-bottom', '');
+                }
+            })
         });
 
     </script>
