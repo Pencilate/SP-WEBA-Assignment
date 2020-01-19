@@ -1,0 +1,81 @@
+﻿<div class="card">
+    <div class="card-header stylish-color-dark white-text">
+        <h4 class="one" style="padding-top:1.8%;">JavaScript Experiments</h4>
+    </div>
+    <div class="card-body" style="padding:3% 6%">
+
+        <form name="createAccountTimeTableForm" novalidate>
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label for="startTime">Choose Start Time*</label><br>
+                        <div class="input-group" id="stIG">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-clock"></i></span>
+                            </div>
+                            <input type="text" class="form-control timepicker" name="startTime" id="startTime" placeholder="Pick time" value="" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="endTime">Choose End Time*</label><br>
+                        <div class="input-group" id="etIG"> 
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-clock"></i></span>
+                            </div>
+                            <input type="text" class="form-control timepicker" name="endTime" id="endTime" placeholder="Pick time" value="" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <button type="button" id="changeTime">ChangeTime</button>
+                </div>
+            </div>
+
+
+        </form>
+    </div>
+</div>
+
+@section Scripts{
+    <link href="~/lib/datepicker/datepicker.min.css" rel="stylesheet" />
+    <script src="~/lib/datepicker/datepicker.min.js"></script>
+    <link href="~/lib/timedropper/timedropper.css" rel="stylesheet" />
+    <script type="text/javascript" src="~/lib/timedropper/timedropper.js"></script>
+    <link href="~/lib/wickedpicker/wickedpicker.min.css" rel="stylesheet" />
+    <script type="text/javascript" src="~/lib/wickedpicker/wickedpicker.js"></script>
+    <style>
+        .error {
+            color: red;
+        }
+
+        .valid {
+            color: forestgreen;
+        }
+
+        .formheight {
+            min-height: 6.5em;
+        }
+    </style>
+    <script>
+        $(document).ready(function () {
+            //$('#startTime').timeDropper({ mousewheel: false, meridians: true, init_animation: 'dropdown', setCurrentTime: false });
+            //$('#endTime').timeDropper({ mousewheel: false, meridians: true, init_animation: 'dropdown', setCurrentTime: false });
+
+            $('.timepicker').wickedpicker();
+
+            //https://stackoverflow.com/questions/39467345/remove-jquery-from-element-and-reapply
+            $('#changeTime').on('click', function () {
+                //$('#startTime').val("2 : 00 AM");
+                console.log('click')
+                var test = $("#startTime").remove();
+                $('#stIG').append(test); // later
+                $("#startTime").wickedpicker({ now: '14:00' });
+            })
+        });
+
+    </script>
+}
