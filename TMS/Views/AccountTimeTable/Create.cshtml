@@ -10,7 +10,7 @@
             <a href="/AccountRates/Index/" id="ARBreadcrumb">Manage Rates</a>
         </li>
         <li class="breadcrumb-item font-small">
-            <a href="/AccountTimeTable/Index/" id="ATTBreadcrumb">Manage Timetable</a>
+            <a href="/AccountTimeTable/Index/" class="aATTIndex">Manage Timetable</a>
         </li>
         <li class="breadcrumb-item font-small active">Create Timetable</li>
     </ol>
@@ -22,7 +22,6 @@
     <div class="card-body" style="padding:3% 6%">
 
         <form name="createAccountTimeTableForm" novalidate>
-            <p style="padding-top:2%"><strong>General information</strong></p>
             <p class="font-small float-right">* indicates required fields</p>
             <div class="form-group formheight">
                 <label for="accountRate">Choose Day of Week*</label><br>
@@ -37,7 +36,7 @@
                     <option value="7">Saturday</option>
                 </select>
             </div>
-            <hr/>
+            <hr />
             <div class="row">
                 <div class="col">
                     <div class="form-group">
@@ -46,7 +45,7 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text"><i class="fas fa-clock"></i></span>
                             </div>
-                            <input type="text" class="form-control" name="startTime" id="startTime" placeholder="Pick time" />
+                            <input type="text" class="form-control timepicker" name="startTime" id="startTime" placeholder="Pick time" />
                         </div>
                     </div>
                 </div>
@@ -57,12 +56,12 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text"><i class="fas fa-clock"></i></span>
                             </div>
-                            <input type="text" class="form-control" name="endTime" id="endTime" placeholder="Pick time" />
+                            <input type="text" class="form-control timepicker" name="endTime" id="endTime" placeholder="Pick time" />
                         </div>
                     </div>
                 </div>
             </div>
-            <hr/>
+            <hr />
             <div class="row">
                 <div class="col">
                     <div class="form-group">
@@ -91,23 +90,61 @@
             </div>
             <hr />
             <div class="form-group">
-                <label for="accountVisibilityToggle">Visibility*</label><br>
-                <input type="checkbox" name="accountVisibilityToggle" id="accountVisibilityToggle" class="form-control" data-toggle="toggle" data-on="Visible" data-off="Hidden" data-onstyle="success" data-offstyle="danger" checked />
+                <label for="timetableVisibilityToggle">Visibility*</label><br>
+                <input type="checkbox" name="timetableVisibilityToggle" id="timetableVisibilityToggle" class="form-control" data-toggle="toggle" data-on="Visible" data-off="Hidden" data-onstyle="success" data-offstyle="danger" checked />
             </div>
 
             <div class="form-group" style="display:flex;justify-content:flex-end;">
                 <input type="button" name="submitBtn" id="submitBtn" value="Submit" class="btn btn-primary">
-                <a href="/AccountRates/Index/" class="aARIndex btn btn-light">Back</a>
+                <a href="/AccountTimeTable/Index/" class="aATTIndex btn btn-light">Back</a>
             </div>
 
         </form>
     </div>
 </div>
+
+<div class="modal fade" id="timetableConflictModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Timetable Conflict</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h5 id="detailedConflict"> </h5>
+                <div class="table-responsive-md w-100 col-12">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr class="row m-0" style="vertical-align:central;">
+                                <th class="col-md-2">Day</th>
+                                <th class="col-md-2">Start Time</th>
+                                <th class="col-md-2">End Time</th>
+                                <th class="col-md-2">Start Date</th>
+                                <th class="col-md-2">End Date</th>
+                                <th class="col-md-2">Visibility</th>
+                            </tr>
+                        </thead>
+                        <tbody id="conflictTableBodyElement"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content:center">
+                <div class="form-group" style="display:flex;">
+                    <input type="button" name="overrideBtn" id="overrideBtn" value="Override" class="btn btn-primary">
+                    <input type="button" value="Close" class="btn btn-white" data-dismiss="modal">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts{
     <link href="~/lib/datepicker/datepicker.min.css" rel="stylesheet" />
     <script src="~/lib/datepicker/datepicker.min.js"></script>
-    <script src="~/lib/timedropper/timedropper.js"></script>
-    <link rel="stylesheet" type="text/css" href="~/lib/timedropper/timedropper.css">
+    <link href="~/lib/wickedpicker/wickedpicker.min.css" rel="stylesheet" />
+    <script type="text/javascript" src="~/lib/wickedpicker/wickedpicker.js"></script>
     <style>
         .error {
             color: red;
@@ -137,7 +174,7 @@
                 return IDs.split('-')
             }
 
-            $('#ATTBreadcrumb').attr('href', '/AccountTimeTable/Index/'+ customerID+ '-' + accountRateID); //Append accountRateID to the end of account rate breadcrumb anchor href
+            $('.aATTIndex').attr('href', '/AccountTimeTable/Index/' + customerID + '-' + accountRateID);  //Append accountRateID to the end of account rate breadcrumb anchor href
             $('#ARBreadcrumb').attr('href', '/AccountRates/Index/' + customerID); //Append accountRateID to the end of create account timetable anchor href
 
             //Call AJAX Method to get the customer name for the title of the page.
@@ -152,115 +189,138 @@
 
             //Initialise datepicker
             $('[data-toggle="datepicker"]').datepicker({ format: 'DD/MM/YYYY' });
-            //Initialise timedroppers
-            $("#startTime").timeDropper({ autoswitch: true, mousewheel: false, meridians: true, format: 'h:mm A', setCurrentTime: true });
-            $("#endTime").timeDropper({ autoswitch: true, mousewheel: false, meridians: true, format: 'h:mm A', setCurrentTime: true });
+            $('.timepicker').wickedpicker();
 
-            //IIFE function for jQuery-validation
-            (function () {
-                $.validator.addMethod('validDate', function (value, element) {
-                    //http://stackoverflow.com/questions/24380305/validate-date-in-dd-mm-yyyy-format-usingjquery-validate
-                    return this.optional(element) || moment(value, 'DD/MM/YYYY').isValid() && moment(value, 'DD/MM/YYYY').format('DD/MM/YYYY') === value;
-                }, 'Please enter a valid date in the format DD/MM/YYYY.');
-                //Check if startDate is not empty
-                $.validator.addMethod('startDateEmpty', function (value, element) {
-                    return this.optional(element) || moment($("#startDate").val(), 'DD/MM/YYYY').isValid();
-                }, 'Please enter a valid date in Start Date field before filling this field.');
-                //Check if the end date is after start date
-                $.validator.addMethod('afterStartDate', function (value, element) {
-                    return this.optional(element) || moment(value, 'DD/MM/YYYY').isSameOrAfter(moment($("#startDate").val(), 'DD/MM/YYYY'));
-                }, 'Please enter a date later than or same as the start date.');
-                //Check if time is valid
-                $.validator.addMethod('validTime', function (value, element) {
-                    return this.optional(element) || moment(value, 'h:mm A').isValid() && moment(value, 'h:mm A').format('h:mm A') === value;
-                }, 'Please choose a valid day of the week');
-                //Check  if startTime is not empty
-                $.validator.addMethod('startTimeEmpty', function (value, element) {
-                    return this.optional(element) || moment($("#startTime").val(), 'h:mm A').isValid();
-                }, 'Please enter a valid date in Start Date field before filling this field.');
-                //Check if the end time is after start time
-                $.validator.addMethod('afterStartTime', function (value, element) {
-                    return this.optional(element) || moment(value, 'h:mm A').isSameOrAfter(moment($("#startTime").val(), 'h:mm A'));
-                }, 'Please choose a valid day of the week');
-                
-
-                $("form[name='createAccountTimeTableForm']").validate({
-                    success: 'valid',
-                    focusCleanup: true,
-                    rules: {
-                        dayOfWeekSelect: {
-                            required: true
-                        },
-                        startTime: {
-                            required: true,
-                            validTime: true
-                        },
-                        endTime: {
-                            required: true,
-                            validTime: true,
-                            startTimeEmpty: true,
-                            afterStartTime: true
-                        },
-                        startDate: {
-                            required: true,
-                            validDate: true
-                        },
-                        endDate: {
-                            required: true,
-                            startDateEmpty: true,
-                            validDate: true,
-                            afterStartDate: true
-                        }
-                    },
-                    messages: {
-                        dayOfWeekSelect: {
-                            required: 'Please pick a day of week.',
-                            validDay: 'Please choose a valid day of the week'
-                        },
-                        startDate: {
-                            required: 'Please pick a start date.',
-                            validDate: 'Please enter a valid start date in the format DD/MM/YYYY.'
-                        },
-                        endDate: {
-                            required: 'Please pick a end date.',
-                            validDate: 'Please enter a valid end date in the format DD/MM/YYYY.',
-                            afterStartDate: 'Please enter a end date later than or same as the start date.'
-                        }
-                    },
-                    errorPlacement: function (error, element) {
-                        if (element.parent().is($('div.input-group'))) {
-                            error.appendTo(element.parent().parent());
-                        }
-                        else {
-                            error.appendTo(element.parent());
-                        }
-
-                    }
+            var accountRateRecord = null;
+            function retrieveARR() {
+                $.ajax({
+                    url: `/API/AccountRates/${customerID}/${accountRateID}`,
+                    method: 'GET'
+                }).done(function (data) {
+                    console.log("Retrieved Account Rate Record")
+                    accountRateRecord = data
+                    $('#startDate').val(moment(accountRateRecord.startDate).format('DD/MM/YYYY'));
+                    $('#endDate').val(moment(accountRateRecord.endDate).format('DD/MM/YYYY'));
+                }).fail(function (editData) {
+                    new Noty({ text: editData.responseJSON.message, type: 'error', timeout: 3000 }).show();
                 });
-                //Immediate validation upon datepicker losing focus
-                $('#startDate').datepicker({
-                    autoclose: true,
-                }).on('change', function () {
+            }
 
-                    $(this).valid(); // Triggers a validation test
-                    $('#endDate').datepicker('setStartDate', $('#startDate').datepicker('getDate'));
-                });
-                $('#endDate').datepicker({
-                    autoclose: true,
-                }).on('change', function () {
-                    $(this).valid(); // Triggers a validation test
+
+            $.when(retrieveARR()).done(function () {
+
+                //IIFE function for jQuery-validation
+                (function () {
+                    $.validator.addMethod('validDate', function (value, element) {
+                        //http://stackoverflow.com/questions/24380305/validate-date-in-dd-mm-yyyy-format-usingjquery-validate
+                        return this.optional(element) || moment(value, 'DD/MM/YYYY').isValid() && moment(value, 'DD/MM/YYYY').format('DD/MM/YYYY') === value;
+                    }, 'Please enter a valid date in the format DD/MM/YYYY.');
+                    //Check if startDate is not empty
+                    $.validator.addMethod('startDateEmpty', function (value, element) {
+                        return this.optional(element) || moment($("#startDate").val(), 'DD/MM/YYYY').isValid();
+                    }, 'Please enter a valid date in Start Date field before filling this field.');
+                    //Check if the end date is after start date
+                    $.validator.addMethod('afterStartDate', function (value, element) {
+                        return this.optional(element) || moment(value, 'DD/MM/YYYY').isSameOrAfter(moment($("#startDate").val(), 'DD/MM/YYYY'));
+                    }, 'Please enter a date later than or same as the start date.');
+                    //Check if time is valid
+                    $.validator.addMethod('validTime', function (value, element) {
+                        return this.optional(element) || moment(value, 'h : mm A').isValid() && moment(value, 'h : mm A').format('h : mm A') === value;
+                    }, 'Please choose a valid time in the format "H:MM AM/PM"');
+                    //Check  if startTime is not empty
+                    $.validator.addMethod('startTimeEmpty', function (value, element) {
+                        return this.optional(element) || moment($("#startTime").val(), 'h : mm A').isValid();
+                    }, 'Please enter a valid date in Start Date field before filling this field.');
+                    //Check if the end time is after start time
+                    $.validator.addMethod('afterStartTime', function (value, element) {
+                        return this.optional(element) || moment(value, 'h : mm A').isSameOrAfter(moment($("#startTime").val(), 'h : mm A'));
+                    }, 'Please choose a valid time later than Start Time');
+                    $.validator.addMethod('afterARStartDate', function (value, element) {
+                        return this.optional(element) || moment(value, 'DD/MM/YYYY').isSameOrAfter(accountRateRecord.startDate, 'DD/MM/YYYY');
+                    }, 'Please choose a valid date after AccountRate Start Date');
+                    $.validator.addMethod('beforeAREndDate', function (value, element) {
+                        return this.optional(element) || moment(value, 'DD/MM/YYYY').isSameOrBefore(accountRateRecord.endDate, 'DD/MM/YYYY');
+                    }, 'Please choose a valid date before AccountRate End Date');
+
+
+                    $("form[name='createAccountTimeTableForm']").validate({
+                        success: 'valid',
+                        focusCleanup: true,
+                        rules: {
+                            dayOfWeekSelect: {
+                                required: true
+                            },
+                            startTime: {
+                                required: true,
+                                validTime: true
+                            },
+                            endTime: {
+                                required: true,
+                                validTime: true,
+                                startTimeEmpty: true,
+                                afterStartTime: true
+                            },
+                            startDate: {
+                                required: true,
+                                validDate: true,
+                                afterARStartDate: true
+                            },
+                            endDate: {
+                                required: true,
+                                startDateEmpty: true,
+                                validDate: true,
+                                afterStartDate: true,
+                                beforeAREndDate: true
+                            }
+                        },
+                        messages: {
+                            dayOfWeekSelect: {
+                                required: 'Please pick a day of week.',
+                                validDay: 'Please choose a valid day of the week'
+                            },
+                            startDate: {
+                                required: 'Please pick a start date.',
+                                validDate: 'Please enter a valid start date in the format DD/MM/YYYY.',
+
+                            },
+                            endDate: {
+                                required: 'Please pick a end date.',
+                                validDate: 'Please enter a valid end date in the format DD/MM/YYYY.',
+                                afterStartDate: 'Please enter a end date later than or same as the start date.'
+                            }
+                        },
+                        errorPlacement: function (error, element) {
+                            if (element.parent().is($('div.input-group'))) {
+                                error.appendTo(element.parent().parent());
+                            }
+                            else {
+                                error.appendTo(element.parent());
+                            }
+
+                        }
                     });
-                //Immediate validation upon timepicker losing focus
-                $('.td-overlay').on('touchend mouseup', function () {
-                    $("#startTime").valid(); // Triggers a validation test
-                    $("#endTime").valid(); // Triggers a validation test
-                });
-            })();
+                    //Immediate validation upon datepicker losing focus
+                    $('#startDate').datepicker({
+                        autoclose: true,
+                    }).on('change', function () {
+
+                        $(this).valid(); // Triggers a validation test
+                        $('#endDate').datepicker('setStartDate', $('#startDate').datepicker('getDate'));
+                    });
+                    $('#endDate').datepicker({
+                        autoclose: true,
+                    }).on('change', function () {
+                        $(this).valid(); // Triggers a validation test
+                    });
+
+                })();
+
+            });
             $('#submitBtn').on('click', function (event) {
                 event.preventDefault();
                 //Check if form is valid
                 if ($("form[name='createAccountTimeTableForm']").valid() == true) {
-                    new Noty({ text: 'Valid Form', type: 'info' }).show();
+                    //new Noty({ text: 'Valid Form', type: 'info' }).show();
 
                     //Retrieve valid from form
                     let cDayOfWeek = $('#dayOfWeekSelect').val();
@@ -270,10 +330,11 @@
                     let cEndTime = $('#endTime').val();
                     let cEndDate = $('#endDate').val();
                     let cCollatedEndDateTime = cEndDate + ' ' + cEndTime;
-                    let cVisibility = $('#accountVisibilityToggle').prop('checked');
+                    let cVisibility = $('#timetableVisibilityToggle').prop('checked');
 
                     //WebFormData constructor
-                    function WebFormData(accountRateID, iDayOfWeek, iCollatedStartDateTime, iCollatedEndDateTime, iVisibility) {
+                    function WebFormData(override, accountRateID, iDayOfWeek, iCollatedStartDateTime, iCollatedEndDateTime, iVisibility) {
+                        this.override = override
                         this.id = accountRateID
                         this.dayOfWeek = iDayOfWeek;
                         this.startDateTime = iCollatedStartDateTime;
@@ -282,11 +343,11 @@
                     }
 
                     //Create webFormData object
-                    let webFormData = new WebFormData(accountRateID, cDayOfWeek, cCollatedStartDateTime, cCollatedEndDateTime, cVisibility);
+                    let webFormData = new WebFormData(false, accountRateID, cDayOfWeek, cCollatedStartDateTime, cCollatedEndDateTime, cVisibility);
                     console.dir(webFormData)
                     //Call AJAX with webFormData to create the record in database
                     $.ajax({
-                        url: '/API/AccountTimeTable/Create/'+accountRateID,
+                        url: '/API/AccountTimeTable/Create/',
                         method: 'POST',
                         data: webFormData,
                         contentType: 'application/x-www-form-urlencoded',
@@ -295,10 +356,48 @@
                         console.dir(data);
                         new Noty({ text: data.message, type: 'success', timeout: 5000 }).show();
 
-                    }).fail(function (data) {
-                        console.dir(data);
-                        new Noty({ text: `An error has occured: ${data.responseJSON.message}`, type: 'error', timeout: 7000 }).show();
+                    }).fail(function (conflictdata) {
+                        console.dir(conflictdata);
+                        new Noty({ text: `An error has occured: ${conflictdata.responseJSON.message}`, type: 'error', timeout: 7000 }).show();
+                        $('#detailedConflict').text(conflictdata.responseJSON.message);
 
+                        console.log(conflictdata.overridable);
+                        if (conflictdata.responseJSON.overridable == true) {
+                            $('#overrideBtn').css('display', 'block');
+                            $('#timetableConflictModal .modal-header').addClass('bg-warning');
+                            $('#timetableConflictModal .modal-title').addClass('text-white');
+
+                        } else {
+                            $('#overrideBtn').css('display', 'none');
+                            $('#timetableConflictModal .modal-header').addClass('bg-danger');
+                            $('#timetableConflictModal .modal-title').addClass('text-white');
+                        }
+                        let conflictRecords = conflictdata.responseJSON.record;
+                        $tableBodyElement = $('#conflictTableBodyElement');
+                        $tableBodyElement.empty();//Clear all html within the table body
+                        for (let i = 0; i < conflictRecords.length; i++) {
+                            oneATT = conflictRecords[i];
+
+                            //Populating one table row
+                            let $cusTR = $("<tr></tr>");
+                            $cusTR.addClass("row m-0");
+
+                            $cusTR.append($("<td></td>", { text: moment((oneATT.day) - 1, 'd').format('dddd') }).addClass("col-md-2"));
+                            $cusTR.append($("<td></td>", { text: moment(oneATT.startTime, 'HH:mm:ss').format('h : mm A') }).addClass("col-md-2"));
+                            $cusTR.append($("<td></td>", { text: moment(oneATT.endTime, 'HH:mm:ss').format('h : mm A') }).addClass("col-md-2"));
+                            $cusTR.append($("<td></td>", { text: moment(oneATT.startDate).format('DD/MM/YYYY') }).addClass("col-md-2"));
+                            $cusTR.append($("<td></td>", { text: moment(oneATT.endDate).format('DD/MM/YYYY') }).addClass("col-md-2"));
+                            if (oneATT.visibility == true) {
+                                $cusTR.append($("<td></td>").addClass("col-md-2").append('<i class="fas fa-check" style="color:#61d800;"></i>'));
+                            }
+                            else {
+                                $cusTR.append($("<td></td>").addClass("col-md-2").append('<i class="fas fa-times" style="color:#ff2410;"></i>'));
+                            }
+
+                            //Append populated table row into table body
+                            $tableBodyElement.append($cusTR);
+                        }
+                        $('#timetableConflictModal').modal('show')
                     })
 
                 } else {
@@ -306,6 +405,53 @@
 
                 }
 
+            });
+
+            $('#overrideBtn').on('click', function () {
+
+                //Retrieve valid from form
+                let cDayOfWeek = $('#dayOfWeekSelect').val();
+                let cStartTime = $('#startTime').val();
+                let cStartDate = $('#startDate').val();
+                let cCollatedStartDateTime = cStartDate + ' ' + cStartTime;
+                let cEndTime = $('#endTime').val();
+                let cEndDate = $('#endDate').val();
+                let cCollatedEndDateTime = cEndDate + ' ' + cEndTime;
+                let cVisibility = $('#timetableVisibilityToggle').prop('checked');
+
+                //WebFormData constructor
+                function WebFormData(override, accountRateID, iDayOfWeek, iCollatedStartDateTime, iCollatedEndDateTime, iVisibility) {
+                    this.override = override
+                    this.id = accountRateID
+                    this.dayOfWeek = iDayOfWeek;
+                    this.startDateTime = iCollatedStartDateTime;
+                    this.endDateTime = iCollatedEndDateTime;
+                    this.visibility = iVisibility;
+                }
+
+                //Create webFormData object
+                let webFormData = new WebFormData(true, accountRateID, cDayOfWeek, cCollatedStartDateTime, cCollatedEndDateTime, cVisibility);
+                console.dir(webFormData)
+                //Call AJAX with webFormData to create the record in database
+                $.ajax({
+                    url: '/API/AccountTimeTable/Create/',
+                    method: 'POST',
+                    data: webFormData,
+                    contentType: 'application/x-www-form-urlencoded',
+                    datatype: 'application/json'
+                }).done(function (data) {
+                    console.dir(data);
+                    new Noty({ text: data.message, type: 'success', timeout: 5000 }).show();
+
+                }).fail(function (data) {
+                    new Noty({ text: `An error has occured: ${data.responseJSON.message}`, type: 'error', timeout: 7000 }).show();
+                });
+            });
+
+            $('#timetableConflictModal').on('hidden.bs.modal', function (e) {
+                $('#overrideBtn').css('display', 'none');
+                $('#timetableConflictModal .modal-header').removeClass('bg-warning');
+                $('#timetableConflictModal .modal-title').removeClass('text-white');
             });
         });
 

@@ -194,7 +194,7 @@ namespace TMS.APIs
                     endDate = att.EffectiveEndDateTime.Date,
                     visibility = att.IsVisible
                 };
-                return Ok(att);
+                return Ok(result);
             }
             catch (SqlException ex)
             {
@@ -212,15 +212,98 @@ namespace TMS.APIs
             {
 
                 AccountTimeTable newATT = new AccountTimeTable();
-                newATT.AccountRateId = int.Parse(data["id"]);
+                int ARID = int.Parse(data["id"]);
+                newATT.AccountRateId = ARID;
                 newATT.DayOfWeekNumber = int.Parse(data["dayOfWeek"]);
-                newATT.EffectiveStartDateTime = DateTime.ParseExact(data["startDateTime"], "d/M/yyyy h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
-                newATT.EffectiveEndDateTime = DateTime.ParseExact(data["endDateTime"], "d/M/yyyy h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
+                newATT.EffectiveStartDateTime = DateTime.ParseExact(data["startDateTime"], "d/M/yyyy h : mm tt", System.Globalization.CultureInfo.InvariantCulture);
+                newATT.EffectiveEndDateTime = DateTime.ParseExact(data["endDateTime"], "d/M/yyyy h : mm tt", System.Globalization.CultureInfo.InvariantCulture);
                 newATT.IsVisible = Boolean.Parse(data["visibility"]);
                 newATT.CreatedAt = _appDateTimeService.GetCurrentDateTime();
                 newATT.CreatedById = userId;
                 newATT.UpdatedAt = _appDateTimeService.GetCurrentDateTime();
                 newATT.UpdatedById = userId;
+
+                bool forceOverride = Boolean.Parse(data["override"]);
+                List<AccountTimeTable> existingATT = Database.AccountTimeTable.Where(a => a.AccountRateId == ARID).ToList();
+                bool overlap = false;
+                bool identical = false;
+                List<AccountTimeTable> identicalATT = new List<AccountTimeTable>();
+                List<AccountTimeTable> overlapATT = new List<AccountTimeTable>();
+                foreach (AccountTimeTable att in existingATT) //Iterate thorugh all the AccountRate record to check for overlap
+                {
+                    if (newATT.DayOfWeekNumber == att.DayOfWeekNumber)
+                    {
+                        if ((newATT.EffectiveStartDateTime.CompareTo(att.EffectiveStartDateTime) == 0) && (newATT.EffectiveEndDateTime.CompareTo(att.EffectiveEndDateTime) == 0))
+                        {
+                            identical = true;
+                            identicalATT.Add(att);
+                        }
+
+                        bool overlapCurrentRecord = false;
+                        if (newATT.EffectiveStartDateTime.CompareTo(att.EffectiveStartDateTime) >= 0)// Check if the new AR Start Date is After the current AR Start Date
+                        {
+                            if (newATT.EffectiveEndDateTime.CompareTo(att.EffectiveEndDateTime) <= 0)// Check if the new AR End Date is Before the current AR End Date
+                            {
+                                overlapCurrentRecord = true; //Record overlap the entire period
+                            }
+                            if (newATT.EffectiveStartDateTime.CompareTo(att.EffectiveEndDateTime) <= 0)// Check if the new AR Start Date is Before the current AR End Date
+                            {
+                                overlapCurrentRecord = true; // Record overlap front of period
+                            }
+
+                        }
+                        else// The new AR Start Date is Before the current AR Start Date
+                        {
+                            if (newATT.EffectiveEndDateTime.CompareTo(att.EffectiveEndDateTime) >= 0)// Check if the new AR End Date is After the current AR End Date
+                            {
+                                overlapCurrentRecord = true; //Record is encapulated by period
+                            }
+                            if (newATT.EffectiveEndDateTime.CompareTo(att.EffectiveStartDateTime) >= 0)// Check if new AR End Date is After the current AR Start Date
+                            {
+                                overlapCurrentRecord = true; //Record over back of period
+                            }
+                        }
+                        if (overlapCurrentRecord)//If there is overlap, collate a string of all the date clashes
+                        {
+                            overlap = true;
+                            overlapATT.Add(att);
+                        }
+                    }
+                }
+                if (identical) {
+                    List<object> result = new List<object>();
+                    foreach (AccountTimeTable iATT in identicalATT) {
+                        result.Add(new
+                        {
+                            id = iATT.AccountTimeTableId,
+                            day = iATT.DayOfWeekNumber,
+                            startTime = iATT.EffectiveStartDateTime.TimeOfDay,
+                            endTime = iATT.EffectiveEndDateTime.TimeOfDay,
+                            startDate = iATT.EffectiveStartDateTime.Date,
+                            endDate = iATT.EffectiveEndDateTime.Date,
+                            visibility = iATT.IsVisible
+                        });
+                        return BadRequest(new { overridable = false, message = "Failed to create record. Your account timetable is the same as the following existing record.", record = result });
+                    }
+                } else if (overlap && !forceOverride) {
+
+                    List<object> result = new List<object>();
+                    foreach (AccountTimeTable oATT in overlapATT)
+                    {
+                        result.Add(new
+                        {
+                            id = oATT.AccountTimeTableId,
+                            day = oATT.DayOfWeekNumber,
+                            startTime = oATT.EffectiveStartDateTime.TimeOfDay,
+                            endTime = oATT.EffectiveEndDateTime.TimeOfDay,
+                            startDate = oATT.EffectiveStartDateTime.Date,
+                            endDate = oATT.EffectiveEndDateTime.Date,
+                            visibility = oATT.IsVisible
+                        });
+                    }
+
+                    return BadRequest(new { overridable = true, message = "Your timetable overlaps with the following existing timetable. Continue creating?", record = result });
+                }
 
                 Database.AccountTimeTable.Add(newATT);
                 Database.SaveChanges();
@@ -239,29 +322,113 @@ namespace TMS.APIs
 
         // PUT api/<controller>/5
         [Authorize("ADMIN")]
-        [HttpPut("Update/{id}")]
-        public IActionResult Put(int id, [FromForm]IFormCollection data)
+        [HttpPut("Update/{ttid}")]
+        public IActionResult Put(int ttid, [FromForm]IFormCollection data)
         {
             int userId = int.Parse(User.FindFirst("userid").Value); //Retireve the user id of the current logged in user
             try
             {
-                AccountTimeTable att = Database.AccountTimeTable.SingleOrDefault(tt => tt.AccountTimeTableId == id);
-                if (att == null) //If AccountRate record is not found return NotFound response
+                AccountTimeTable foundATT = Database.AccountTimeTable.SingleOrDefault(tt => tt.AccountTimeTableId == ttid);
+                if (foundATT == null) //If AccountTimeTable record is not found return NotFound response
                 {
                     return NotFound(new { message = "Customer account timetable could not be found" });
                 }
 
-                att.AccountRateId = int.Parse(data["id"]);
-                att.DayOfWeekNumber = int.Parse(data["dayOfWeek"]);
-                att.EffectiveStartDateTime = DateTime.ParseExact(data["startDateTime"], "d/M/yyyy h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
-                att.EffectiveEndDateTime = DateTime.ParseExact(data["endDateTime"], "d/M/yyyy h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
-                att.IsVisible = Boolean.Parse(data["visibility"]);
-                att.CreatedAt = _appDateTimeService.GetCurrentDateTime();
-                att.CreatedById = userId;
-                att.UpdatedAt = _appDateTimeService.GetCurrentDateTime();
-                att.UpdatedById = userId;
+                int ARID = int.Parse(data["id"]);
+                foundATT.DayOfWeekNumber = int.Parse(data["dayOfWeek"]);
+                foundATT.EffectiveStartDateTime = DateTime.ParseExact(data["startDateTime"], "d/M/yyyy h : mm tt", System.Globalization.CultureInfo.InvariantCulture);
+                foundATT.EffectiveEndDateTime = DateTime.ParseExact(data["endDateTime"], "d/M/yyyy h : mm tt", System.Globalization.CultureInfo.InvariantCulture);
+                foundATT.IsVisible = Boolean.Parse(data["visibility"]);
+                foundATT.UpdatedAt = _appDateTimeService.GetCurrentDateTime();
+                foundATT.UpdatedById = userId;
 
-                Database.AccountTimeTable.Update(att);
+                bool forceOverride = Boolean.Parse(data["override"]);
+                List<AccountTimeTable> existingATT = Database.AccountTimeTable.Where(a => a.AccountRateId == ARID).Where(tt => tt.AccountTimeTableId != ttid).ToList();
+                bool overlap = false;
+                bool identical = false;
+                List<AccountTimeTable> identicalATT = new List<AccountTimeTable>();
+                List<AccountTimeTable> overlapATT = new List<AccountTimeTable>();
+                foreach (AccountTimeTable att in existingATT) //Iterate thorugh all the AccountRate record to check for overlap
+                {
+                    if (foundATT.DayOfWeekNumber == att.DayOfWeekNumber)
+                    {
+                        if ((foundATT.EffectiveStartDateTime.CompareTo(att.EffectiveStartDateTime) == 0) && (foundATT.EffectiveEndDateTime.CompareTo(att.EffectiveEndDateTime) == 0))
+                        {
+                            identical = true;
+                            identicalATT.Add(att);
+                        }
+
+                        bool overlapCurrentRecord = false;
+                        if (foundATT.EffectiveStartDateTime.CompareTo(att.EffectiveStartDateTime) >= 0)// Check if the new AR Start Date is After the current AR Start Date
+                        {
+                            if (foundATT.EffectiveEndDateTime.CompareTo(att.EffectiveEndDateTime) <= 0)// Check if the new AR End Date is Before the current AR End Date
+                            {
+                                overlapCurrentRecord = true; //Record overlap the entire period
+                            }
+                            if (foundATT.EffectiveStartDateTime.CompareTo(att.EffectiveEndDateTime) <= 0)// Check if the new AR Start Date is Before the current AR End Date
+                            {
+                                overlapCurrentRecord = true; // Record overlap front of period
+                            }
+
+                        }
+                        else// The new AR Start Date is Before the current AR Start Date
+                        {
+                            if (foundATT.EffectiveEndDateTime.CompareTo(att.EffectiveEndDateTime) >= 0)// Check if the new AR End Date is After the current AR End Date
+                            {
+                                overlapCurrentRecord = true; //Record is encapulated by period
+                            }
+                            if (foundATT.EffectiveEndDateTime.CompareTo(att.EffectiveStartDateTime) >= 0)// Check if new AR End Date is After the current AR Start Date
+                            {
+                                overlapCurrentRecord = true; //Record over back of period
+                            }
+                        }
+                        if (overlapCurrentRecord)//If there is overlap, collate a string of all the date clashes
+                        {
+                            overlap = true;
+                            overlapATT.Add(att);
+                        }
+                    }
+                }
+                if (identical)
+                {
+                    List<object> result = new List<object>();
+                    foreach (AccountTimeTable iATT in identicalATT)
+                    {
+                        result.Add(new
+                        {
+                            id = iATT.AccountTimeTableId,
+                            day = iATT.DayOfWeekNumber,
+                            startTime = iATT.EffectiveStartDateTime.TimeOfDay,
+                            endTime = iATT.EffectiveEndDateTime.TimeOfDay,
+                            startDate = iATT.EffectiveStartDateTime.Date,
+                            endDate = iATT.EffectiveEndDateTime.Date,
+                            visibility = iATT.IsVisible
+                        });
+                        return BadRequest(new { overridable = false, message = "Failed to update record. Your account timetable is the same as the following existing record.", record = result });
+                    }
+                }
+                else if (overlap && !forceOverride)
+                {
+
+                    List<object> result = new List<object>();
+                    foreach (AccountTimeTable oATT in overlapATT)
+                    {
+                        result.Add(new
+                        {
+                            id = oATT.AccountTimeTableId,
+                            day = oATT.DayOfWeekNumber,
+                            startTime = oATT.EffectiveStartDateTime.TimeOfDay,
+                            endTime = oATT.EffectiveEndDateTime.TimeOfDay,
+                            startDate = oATT.EffectiveStartDateTime.Date,
+                            endDate = oATT.EffectiveEndDateTime.Date,
+                            visibility = oATT.IsVisible
+                        });
+                    }
+
+                    return BadRequest(new { overridable = true, message = "Your timetable overlaps with the following existing timetable. Continue creating?", record = result });
+                }
+
+                Database.AccountTimeTable.Update(foundATT);
                 Database.SaveChanges();
                 return Ok(new { message = "Successfully updated record." });
 

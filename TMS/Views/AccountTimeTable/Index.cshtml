@@ -89,7 +89,7 @@
 
 <!-- Modal -->
 <div class="modal fade" id="editAccountTTModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Edit Account Rate</h5>
@@ -98,32 +98,78 @@
                 </button>
             </div>
             <div class="modal-body">
-                <p class="font-small float-right">* indicates required fields</p>
-                <form name="editAccountRateForm" novalidate>
 
+                <form name="editAccountTimeTableForm" novalidate>
+                    <p class="font-small float-right">* indicates required fields</p>
                     <div class="form-group formheight">
-                        <label for="accountRate"> Enter Rate per Hour*</label><br>
-                        <input type="number" class="form-control" name="accountRate" id="accountRate" placeholder="Enter amount" />
+                        <label for="accountRate">Choose Day of Week*</label><br>
+                        <select class="custom-select" id="dayOfWeekSelect" name="dayOfWeekSelect">
+                            <option value="">Choose</option>
+                            <option value="1">Sunday</option>
+                            <option value="2">Monday</option>
+                            <option value="3">Tuesday</option>
+                            <option value="4">Wednesday</option>
+                            <option value="5">Thursday</option>
+                            <option value="6">Friday</option>
+                            <option value="7">Saturday</option>
+                        </select>
                     </div>
-                    <div class="form-group formheight">
-                        <label for="startDate">Pick a Start Date*</label><br>
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text"><i class="fas fa-calendar-day"></i></span>
+                    <hr />
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="startTime">Choose Start Time*</label><br>
+                                <div class="input-group" id="stIG">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-clock"></i></span>
+                                    </div>
+                                    <input type="text" class="form-control timepicker" name="startTime" id="startTime" placeholder="Pick time" />
+                                </div>
                             </div>
-                            <input type="text" class="form-control" name="startDate" id="startDate" data-toggle="datepicker" placeholder="Pick date" />
-                            <div data-toggle="datepicker"></div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="endTime">Choose End Time*</label><br>
+                                <div class="input-group" id="etIG">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-clock"></i></span>
+                                    </div>
+                                    <input type="text" class="form-control timepicker" name="endTime" id="endTime" placeholder="Pick time" />
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="form-group formheight">
-                        <label for="endDate">Pick a End Date*</label><br>
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text"><i class="fas fa-calendar-day"></i></span>
+                    <hr />
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="startDate">Pick a Start Date*</label><br>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-calendar-day"></i></span>
+                                    </div>
+                                    <input type="text" class="form-control" name="startDate" id="startDate" data-toggle="datepicker" placeholder="Pick date" />
+                                    <div data-toggle="datepicker"></div>
+                                </div>
                             </div>
-                            <input type="text" class="form-control" name="endDate" id="endDate" data-toggle="datepicker" placeholder="Pick date" />
-                            <div data-toggle="datepicker"></div>
                         </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="endDate">Pick a End Date*</label><br>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-calendar-day"></i></span>
+                                    </div>
+                                    <input type="text" class="form-control" name="endDate" id="endDate" data-toggle="datepicker" placeholder="Pick date" />
+                                    <div data-toggle="datepicker"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="form-group">
+                        <label for="timetableVisibilityToggle">Visibility*</label><br>
+                        <input type="checkbox" name="timetableVisibilityToggle" id="timetableVisibilityToggle" class="form-control" data-toggle="toggle" data-on="Visible" data-off="Hidden" data-onstyle="success" data-offstyle="danger" checked />
                     </div>
 
                 </form>
@@ -131,6 +177,43 @@
             <div class="modal-footer">
                 <div class="form-group">
                     <input type="button" name="editSubmitBtn" id="editSubmitBtn" value="Update" class="btn btn-primary">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="timetableConflictModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Timetable Conflict</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h5 id="detailedConflict"> </h5>
+                <div class="table-responsive-md w-100 col-12">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr class="row m-0" style="vertical-align:central;">
+                                <th class="col-md-2">Day</th>
+                                <th class="col-md-2">Start Time</th>
+                                <th class="col-md-2">End Time</th>
+                                <th class="col-md-2">Start Date</th>
+                                <th class="col-md-2">End Date</th>
+                                <th class="col-md-2">Visibility</th>
+                            </tr>
+                        </thead>
+                        <tbody id="conflictTableBodyElement"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content:center">
+                <div class="form-group" style="display:flex;">
+                    <input type="button" name="overrideBtn" id="overrideBtn" value="Override" class="btn btn-primary">
+                    <input type="button" value="Close" class="btn btn-white" data-dismiss="modal">
                 </div>
             </div>
         </div>
@@ -149,41 +232,29 @@
             <div class="modal-body">
                 <div style="text-align:center;">
                     <i class="far fa-trash-alt" style="font-size: 2em; color: red;"></i>
-                    <p class="card-title">Delete account rate?</p>
+                    <p class="card-title">Delete account timetable?</p>
                     <p>Summary:</p>
                 </div>
-                <div class="card h-100 text-white bg-info mb-3 rateDetail">
-                    <div class=".d-inline-block">
-                        <i class="fas fa-dollar-sign"></i>
-                        <span class="card-title text-uppercase">Rate</span>
-                    </div>
-                    <p class="card-text" id="accountRateRateDetail">0</p>
-                </div>
-                <div class="card h-100 text-white bg-info mb-3 rateDetail">
+                <div class="card h-100 text-white bg-info mb-3 ttDetail">
                     <div class=".d-inline-block">
                         <i class="fas fa-calendar-day"></i>
-                        <span class="card-title text-uppercase">Start Date</span>
+                        <span class="card-title text-uppercase">Day of Week</span>
                     </div>
-                    <p class="card-text" id="accountRateStartDateDetail">DD/MM/YYYY</p>
+                    <p class="card-text" id="accountTTDayDetail">0</p>
                 </div>
-                <div class="card h-100 text-white bg-info mb-3 rateDetail">
+                <div class="card h-100 text-white bg-info mb-3 ttDetail">
                     <div class=".d-inline-block">
-                        <i class="fas fa-calendar-day"></i>
-                        <span class="card-title text-uppercase">End Date</span>
+                        <i class="fas fa-calendar-alt"></i>
+                        <span class="card-title text-uppercase">Period</span>
                     </div>
-                    <p class="card-text" id="accountRateEndDateDetail">DD/MM/YYYY</p>
+                    <p class="card-text" id="accountTTDateDetail">DD/MM/YYYY</p>
                 </div>
-                <div style="text-align:center;">
-                    <p>The following will be deleted:</p>
-                </div>
-                <div class="row" id="accAffectSummary">
-                    <div class="col">
-                        <div class="card h-100 text-white bg-warning mb-3">
-                            <i class="fas fa-table"></i>
-                            <p class="card-title text-uppercase">TimeTable Record</p>
-                            <p class="card-text" id="accountRateTTDetail">0</p>
-                        </div>
+                <div class="card h-100 text-white bg-info mb-3 ttDetail">
+                    <div class=".d-inline-block">
+                        <i class="fas fa-clock"></i>
+                        <span class="card-title text-uppercase">Timeslot</span>
                     </div>
+                    <p class="card-text" id="accountTTTimeDetail">H:MM</p>
                 </div>
 
             </div>
@@ -200,8 +271,8 @@
 @section Scripts{
     <link href="~/lib/datepicker/datepicker.min.css" rel="stylesheet" />
     <script src="~/lib/datepicker/datepicker.min.js"></script>
-    <script src="~/lib/timedropper/timedropper.js"></script>
-    <link rel="stylesheet" type="text/css" href="~/lib/timedropper/timedropper.css">
+    <link href="~/lib/wickedpicker/wickedpicker.min.css" rel="stylesheet" />
+    <script type="text/javascript" src="~/lib/wickedpicker/wickedpicker.js"></script>
     <style>
         table.table td {
             padding-left: 0.2rem;
@@ -226,34 +297,34 @@
             color: white;
         }
 
-        div#deleteAccountRateModal div#accAffectSummary .card-title {
-            text-align: center;
-            font-size: 12px;
-        }
-
-        div#deleteAccountRateModal div#accAffectSummary .card-text {
-            text-align: center;
-            font-size: 2em;
-        }
-
-        div#deleteAccountRateModal div#accAffectSummary .card i {
-            text-align: center;
-            font-size: 1.5em;
-            padding: 0.5em;
-        }
-
-        div#deleteAccountRateModal .card {
+        div#deleteAccountTTModal .card {
             padding: 1em;
         }
 
-        div#deleteAccountRateModal .rateDetail i {
+        div#deleteAccountTTModal .ttDetail i {
             font-size: 1em;
             padding-right: 0.5em;
         }
 
-        div#deleteAccountRateModal .rateDetail .card-text {
+        div#deleteAccountTTModal .ttDetail .card-text {
             text-align: center;
             font-size: 1.2em;
+        }
+
+        .toggle.android {
+            border-radius: 0px;
+        }
+
+            .toggle.android .toggle-handle {
+                border-radius: 0px;
+            }
+
+        .error {
+            color: red;
+        }
+
+        .valid {
+            color: forestgreen;
         }
 
         .formheight {
@@ -274,6 +345,7 @@
             }
             return IDs.split('-')
         }
+
 
         $('#accountTTAddBtn').attr('href', '/AccountTimeTable/Create/' + customerID + '-' + accountRateID); //Append accountRateID to the end of account rate breadcrumb anchor href
         $('#ARBreadcrumb').attr('href', '/AccountRates/Index/' + customerID); //Append accountRateID to the end of create account timetable anchor href
@@ -347,8 +419,8 @@
 
                 $cusTR.append($("<td></td>", { text: oneATT.no }).addClass("col-md-1"));
                 $cusTR.append($("<td></td>", { text: moment((oneATT.day) - 1, 'd').format('dddd') }).addClass("col-md-2"));
-                $cusTR.append($("<td></td>", { text: moment(oneATT.startTime, 'HH:mm:ss').format('h:mm A') }).addClass("col-md-1"));
-                $cusTR.append($("<td></td>", { text: moment(oneATT.endTime, 'HH:mm:ss').format('h:mm A') }).addClass("col-md-1"));
+                $cusTR.append($("<td></td>", { text: moment(oneATT.startTime, 'HH:mm:ss').format('h : mm A') }).addClass("col-md-1"));
+                $cusTR.append($("<td></td>", { text: moment(oneATT.endTime, 'HH:mm:ss').format('h : mm A') }).addClass("col-md-1"));
                 $cusTR.append($("<td></td>", { text: moment(oneATT.startDate).format('DD/MM/YYYY') }).addClass("col-md-2"));
                 $cusTR.append($("<td></td>", { text: moment(oneATT.endDate).format('DD/MM/YYYY') }).addClass("col-md-2"));
                 if (oneATT.visibility == true) {
@@ -363,7 +435,7 @@
                 $cusTR.append($("<td></td>").addClass("col-md-1").append($btnEdit));
 
                 //Delete Button
-                let $btnDelete = $('<button type="button"><i class="fas fa-trash"></i> Delete</button>').addClass('btn-sm btn-outline-danger').attr('data-toggle', 'modal').attr('data-target', `#deleteAccountTTModal`).attr('data-ttId', oneATT.id);
+                let $btnDelete = $('<button type="button"><i class="fas fa-trash"></i> Delete</button>').addClass('btn-sm btn-outline-danger').attr('data-toggle', 'modal').attr('data-target', `#deleteAccountTTModal`).attr('data-ttid', oneATT.id);
                 $cusTR.append($("<td></td>").addClass("col-md-1").append($btnDelete));
 
                 //Append populated table row into table body
@@ -443,11 +515,133 @@
         }
 
         $('[data-toggle="datepicker"]').datepicker({ format: 'DD/MM/YYYY', zIndex: 2048 });
-        //Initialise timedroppers
-        $("#startTime").timeDropper({ autoswitch: true, mousewheel: false, meridians: true, format: 'h:mm A', setCurrentTime: true });
-        $("#endTime").timeDropper({ autoswitch: true, mousewheel: false, meridians: true, format: 'h:mm A', setCurrentTime: true });
 
-        $('#editAccountRateModal').on('show.bs.modal', function (event) {
+        $('.timepicker').wickedpicker();
+
+        var accountRateRecord = null;
+        function retrieveARR() {
+            $.ajax({
+                url: `/API/AccountRates/${customerID}/${accountRateID}`,
+                method: 'GET'
+            }).done(function (data) {
+                console.log("Retrieved Account Rate Record")
+                accountRateRecord = data
+            }).fail(function (editData) {
+                new Noty({ text: editData.responseJSON.message, type: 'error', timeout: 3000 }).show();
+            });
+        }
+
+
+        $.when(retrieveARR()).done(function () {
+            //IIFE function for jQuery-validation
+            (function () {
+                $.validator.addMethod('validDate', function (value, element) {
+                    //http://stackoverflow.com/questions/24380305/validate-date-in-dd-mm-yyyy-format-usingjquery-validate
+                    return this.optional(element) || moment(value, 'DD/MM/YYYY').isValid() && moment(value, 'DD/MM/YYYY').format('DD/MM/YYYY') === value;
+                }, 'Please enter a valid date in the format DD/MM/YYYY.');
+                //Check if startDate is not empty
+                $.validator.addMethod('startDateEmpty', function (value, element) {
+                    return this.optional(element) || moment($("#startDate").val(), 'DD/MM/YYYY').isValid();
+                }, 'Please enter a valid date in Start Date field before filling this field.');
+                //Check if the end date is after start date
+                $.validator.addMethod('afterStartDate', function (value, element) {
+                    return this.optional(element) || moment(value, 'DD/MM/YYYY').isSameOrAfter(moment($("#startDate").val(), 'DD/MM/YYYY'));
+                }, 'Please enter a date later than or same as the start date.');
+                //Check if time is valid
+                $.validator.addMethod('validTime', function (value, element) {
+                    return this.optional(element) || moment(value, 'h : mm A').isValid() && moment(value, 'h : mm A').format('h : mm A') === value;
+                }, 'Please choose a valid time in the format "H : MM AM/PM"');
+                //Check  if startTime is not empty
+                $.validator.addMethod('startTimeEmpty', function (value, element) {
+                    return this.optional(element) || moment($("#startTime").val(), 'h : mm A').isValid();
+                }, 'Please enter a valid date in Start Date field before filling this field.');
+                //Check if the end time is after start time
+                $.validator.addMethod('afterStartTime', function (value, element) {
+                    return this.optional(element) || moment(value, 'h : mm A').isSameOrAfter(moment($("#startTime").val(), 'h : mm A'));
+                }, 'Please choose a valid time later than Start Time');
+                $.validator.addMethod('afterARStartDate', function (value, element) {
+                    return this.optional(element) || moment(value, 'DD/MM/YYYY').isSameOrAfter(accountRateRecord.startDate, 'DD/MM/YYYY');
+                }, 'Please choose a valid date after AccountRate Start Date');
+                $.validator.addMethod('beforeAREndDate', function (value, element) {
+                    return this.optional(element) || moment(value, 'DD/MM/YYYY').isSameOrBefore(accountRateRecord.endDate, 'DD/MM/YYYY');
+                }, 'Please choose a valid date before AccountRate End Date');
+
+
+                $("form[name='editAccountTimeTableForm']").validate({
+                    success: 'valid',
+                    focusCleanup: true,
+                    rules: {
+                        dayOfWeekSelect: {
+                            required: true
+                        },
+                        startTime: {
+                            required: true,
+                            validTime: true
+                        },
+                        endTime: {
+                            required: true,
+                            validTime: true,
+                            startTimeEmpty: true,
+                            afterStartTime: true
+                        },
+                        startDate: {
+                            required: true,
+                            validDate: true,
+                            afterARStartDate: true
+                        },
+                        endDate: {
+                            required: true,
+                            startDateEmpty: true,
+                            validDate: true,
+                            afterStartDate: true,
+                            beforeAREndDate: true
+                        }
+                    },
+                    messages: {
+                        dayOfWeekSelect: {
+                            required: 'Please pick a day of week.',
+                            validDay: 'Please choose a valid day of the week'
+                        },
+                        startDate: {
+                            required: 'Please pick a start date.',
+                            validDate: 'Please enter a valid start date in the format DD/MM/YYYY.',
+
+                        },
+                        endDate: {
+                            required: 'Please pick a end date.',
+                            validDate: 'Please enter a valid end date in the format DD/MM/YYYY.',
+                            afterStartDate: 'Please enter a end date later than or same as the start date.'
+                        }
+                    },
+                    errorPlacement: function (error, element) {
+                        if (element.parent().is($('div.input-group'))) {
+                            error.appendTo(element.parent().parent());
+                        }
+                        else {
+                            error.appendTo(element.parent());
+                        }
+
+                    }
+                });
+                //Immediate validation upon datepicker losing focus
+                $('#startDate').datepicker({
+                    autoclose: true,
+                }).on('change', function () {
+
+                    $(this).valid(); // Triggers a validation test
+                    $('#endDate').datepicker('setStartDate', $('#startDate').datepicker('getDate'));
+                });
+                $('#endDate').datepicker({
+                    autoclose: true,
+                }).on('change', function () {
+                    $(this).valid(); // Triggers a validation test
+                });
+                
+            })();
+
+        });
+
+        $('#editAccountTTModal').on('show.bs.modal', function (event) {
 
             let $button = $(event.relatedTarget); // Button that triggered the modal
             accountTTID = $button.data('ttid'); // Extract info from data-* attributes and set the value of the global cusID variable
@@ -458,192 +652,238 @@
             var modal = $(this);
             //Call AJAX to retrieve one customer account rate information
             $.ajax({
-                url: '/API/AccountRates/' + accountRateID + '/' + accountTTID,
+                url: `/API/AccountTimeTable/GetAccountTimeTable/${accountTTID}`,
                 method: 'GET'
             }).done(function (editData) {
                 //Populating modal with data from AJAX
-                modal.find('.modal-body input#accountRate').val(editData.rate);
+                modal.find('.modal-body #dayOfWeekSelect').val(editData.day);
+                modal.find('.modal-body input#startTime').val(moment(editData.startTime, 'hh:mm:ss').format('h : mm A'));
                 modal.find('.modal-body input#startDate').val(moment(editData.startDate).format('DD/MM/YYYY'));
-                $('#startDate').datepicker('update');
-
+                modal.find('.modal-body input#endTime').val(moment(editData.endTime, 'hh:mm:ss').format('h : mm A'));
                 modal.find('.modal-body input#endDate').val(moment(editData.endDate).format('DD/MM/YYYY'));
+
+                
+
+                $('#startDate').datepicker('update');
                 $('#endDate').datepicker('update');
+                if (editData.visibility == true) {
+                    //modal.find('.modal-body input#timetableVisibilityToggle').prop('checked',true);
+                    modal.find('.modal-body input#timetableVisibilityToggle').bootstrapToggle('on');
+                }
+
+                //https://stackoverflow.com/questions/39467345/remove-jquery-from-element-and-reapply
+                console.log('setStartTime')
+                var sT = $("#startTime").remove();
+                $('#stIG').append(sT); // later
+                $("#startTime").wickedpicker({ now: `${moment(editData.startTime, 'hh:mm:ss').format('HH:mm')}` });
+
+                console.log('setEndTime')
+                var sT = $("#endTime").remove();
+                $('#etIG').append(sT); // later
+                $("#endTime").wickedpicker({ now: `${moment(editData.endTime, 'hh:mm:ss').format('HH:mm')}` });
+
+                $('.timepicker').on('click', function () {
+                    $('.wickedpicker').css('z-index', 2560);
+                })
+
+                $('#startTime').on('change', function () {
+                    $(this).valid(); // Triggers a validation test
+                });
+
+                $('#endTime').on('change', function () {
+                    $(this).valid(); // Triggers a validation test
+                });
             }).fail(function (editData) {
                 new Noty({ text: editData.responseJSON.message, type: 'error', timeout: 3000 }).show();
                 $('#editAccountRateModal').modal('hide');
             });
         });
 
+
+        //WebFormData constructor
+        function WebFormData(override, accountRateID, iDayOfWeek, iCollatedStartDateTime, iCollatedEndDateTime, iVisibility) {
+            this.override = override
+            this.id = accountRateID
+            this.dayOfWeek = iDayOfWeek;
+            this.startDateTime = iCollatedStartDateTime;
+            this.endDateTime = iCollatedEndDateTime;
+            this.visibility = iVisibility;
+        }
+
         $('input#editSubmitBtn').on('click', function () {
             //Check if the form is valid
-            if ($("form[name='editAccountRateForm']").valid() == true) {
-                console.dir(accountRateID + " of PUT Method");
+            if ($("form[name='editAccountTimeTableForm']").valid() == true) {
+                console.dir(accountTTID + " of PUT Method");
                 //Retrieve the values from the form
-                let cAccountRate = $('#accountRate').val();
-                let cRateStartDate = $('#startDate').val();
-                let cRateEndDate = $('#endDate').val();
 
-                //WebFormData constructor
-                function WebFormData(iAccountRate, iRateStartDate, iRateEndDate) {
-                    this.accountRate = iAccountRate;
-                    this.rateStartDate = iRateStartDate;
-                    this.rateEndDate = iRateEndDate;
-                }
+                //Retrieve valid from form
+                let cDayOfWeek = $('#dayOfWeekSelect').val();
+                let cStartTime = $('#startTime').val();
+                let cStartDate = $('#startDate').val();
+                let cCollatedStartDateTime = cStartDate + ' ' + cStartTime;
+                let cEndTime = $('#endTime').val();
+                let cEndDate = $('#endDate').val();
+                let cCollatedEndDateTime = cEndDate + ' ' + cEndTime;
+                let cVisibility = $('#timetableVisibilityToggle').prop('checked');
 
                 //Create webFormData object
-                let webformData = new WebFormData(cAccountRate, cRateStartDate, cRateEndDate);
-                console.dir(webformData);
-
-                //Call AJAX with webFormData to update the record in database
+                let webFormData = new WebFormData(false, accountRateID, cDayOfWeek, cCollatedStartDateTime, cCollatedEndDateTime, cVisibility);
+                console.dir(webFormData)
+                //Call AJAX with webFormData to create the record in database
                 $.ajax({
-                    url: '/API/AccountRates/Update/' + customerID + '/' + accountRateID,
+                    url: `/API/AccountTimeTable/Update/${accountTTID}`,
                     method: 'PUT',
-                    data: webformData,
+                    data: webFormData,
                     contentType: 'application/x-www-form-urlencoded',
                     datatype: 'application/json'
+                }).done(function (data) {
+                    console.dir(data);
+                    new Noty({ text: data.message, type: 'success', timeout: 5000 }).show();
+                    $('#editAccountTTModal').modal('hide');
+                    loadData(currentPage, pageSize, sortOrder);
 
-                }).done(function (editResult) {
-                    new Noty({ text: editResult.message, type: 'success', timeout: 3000 }).show();
-                    $('#editAccountRateModal').modal('hide');
-                    loadData(currentPage, pageSize, sortOrder)
-                }).fail(function (editResult) {
-                    new Noty({ text: editResult.responseJSON.message, type: 'error', timeout: 5000 }).show();
-                });
+                }).fail(function (conflictdata) {
+                    console.dir(conflictdata);
+                    new Noty({ text: `An error has occured: ${conflictdata.responseJSON.message}`, type: 'error', timeout: 7000 }).show();
+                    $('#detailedConflict').text(conflictdata.responseJSON.message);
 
+                    console.log(conflictdata.overridable);
+                    if (conflictdata.responseJSON.overridable == true) {
+                        $('#overrideBtn').css('display', 'block');
+                        $('#timetableConflictModal .modal-header').addClass('bg-warning');
+                        $('#timetableConflictModal .modal-title').addClass('text-white');
+
+                    } else {
+                        $('#overrideBtn').css('display', 'none');
+                        $('#timetableConflictModal .modal-header').addClass('bg-danger');
+                        $('#timetableConflictModal .modal-title').addClass('text-white');
+                        $('#editAccountTTModal').modal('hide');
+                    }
+                    let conflictRecords = conflictdata.responseJSON.record;
+                    $tableBodyElement = $('#conflictTableBodyElement');
+                    $tableBodyElement.empty();//Clear all html within the table body
+                    for (let i = 0; i < conflictRecords.length; i++) {
+                        oneATT = conflictRecords[i];
+
+                        //Populating one table row
+                        let $cusTR = $("<tr></tr>");
+                        $cusTR.addClass("row m-0");
+
+                        $cusTR.append($("<td></td>", { text: moment((oneATT.day) - 1, 'd').format('dddd') }).addClass("col-md-2"));
+                        $cusTR.append($("<td></td>", { text: moment(oneATT.startTime, 'HH:mm:ss').format('h : mm A') }).addClass("col-md-2"));
+                        $cusTR.append($("<td></td>", { text: moment(oneATT.endTime, 'HH:mm:ss').format('h : mm A') }).addClass("col-md-2"));
+                        $cusTR.append($("<td></td>", { text: moment(oneATT.startDate).format('DD/MM/YYYY') }).addClass("col-md-2"));
+                        $cusTR.append($("<td></td>", { text: moment(oneATT.endDate).format('DD/MM/YYYY') }).addClass("col-md-2"));
+                        if (oneATT.visibility == true) {
+                            $cusTR.append($("<td></td>").addClass("col-md-2").append('<i class="fas fa-check" style="color:#61d800;"></i>'));
+                        }
+                        else {
+                            $cusTR.append($("<td></td>").addClass("col-md-2").append('<i class="fas fa-times" style="color:#ff2410;"></i>'));
+                        }
+
+                        //Append populated table row into table body
+                        $tableBodyElement.append($cusTR);
+                    }
+
+                    $('#timetableConflictModal').modal('show')
+                })
 
             }
         });
 
-        //jQuery validation
-        (function () {
-            $.validator.addMethod('validDate', function (value, element) {
-                //http://stackoverflow.com/questions/24380305/validate-date-in-dd-mm-yyyy-format-usingjquery-validate
-                return this.optional(element) || moment(value, 'DD/MM/YYYY').isValid() && moment(value, 'DD/MM/YYYY').format('DD/MM/YYYY') === value;
-            }, 'Please enter a valid date in the format DD/MM/YYYY.');
-            //Check if the startDate field is not empty
-            $.validator.addMethod('startDateEmpty', function (value, element) {
-                return this.optional(element) || moment($("#startDate").val(), 'DD/MM/YYYY').isValid();
-            }, 'Please enter a valid date in Start Date field before filling this field.');
-            //Check if the endDate field value is after the startDate field
-            $.validator.addMethod('afterStartDate', function (value, element) {
-                return this.optional(element) || moment(value, 'DD/MM/YYYY').isSameOrAfter(moment($("#startDate").val(), 'DD/MM/YYYY'));
-            }, 'Please enter a date later than or same as the start date.');
-            //Check if the rate is valid with 2 decimal place
-            $.validator.addMethod("validDecimal", function (value, element) {
-                return this.optional(element) || /^(\d{0,4})(\.\d{0,2})?$/gm.test(value);
-            }, "Please enter a rate between $0 to $10000 with a maximum of 2 decimal place.");
+        $('#overrideBtn').on('click', function () {
 
-            $("form[name='editAccountRateForm']").validate({
-                success: 'valid',
-                focusCleanup: true,
-                rules: {
-                    accountRate: {
-                        required: true,
-                        number: true,
-                        min: 0,
-                        max: 9999.99,
-                        validDecimal: true
+            //Retrieve valid from form
+            let cDayOfWeek = $('#dayOfWeekSelect').val();
+            let cStartTime = $('#startTime').val();
+            let cStartDate = $('#startDate').val();
+            let cCollatedStartDateTime = cStartDate + ' ' + cStartTime;
+            let cEndTime = $('#endTime').val();
+            let cEndDate = $('#endDate').val();
+            let cCollatedEndDateTime = cEndDate + ' ' + cEndTime;
+            let cVisibility = $('#timetableVisibilityToggle').prop('checked');
 
-                    },
-                    startDate: {
-                        required: true,
-                        validDate: true
-                    },
-                    endDate: {
-                        required: true,
-                        startDateEmpty: true,
-                        validDate: true,
-                        afterStartDate: true
-                    }
-                },
-                messages: {
-                    accountRate: {
-                        required: 'Please enter the rate.',
-                        number: 'Please enter a valid amount.',
-                        min: 'Please enter a rate greater than $0.',
-                        max: 'Please enter a rate smaller than $10000.'
-                    },
-                    startDate: {
-                        required: 'Please pick a start date.',
-                        validDate: 'Please enter a valid start date in the format DD/MM/YYYY.'
-                    },
-                    endDate: {
-                        required: 'Please pick a end date.',
-                        validDate: 'Please enter a valid end date in the format DD/MM/YYYY.',
-                        afterStartDate: 'Please enter a end date later than or same as the start date.'
-                    }
-                },
-                errorPlacement: function (error, element) {
-                    if (element.parent().is($('div.input-group'))) {
-                        error.appendTo(element.parent().parent());
-                    }
-                    else {
-                        error.appendTo(element.parent());
-                    }
+            //Create webFormData object
+            let webFormData = new WebFormData(true, accountRateID, cDayOfWeek, cCollatedStartDateTime, cCollatedEndDateTime, cVisibility);
+            console.dir(webFormData)
+            //Call AJAX with webFormData to create the record in database
+            $.ajax({
+                url: `/API/AccountTimeTable/Update/${accountTTID}`,
+                method: 'PUT',
+                data: webFormData,
+                contentType: 'application/x-www-form-urlencoded',
+                datatype: 'application/json'
+            }).done(function (data) {
+                console.dir(data);
+                new Noty({ text: data.message, type: 'success', timeout: 5000 }).show();
+                $('#timetableConflictModal').modal('hide');
+                $('#editAccountTTModal').modal('hide');
+                loadData(currentPage, pageSize, sortOrder);
 
-                }
+            }).fail(function (data) {
+                new Noty({ text: `An error has occured: ${data.responseJSON.message}`, type: 'error', timeout: 7000 }).show();
+                ('#timetableConflictModal').modal('hide');
             });
+        });
 
-            //Immediate validation upon datepicker losing focus
-            $('#startDate').datepicker({
-                autoclose: true,
-            }).on('change', function () {
-                $(this).valid(); // Triggers a validation test
-                $('#endDate').datepicker('setStartDate', $('#startDate').datepicker('getDate'));
-            });
-            $('#endDate').datepicker({
-                autoclose: true,
-            }).on('change', function () {
-                $(this).valid(); // Triggers a validation test
-            });
+        $('#timetableConflictModal').on('hidden.bs.modal', function (e) {
+            $('#overrideBtn').css('display', 'none');
+            $('#timetableConflictModal .modal-header').removeClass('bg-warning');
+            $('#timetableConflictModal .modal-title').removeClass('text-white');
+        })
 
-        })();
 
         //Reset Edit modal
         $('#editAccountTTModal').on('hidden.bs.modal', function () {
             var modal = $(this);
             //Resetting the form in the edit modal
-            modal.find('.modal-body input#accountRate').val('');
+            modal.find('.modal-body #dayOfWeekSelect').val('');
+            modal.find('.modal-body input#startTime').val('');
             modal.find('.modal-body input#startDate').val('');
+            modal.find('.modal-body input#endTime').val('');
             modal.find('.modal-body input#endDate').val('');
+            let $toggle = modal.find('.modal-body input#timetableVisibilityToggle');
+            if ($toggle.prop('checked') == true) {
+                //$toggle.removeAttr('checked');
+                $toggle.bootstrapToggle('off');
+            }
         });
 
         $('#deleteAccountTTModal').on('show.bs.modal', function (event) {
 
             let $button = $(event.relatedTarget); // Button that triggered the modal
-            accountRateID = $button.data('rateid'); // Extract info from data-* attributes and set the value of the global cusID variable
-            console.dir(accountRateID + " of Modal");
+            accountTTID = $button.data('ttid'); // Extract info from data-* attributes and set the value of the global cusID variable
+            console.dir(accountTTID + " of Modal");
 
             //new Noty({ text: `Edit Button Pressed for ${accountRateID}`, type: 'info', timeout: 1000 }).show();//For Debug
 
             var modal = $(this);
             //Call AJAX to get account summary of the AccountRate with specified accountRateID
             $.ajax({
-                url: '/API/AccountRates/RateSummary/' + customerID + '/' + accountRateID,
+                url: `/API/AccountTimeTable/GetAccountTimeTable/${accountTTID}`,
                 method: 'GET'
             }).done(function (delData) {
                 //Populating modal with data from AJAX
                 console.dir(delData);
-                modal.find('.modal-body .rateDetail p#accountRateRateDetail').text(delData.rate);
-                modal.find('.modal-body .rateDetail p#accountRateStartDateDetail').text(moment(delData.startDate).format('DD/MM/YYYY'));
-                modal.find('.modal-body .rateDetail p#accountRateEndDateDetail').text(moment(delData.endDate).format('DD/MM/YYYY'));
-                modal.find('.modal-body #accAffectSummary p#accountRateTTDetail').text(delData.ttCount);
+                modal.find('.modal-body .ttDetail p#accountTTDayDetail').text(moment(delData.day - 1, 'd').format('dddd'));
+                modal.find('.modal-body .ttDetail p#accountTTDateDetail').text(`${moment(delData.startDate).format('Do MMMM YYYY')} to ${moment(delData.endDate).format('Do MMMM YYYY')}`);
+                modal.find('.modal-body .ttDetail p#accountTTTimeDetail').text(`${moment(delData.startTime, 'hh:mm:ss').format('h : mm A')} to ${moment(delData.endTime, 'hh:mm:ss').format('h : mm A')}`);
             }).fail(function (delData) {
                 console.dir(delData);
                 new Noty({ text: delData.responseJSON.message, type: 'error', timeout: 3000 }).show();
-                $('#deleteAccountRateModal').modal('hide');
+                $('#deleteAccountTTModal').modal('hide');
             });
         })
 
         $('input#deleteSubmitBtn').on('click', function () {
-            console.dir(accountRateID + " of DELETE Method");
-            //Call AJAX to delete the AccountRate record with specified accountRateID
+            console.dir(accountTTID + " of DELETE Method");
+            //Call AJAX to delete the AccountTimeTable record with specified accountRateID
             $.ajax({
-                url: '/API/AccountRates/Delete/' + customerID + '/' + accountRateID,
+                url: `/API/AccountTimeTable/Delete/${accountTTID}`,
                 method: 'DELETE'
             }).done(function (delResult) {
                 new Noty({ text: delResult.message, type: 'success', timeout: 3000 }).show();
-                $('#deleteAccountRateModal').modal('hide');
+                $('#deleteAccountTTModal').modal('hide');
                 loadData(1, pageSize, sortOrder)
             }).fail(function (delResult) {
                 new Noty({ text: delResult.responseJSON.message, type: 'error', timeout: 3000 }).show();
@@ -654,10 +894,9 @@
         $('#deleteAccountTTModal').on('hidden.bs.modal', function () {
             var modal = $(this);
             //Resetting the form in the delete modal
-            modal.find('.modal-body .retailDetail p#accountRateRateDetail').html('<i class="fas fa-circle-notch"></i>');
-            modal.find('.modal-body .retailDetail p#accountRateStartDateDetail').html('<i class="fas fa-circle-notch"></i>');
-            modal.find('.modal-body .retailDetail p#accountRateEndDateDetail').html('<i class="fas fa-circle-notch"></i>');
-            modal.find('.modal-body #accAffectSummary p#accountRateTTDetail').html('<i class="fas fa-circle-notch"></i>');
+            modal.find('.modal-body .ttDetail p#accountTTDayDetail').html('<i class="fas fa-circle-notch"></i>');
+            modal.find('.modal-body .ttDetail p#accountTTDateDetail').html('<i class="fas fa-circle-notch"></i>');
+            modal.find('.modal-body .ttDetail p#accountTTTimeDetail').html('<i class="fas fa-circle-notch"></i>');
         });
     </script>
 }
