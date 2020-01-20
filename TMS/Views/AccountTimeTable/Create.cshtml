@@ -253,15 +253,15 @@
             $('.aATTIndex').attr('href', '/AccountTimeTable/Index/' + customerID + '-' + accountRateID);  //Append accountRateID to the end of account rate breadcrumb anchor href
             $('#ARBreadcrumb').attr('href', '/AccountRates/Index/' + customerID); //Append accountRateID to the end of create account timetable anchor href
 
-            //Call AJAX Method to get the customer name for the title of the page.
-            $.ajax({
-                url: '/API/CustomerAccounts/' + customerID,
-                method: 'GET'
-            }).done(function (data) {
-                $('.accountNameTitle').text(data.accountName);
-            }).fail(function (editData) {
-                new Noty({ text: editData.responseJSON.message, type: 'error', timeout: 3000 }).show();
-            });
+            ////Call AJAX Method to get the customer name for the title of the page.
+            //$.ajax({
+            //    url: '/API/CustomerAccounts/' + customerID,
+            //    method: 'GET'
+            //}).done(function (data) {
+            //    $('.accountNameTitle').text(data.accountName);
+            //}).fail(function (editData) {
+            //    new Noty({ text: editData.responseJSON.message, type: 'error', timeout: 3000 }).show();
+            //});
 
             //Initialise datepicker
             $('[data-toggle="datepicker"]').datepicker({ format: 'DD/MM/YYYY' });
@@ -421,6 +421,7 @@
                     //Create webFormData object
                     let webFormData = new WebFormData(false, accountRateID, cDayOfWeek, cCollatedStartDateTime, cCollatedEndDateTime, cVisibility);
                     console.dir(webFormData)
+
                     //Call AJAX with webFormData to create the record in database
                     $.ajax({
                         url: '/API/AccountTimeTable/Create/',
@@ -537,6 +538,10 @@
             var sortOrder = 'ASC';
             var currentPage;
 
+            var pageSizeFull = 20;
+            var sortOrderFull = 'ASC';
+            var currentPageFull;
+
             (function () {
                 //Call loadData to populate the page with data
                 loadData(1, pageSize, sortOrder);
@@ -560,6 +565,8 @@
                     method: 'GET'
                 }).done(function (data) {
                     console.dir(data);
+                    //Set title of page
+                    $('.accountNameTitle').text(data.accountName + " rate/hour $" + data.accountRate);
 
                     //Data required for pagination
                     let totalRecCount = data.totalRecordCount;
@@ -573,7 +580,7 @@
                     renderData(data.records);
                     //Call function to create navigation properties
                     if (totalPages != 0) {
-                        //createPageNav($('#topNav'), currentPage, totalPages);
+                        createPageNav($('#topNav'), currentPage, totalPages);
                         createPageNav($('#btmNav'), currentPage, totalPages);
                     }
                     //Populate the navigation state message
@@ -620,12 +627,12 @@
                 //Check if current page is first page
                 if (currentPage == 1) {
                     $liPrev.addClass('disabled');
-                    let $a = $('<a>Previous</a>').addClass('page-link').attr('href', '#').attr('tabindex', '-1');
+                    let $a = $('<a>Previous</a>').addClass('page-link').attr('href', '#listCard').attr('tabindex', '-1');
                     $liPrev.append($a);
                 }
                 else {
                     //Set data of previous button as well as onClickListenser
-                    let $a = $('<a>Previous</a>').addClass('page-link').attr('href', '#').attr('data-page-number', currentPage - 1).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder);
+                    let $a = $('<a>Previous</a>').addClass('page-link').attr('href', '#listCard').attr('data-page-number', currentPage - 1).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder);
                     $a.on('click', function (event) {
                         let perPageSize = $(event.target).data('page-size');
                         let pageNumber = $(event.target).data('page-number');
@@ -643,12 +650,12 @@
                     //If its current page make the page number disabled
                     if (i == currentPage) {
                         $li.addClass('active disabled');
-                        let $a = $(`<a>${i}</a>`).addClass('page-link').attr('href', '#').attr('tabindex', '-1');
+                        let $a = $(`<a>${i}</a>`).addClass('page-link').attr('href', '#listCard').attr('tabindex', '-1');
                         $li.append($a);
                     }
                     else {//Other pages other than current page
                         //Set data of the page button as well as onClickListenser
-                        let $a = $(`<a>${i}</a>`).addClass('page-link').attr('href', '#').attr('data-page-number', i).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder);
+                        let $a = $(`<a>${i}</a>`).addClass('page-link').attr('href', '#listCard').attr('data-page-number', i).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder);
                         $a.on('click', function (event) {
                             let perPageSize = $(event.target).data('page-size');
                             let pageNumber = $(event.target).data('page-number');
@@ -666,12 +673,12 @@
                 //Check if current page is last page
                 if (currentPage == totalPages) {
                     $liNext.addClass('disabled');
-                    let $a = $('<a>Next</a>').addClass('page-link').attr('href', '#').attr('tabindex', '-1');
+                    let $a = $('<a>Next</a>').addClass('page-link').attr('href', '#listCard').attr('tabindex', '-1');
                     $liNext.append($a);
                 }
                 else {
                     //Set data of the page button as well as onClickListenser
-                    let $a = $('<a>Next</a>').addClass('page-link').attr('href', '#').attr('data-page-number', currentPage + 1).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder);
+                    let $a = $('<a>Next</a>').addClass('page-link').attr('href', '#listCard').attr('data-page-number', currentPage + 1).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder);
                     $a.on('click', function (event) {
                         let perPageSize = $(event.target).data('page-size');
                         let pageNumber = $(event.target).data('page-number');
@@ -702,8 +709,15 @@
                     $('#listCard').width($('#createCard').width());
                     $('#spacer').css('padding-bottom', '20em');
                     $('#paginationOptions').css('display', 'none');
-                    
-                    loadData(1, 2 , 'ASC');
+
+                    currentPageFull = currentPage;
+                    pageSizeFull = pageSize;
+                    currentPageFull = currentPage;
+
+                    currentPage = 1;
+                    pageSize = 2;
+                    sortOrder = 'ASC';
+                    loadData(currentPage, pageSize, sortOrder);
                 } else {
                     $('#listCard').css('position', '');
                     $('#listCard').css('bottom', '');
@@ -711,7 +725,11 @@
                     $('#listCard').css('z-index', '');
                     $('#spacer').css('padding-bottom', '');
                     $('#paginationOptions').css('display', '');
-                    loadData(1, pageSize, sortOrder);
+
+                    currentPage = currentPageFull;
+                    pageSize = pageSizeFull;
+                    sortOrder = sortOrderFull;
+                    loadData(currentPage, pageSize, sortOrder);
                 }
             })
         });
