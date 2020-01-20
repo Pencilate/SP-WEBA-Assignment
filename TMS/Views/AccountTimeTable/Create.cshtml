@@ -116,7 +116,7 @@
         <h4 class="one" style="padding-top:1.8%;">Existing Timetable for <span class="accountNameTitle">Account Name</span></h4>
     </div>
     <div class="card-body col-12" style="padding:1% 3%">
-        @*<div class="row justify-content-center" id="paginationOptions" style="padding: 0.5em 0;">
+        <div class="row justify-content-center" id="paginationOptions" style="padding: 0.5em 0;">
             <div class="col d-inline">
                 <div class="input-group">
                     <div class="input-group-prepend">
@@ -144,7 +144,7 @@
                     </select>
                 </div>
             </div>
-        </div>*@
+        </div>
         <div class="row justify-content-center">
             <nav>
                 <ul class="pagination" id="topNav"></ul>
@@ -265,7 +265,7 @@
 
             //Initialise datepicker
             $('[data-toggle="datepicker"]').datepicker({ format: 'DD/MM/YYYY' });
-            $('.timepicker').wickedpicker();
+            $('.timepicker').wickedpicker({ minutesInterval: 15, now: "12:00"});
 
             var accountRateRecord = null;
             function retrieveARR() {
@@ -533,7 +533,7 @@
 
 
             //Pagination parameters
-            var pageSize = 2;
+            var pageSize = 20;
             var sortOrder = 'ASC';
             var currentPage;
 
@@ -701,12 +701,17 @@
                     $('#listCard').css('z-index', '10');
                     $('#listCard').width($('#createCard').width());
                     $('#spacer').css('padding-bottom', '20em');
+                    $('#paginationOptions').css('display', 'none');
+                    
+                    loadData(1, 2 , 'ASC');
                 } else {
                     $('#listCard').css('position', '');
                     $('#listCard').css('bottom', '');
                     $('#listCard').css('width', '');
                     $('#listCard').css('z-index', '');
                     $('#spacer').css('padding-bottom', '');
+                    $('#paginationOptions').css('display', '');
+                    loadData(1, pageSize, sortOrder);
                 }
             })
         });

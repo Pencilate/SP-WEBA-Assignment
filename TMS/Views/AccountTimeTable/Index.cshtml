@@ -516,7 +516,7 @@
 
         $('[data-toggle="datepicker"]').datepicker({ format: 'DD/MM/YYYY', zIndex: 2048 });
 
-        $('.timepicker').wickedpicker();
+        $('.timepicker').wickedpicker({ minutesInterval: 15 });
 
         var accountRateRecord = null;
         function retrieveARR() {
@@ -680,7 +680,7 @@
                 console.log('setEndTime')
                 var sT = $("#endTime").remove();
                 $('#etIG').append(sT); // later
-                $("#endTime").wickedpicker({ now: `${moment(editData.endTime, 'hh:mm:ss').format('HH:mm')}` });
+                $("#endTime").wickedpicker({ now: `${moment(editData.endTime, 'hh:mm:ss').format('HH:mm')}`, minutesInterval: 15  });
 
                 $('.timepicker').on('click', function () {
                     $('.wickedpicker').css('z-index', 2560);
