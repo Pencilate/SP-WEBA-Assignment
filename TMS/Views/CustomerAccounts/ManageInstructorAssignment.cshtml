@@ -6,7 +6,7 @@
         <li class="breadcrumb-item font-small">
             <a asp-controller="CustomerAccounts" asp-action="Index">Manage Customer Accounts</a>
         </li>
-        <li class="breadcrumb-item font-small active">Assign Instructor to Customer Account</li>
+        <li class="breadcrumb-item font-small active">Manage Instructor Assignment</li>
     </ol>
 </nav>
 
@@ -14,9 +14,9 @@
     <div class="card-header stylish-color-dark white-text">
         <div class="container-fluid d-flex">
             <h4 class="one" style="padding-top:1.8%;width:80%">Assign instructor(s) to <span id="accountNameTitle">Account Name</span></h4>
-            <a href="" id="backBtn" class="btn btn-secondary" style="text-align:center;">Back</a>
+            <a href="/CustomerAccounts/Index" id="backBtn" class="btn btn-secondary" style="text-align:center;">Back</a>
             <button type="button" id="unassignInstrctorBtn" class="btn btn-danger" style="margin-left:auto"><i class="fas fa-minus" style="color:#FFF;float:left;padding-top: 0.8em;"></i> Unassgin  Instructor</button>
-            <a href="#" id="assignInstrctorBtn" class="btn btn-primary" style="margin-left:auto"><i class="fas fa-plus" style="color:#FFF;float:left;padding-top: 0.8em;"></i> Assign Instructor</a>
+            <a href="/CustomerAccounts/AssignInstructors/" id="assignInstrctorBtn" class="btn btn-primary" style="margin-left:auto"><i class="fas fa-plus" style="color:#FFF;float:left;padding-top: 0.8em;"></i> Assign Instructor</a>
         </div>
     </div>
     <div class="card-body col-12" style="padding:1% 3%">
@@ -64,9 +64,10 @@
                             <th class="col-md-1">Pick</th>
                             <th class="col-md-2">Full Name</th>
                             <th class="col-md-2">Email</th>
-                            <th class="col-md-2">Wage rate per hour (%)</th>
+                            <th class="col-md-1">Wage rate per hour (%)</th>
+                            <th class="col-md-2">Accounts</th>
                             <th class="col-md-2">Created at</th>
-                            <th class="col-md-2">Assigned by</th>
+                            <th class="col-md-1">Assigned by</th>
                         </tr>
                     </thead>
                     <tbody id="tableBodyElement"></tbody>
@@ -158,7 +159,7 @@
             }
         }
 
-        $('#accountRateAddBtn').attr('href', '/AccountRates/Create/' + customerID); //Append customerID to the end of create account rate anchor href
+        $('#assignInstrctorBtn').attr('href', '/CustomerAccounts/AssignInstructors/' + customerID); //Append customerID to the end of create account rate anchor href
 
         var accountRateID; //Global accountRateID variable
 
@@ -231,9 +232,10 @@
                 $cusTR.append($(`<td><input type="checkbox" name="unassignChk" id="unassignChk" value="${oneIA.id}"></input></td>`).addClass("col-md-1"));
                 $cusTR.append($("<td></td>", { text: oneIA.name }).addClass("col-md-2"));
                 $cusTR.append($("<td></td>", { text: oneIA.email }).addClass("col-md-2"));
-                $cusTR.append($("<td></td>", { text: oneIA.wage }).addClass("col-md-2"));
+                $cusTR.append($("<td></td>", { text: oneIA.wage }).addClass("col-md-1"));
+                $cusTR.append($("<td></td>", { text: oneIA.accountsAssigned }).addClass("col-md-2"));
                 $cusTR.append($("<td></td>", { text: moment(oneIA.createdAt).format('DD/MM/YYYY') }).addClass("col-md-2"));
-                $cusTR.append($("<td></td>", { text: oneIA.assignedBy }).addClass("col-md-2"));
+                $cusTR.append($("<td></td>", { text: oneIA.assignedBy }).addClass("col-md-1"));
 
                 //Append populated table row into table body
                 $tableBodyElement.append($cusTR);
@@ -330,7 +332,7 @@
             }).fail(function (data) {
                 new Noty({ text: data.responseJSON.message, type: 'error', timeout: 5000 }).show();
 
-            })
+            });
         })
 
 
