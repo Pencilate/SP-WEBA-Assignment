@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -29,6 +30,7 @@ namespace TMS.APIs
         }
 
         // GET api/<controller>/5
+        [Authorize("ADMIN")]
         [HttpGet("GetIAPaginated/{id}")]
         public IActionResult Get(int id, [FromQuery]QueryPagingParametersForInstructorAccount inParameters)
         {
@@ -178,6 +180,7 @@ namespace TMS.APIs
             }
         }
 
+        [Authorize("ADMIN")]
         [HttpGet("GetAllInstructorPaginated/{id}")]
         public IActionResult GetAllInstructorPaginated(int id, [FromQuery]QueryPagingParametersForInstructorAccount inParameters)
         {
@@ -333,15 +336,33 @@ namespace TMS.APIs
         }
 
         // POST api/<controller>
-        [HttpPost]
-        public void Post([FromBody]string value)
+        [Authorize("ADMIN")]
+        [HttpPost("Assign")]
+        public IActionResult Post([FromForm]IFormCollection  data)
         {
-        }
+            int userId = int.Parse(User.FindFirst("userid").Value); //Retireve the user id of the current logged in user
+            try
+            {
+                InstructorAccount newIA = new InstructorAccount();
+                newIA.CustomerAccountId = int.Parse(data["customerId"]);
+                newIA.InstructorId = int.Parse(data["instructorId"]);
+                newIA.WageRate = decimal.Parse(data["wageRate"]);
+                newIA.CreatedAt = _appDateTimeService.GetCurrentDateTime();
+                newIA.CreatedById = userId;
 
-        // PUT api/<controller>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
-        {
+                Database.InstructorAccounts.Add(newIA);
+                Database.SaveChanges();
+
+               return Ok(new { message = "Successfully assigned instructor"});
+            }
+            catch (SqlException ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Something wrong has occured. Please contact the administrators." }); //If any database related operation occur, return ISE
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "There are issues with the request." });
+            }
         }
 
         // DELETE api/<controller>/5

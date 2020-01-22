@@ -320,7 +320,6 @@
                 instructorAccountIdList.push($(this).val());
             });
 
-            console.dir(webFormData);
             $.ajax({
                 method: 'DELETE',
                 url: `/API/Instructors/Unassign?value=${instructorAccountIdList}`,
@@ -328,7 +327,7 @@
                 datatype: 'application/json'
             }).done(function (data) {
                 new Noty({ text: data.message, type: 'success', timeout: 3000 }).show();
-
+                loadData(1, pageSize, sortOrder);
             }).fail(function (data) {
                 new Noty({ text: data.responseJSON.message, type: 'error', timeout: 5000 }).show();
 

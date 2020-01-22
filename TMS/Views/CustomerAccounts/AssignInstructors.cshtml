@@ -383,16 +383,17 @@
             let wage = $selectedWageSelect.val()
             console.log('Selected Wage: ' + wage);
             let webFormData = new WebFormData(customerID, choosenInstructor, wage);
+            console.dir(webFormData);
 
             $.ajax({
                 method: 'POST',
-                url: `/API/Instructors/Assign`,
+                url: '/API/Instructors/Assign',
                 data: webFormData,
-                contentType: 'application/json',
+                contentType: 'application/x-www-form-urlencoded',
                 datatype: 'application/json'
             }).done(function (data) {
                 new Noty({ text: data.message, type: 'success', timeout: 3000 }).show();
-
+                loadData(1, pageSize, sortOrder);
             }).fail(function (data) {
                 new Noty({ text: data.responseJSON.message, type: 'error', timeout: 5000 }).show();
 
