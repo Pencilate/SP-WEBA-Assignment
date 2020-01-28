@@ -53,6 +53,15 @@
                     </select>
                 </div>
             </div>
+            <div class="col">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <label class="input-group-text" for="searchFilter"> Search</label>
+                    </div>
+                    <input type="text" name="searchFilter" id="searchFilterInput" class="form-control" />
+                </div>
+
+            </div>
         </div>
         <div class="row justify-content-center">
             <nav>
@@ -173,27 +182,33 @@
         var pageSize = 5;
         var sortOrder = 'ASC';
         var currentPage;
+        var searchTerm = '';
 
         (function () {
             //Call loadData to populate the page with data
-            loadData(1, pageSize, sortOrder);
+            loadData(1, pageSize, sortOrder, '');
 
             //Set onChangeListeners for filter options
             $('#pageSizeSelection').on('change', function () {
                 pageSize = this.value;
-                loadData(1, pageSize, sortOrder);
-            })
+                loadData(1, pageSize, sortOrder, searchTerm);
+            });
             $('#sortOrderSelection').on('change', function () {
                 sortOrder = this.value;
-                loadData(currentPage, pageSize, sortOrder);
-            })
+                loadData(currentPage, pageSize, sortOrder, searchTerm);
+            });
+
+            $('#searchFilterInput').on('change', function () {
+                searchTerm = this.value;
+                loadData(1, pageSize, sortOrder, searchTerm)
+            });
 
         })();
 
-        function loadData(pageNo, perPageSize, prefSortOrder) {
+        function loadData(pageNo, perPageSize, prefSortOrder, prefSearchTerm) {
              //Call AJAX to retrieve all AccountRate data
             $.ajax({
-                url: `/API/Instructors/GetAllInstructorPaginated/${customerID}?page_number=${pageNo}&per_page=${perPageSize}&sort_order=${prefSortOrder}`,
+                url: `/API/Instructors/GetAllInstructorPaginated/${customerID}?page_number=${pageNo}&per_page=${perPageSize}&sort_order=${prefSortOrder}&search_term=${prefSearchTerm}`,
                 method: 'GET'
             }).done(function (data) {
                 console.dir(data);
@@ -298,12 +313,13 @@
             }
             else {
                 //Set data of previous button as well as onClickListenser
-                let $a = $('<a>Previous</a>').addClass('page-link').attr('href', '#').attr('data-page-number', currentPage - 1).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder);
+                let $a = $('<a>Previous</a>').addClass('page-link').attr('href', '#').attr('data-page-number', currentPage - 1).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder).attr('data-search', searchTerm);
                 $a.on('click', function (event) {
                     let perPageSize = $(event.target).data('page-size');
                     let pageNumber = $(event.target).data('page-number');
                     let prefSortOrder = $(event.target).data('sort-order');
-                    loadData(pageNumber, perPageSize, prefSortOrder);
+                    let prefSearchTerm = $(event.target).data('search');
+                    loadData(pageNumber, perPageSize, prefSortOrder, prefSearchTerm);
                 })
                 $liPrev.append($a);
             }
@@ -321,12 +337,13 @@
                 }
                 else {//Other pages other than current page
                     //Set data of the page button as well as onClickListenser
-                    let $a = $(`<a>${i}</a>`).addClass('page-link').attr('href', '#').attr('data-page-number', i).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder);
+                    let $a = $(`<a>${i}</a>`).addClass('page-link').attr('href', '#').attr('data-page-number', i).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder).attr('data-search', searchTerm);
                     $a.on('click', function (event) {
                         let perPageSize = $(event.target).data('page-size');
                         let pageNumber = $(event.target).data('page-number');
                         let prefSortOrder = $(event.target).data('sort-order');
-                        loadData(pageNumber, perPageSize, prefSortOrder);
+                        let prefSearchTerm = $(event.target).data('search');
+                        loadData(pageNumber, perPageSize, prefSortOrder, prefSearchTerm);
                     })
                     $li.append($a);
                 }
@@ -344,12 +361,13 @@
             }
             else {
                 //Set data of the page button as well as onClickListenser
-                let $a = $('<a>Next</a>').addClass('page-link').attr('href', '#').attr('data-page-number', currentPage + 1).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder);
+                let $a = $('<a>Next</a>').addClass('page-link').attr('href', '#').attr('data-page-number', currentPage + 1).attr('data-page-size', pageSize).attr('data-sort-order', sortOrder).attr('data-search', searchTerm);
                 $a.on('click', function (event) {
                     let perPageSize = $(event.target).data('page-size');
                     let pageNumber = $(event.target).data('page-number');
                     let prefSortOrder = $(event.target).data('sort-order');
-                    loadData(pageNumber, perPageSize, prefSortOrder);
+                    let prefSearchTerm = $(event.target).data('search');
+                    loadData(pageNumber, perPageSize, prefSortOrder, prefSearchTerm);
                 })
                 $liNext.append($a);
             }
@@ -436,7 +454,7 @@
                     datatype: 'application/json'
                 }).done(function (data) {
                     new Noty({ text: data.message, type: 'success', timeout: 3000 }).show();
-                    loadData(1, pageSize, sortOrder);
+                    loadData(currentPage, pageSize, sortOrder, searchTerm);
                 }).fail(function (data) {
                     new Noty({ text: data.responseJSON.message, type: 'error', timeout: 5000 }).show();
 

@@ -45,6 +45,7 @@ namespace TMS.APIs
                 int pageSize = 10;
                 int currentPage = 0;
                 string sortOrder = "ASC";
+                string searchTerm = "";
 
                 int totalPage = 0;
                 int startRecord = 0;
@@ -55,12 +56,14 @@ namespace TMS.APIs
                     currentPage = Int32.Parse(inParameters.page_number.ToString());
                     pageSize = Int32.Parse(inParameters.per_page.ToString());
                     sortOrder = inParameters.sort_order;
+                    searchTerm = inParameters.search_term;
                 }
                 else
                 {
                     currentPage = 1;
                     pageSize = 10;
                     sortOrder = "ASC";
+                    searchTerm = "";
                 }
                 if (currentPage == 1)  //Calculate the page's first record's index
                 {
@@ -75,12 +78,27 @@ namespace TMS.APIs
                 if (sortOrder.Equals("ASC"))
                 {
                     //Query the database for AccountRate records related to the customer in the ascending order of AccountRateId
-                    cusInstrctorAccounts = Database.InstructorAccounts.Where(ia => ia.CustomerAccountId == id).Include(ia => ia.Instructor).Include(ia => ia.CreatedBy).OrderBy(ia => ia.InstructorAccountId).ToList();
+                    if (String.IsNullOrEmpty(searchTerm))
+                    {
+                        cusInstrctorAccounts = Database.InstructorAccounts.Where(ia => ia.CustomerAccountId == id).Include(ia => ia.Instructor).Include(ia => ia.CreatedBy).OrderBy(ia => ia.InstructorAccountId).ToList();
+                    }
+                    else
+                    {
+                        cusInstrctorAccounts = Database.InstructorAccounts.Where(ia => ia.CustomerAccountId == id).Include(ia => ia.Instructor).Include(ia => ia.CreatedBy).Where(ia => ia.Instructor.FullName.Contains(searchTerm)).OrderBy(ia => ia.InstructorAccountId).ToList();
+                    }
                 }
                 else if (sortOrder.Equals("DESC"))
                 {
                     //Query the database for AccountRate records related to the customer in the descending order of AccountRateId
-                    cusInstrctorAccounts = Database.InstructorAccounts.Where(ia => ia.CustomerAccountId == id).Include(ia => ia.Instructor).Include(ia => ia.CreatedBy).OrderByDescending(ia => ia.InstructorAccountId).ToList();
+                    if (String.IsNullOrEmpty(searchTerm))
+                    {
+                        cusInstrctorAccounts = Database.InstructorAccounts.Where(ia => ia.CustomerAccountId == id).Include(ia => ia.Instructor).Include(ia => ia.CreatedBy).OrderByDescending(ia => ia.InstructorAccountId).ToList();
+                    }
+                    else
+                    {
+                        cusInstrctorAccounts = Database.InstructorAccounts.Where(ia => ia.CustomerAccountId == id).Include(ia => ia.Instructor).Include(ia => ia.CreatedBy).Where(ia => ia.Instructor.FullName.Contains(searchTerm)).OrderByDescending(ia => ia.InstructorAccountId).ToList();
+                    }
+                    
                 }
                 else
                 {
@@ -195,6 +213,7 @@ namespace TMS.APIs
                 int pageSize = 10;
                 int currentPage = 0;
                 string sortOrder = "ASC";
+                string searchTerm = "";
 
                 int totalPage = 0;
                 int startRecord = 0;
@@ -205,12 +224,14 @@ namespace TMS.APIs
                     currentPage = Int32.Parse(inParameters.page_number.ToString());
                     pageSize = Int32.Parse(inParameters.per_page.ToString());
                     sortOrder = inParameters.sort_order;
+                    searchTerm = inParameters.search_term;
                 }
                 else
                 {
                     currentPage = 1;
                     pageSize = 10;
                     sortOrder = "ASC";
+                    searchTerm = "";
                 }
                 if (currentPage == 1)  //Calculate the page's first record's index
                 {
@@ -225,12 +246,25 @@ namespace TMS.APIs
                 if (sortOrder.Equals("ASC"))
                 {
                     //Query the database for AccountRate records related to the customer in the ascending order of AccountRateId
-                    instrctors = Database.AppUsers.Where(au => au.RoleId == 2).OrderBy(au => au.Id).ToList();
+                    if (String.IsNullOrEmpty(searchTerm))
+                    {
+                        instrctors = Database.AppUsers.Where(au => au.RoleId == 2).OrderBy(au => au.Id).ToList();
+                    }
+                    else{
+                        instrctors = Database.AppUsers.Where(au => au.RoleId == 2).Where(au => au.FullName.Contains(searchTerm)).OrderBy(au => au.Id).ToList();
+                    }
                 }
                 else if (sortOrder.Equals("DESC"))
                 {
                     //Query the database for AccountRate records related to the customer in the descending order of AccountRateId
-                    instrctors = Database.AppUsers.Where(au => au.RoleId == 2).OrderByDescending(au => au.Id).ToList();
+                    if (String.IsNullOrEmpty(searchTerm))
+                    {
+                        instrctors = Database.AppUsers.Where(au => au.RoleId == 2).OrderByDescending(au => au.Id).ToList();
+                    }
+                    else
+                    {
+                        instrctors = Database.AppUsers.Where(au => au.RoleId == 2).Where(au => au.FullName.Contains(searchTerm)).OrderByDescending(au => au.Id).ToList();
+                    }
                 }
                 else
                 {
@@ -397,6 +431,8 @@ namespace TMS.APIs
         public int page_number { get; set; }
         public int per_page { get; set; }
         public string sort_order { get; set; }
+        public string search_term { get; set; }
+        
 
     }//end of QueryPagingParametersForAccountRates class
 }
