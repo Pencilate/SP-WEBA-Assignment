@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
@@ -224,52 +225,76 @@ namespace TMS.APIs
                 newATT.UpdatedById = userId;
 
                 bool forceOverride = Boolean.Parse(data["override"]);
-                List<AccountTimeTable> existingATT = Database.AccountTimeTable.Where(a => a.AccountRateId == ARID).ToList();
                 bool overlap = false;
                 bool identical = false;
                 List<AccountTimeTable> identicalATT = new List<AccountTimeTable>();
                 List<AccountTimeTable> overlapATT = new List<AccountTimeTable>();
-                foreach (AccountTimeTable att in existingATT) //Iterate thorugh all the AccountRate record to check for overlap
-                {
-                    if (newATT.DayOfWeekNumber == att.DayOfWeekNumber)
-                    {
-                        if ((newATT.EffectiveStartDateTime.CompareTo(att.EffectiveStartDateTime) == 0) && (newATT.EffectiveEndDateTime.CompareTo(att.EffectiveEndDateTime) == 0))
-                        {
-                            identical = true;
-                            identicalATT.Add(att);
-                        }
 
-                        bool overlapCurrentRecord = false;
-                        if (newATT.EffectiveStartDateTime.CompareTo(att.EffectiveStartDateTime) >= 0)// Check if the new AR Start Date is After the current AR Start Date
-                        {
-                            if (newATT.EffectiveEndDateTime.CompareTo(att.EffectiveEndDateTime) <= 0)// Check if the new AR End Date is Before the current AR End Date
-                            {
-                                overlapCurrentRecord = true; //Record overlap the entire period
-                            }
-                            if (newATT.EffectiveStartDateTime.CompareTo(att.EffectiveEndDateTime) <= 0)// Check if the new AR Start Date is Before the current AR End Date
-                            {
-                                overlapCurrentRecord = true; // Record overlap front of period
-                            }
+                SqlParameter[] parameters = new SqlParameter[4];
+                parameters[0] = new SqlParameter("@AccountRateId", SqlDbType.Int);
+                parameters[0].Value = newATT.AccountRateId;
+                parameters[1] = new SqlParameter("@DayOfWeek", SqlDbType.Int);
+                parameters[1].Value = newATT.DayOfWeekNumber;
+                parameters[2] = new SqlParameter("@StartDateTime", SqlDbType.DateTime2);
+                parameters[2].Value = newATT.EffectiveStartDateTime;
+                parameters[3] = new SqlParameter("@EndDateTime", SqlDbType.DateTime2);
+                parameters[3].Value = newATT.EffectiveEndDateTime;
 
-                        }
-                        else// The new AR Start Date is Before the current AR Start Date
-                        {
-                            if (newATT.EffectiveEndDateTime.CompareTo(att.EffectiveEndDateTime) >= 0)// Check if the new AR End Date is After the current AR End Date
-                            {
-                                overlapCurrentRecord = true; //Record is encapulated by period
-                            }
-                            if (newATT.EffectiveEndDateTime.CompareTo(att.EffectiveStartDateTime) >= 0)// Check if new AR End Date is After the current AR Start Date
-                            {
-                                overlapCurrentRecord = true; //Record over back of period
-                            }
-                        }
-                        if (overlapCurrentRecord)//If there is overlap, collate a string of all the date clashes
-                        {
-                            overlap = true;
-                            overlapATT.Add(att);
-                        }
-                    }
+                identicalATT = Database.AccountTimeTable.FromSql($"exec uspAccountTimeTableCheckIdenticalBeforeAdd @AccountRateId, @DayOfWeek, @StartDateTime, @EndDateTime",parameters).ToList();
+                if (identicalATT != null && identicalATT.Count > 0) {
+                    identical = true;
                 }
+                //overlapATT = Database.AccountTimeTable.FromSql($"exec uspAccountTimeTableCheckOverlapBeforeAdd {newATT.AccountTimeTableId},{newATT.AccountRateId},{newATT.DayOfWeekNumber},'{newATT.EffectiveStartDateTime.ToString("yyyy-MM-dd HH:mm:ss.fffffff")}','{newATT.EffectiveEndDateTime.ToString("yyyy-MM-dd HH:mm:ss.fffffff")}'").ToList();
+                overlapATT = Database.AccountTimeTable.FromSql($"exec uspAccountTimeTableCheckOverlapBeforeAdd @AccountRateId, @DayOfWeek, @StartDateTime, @EndDateTime", parameters).ToList();
+                if (overlapATT != null && overlapATT.Count > 0)
+                {
+                    overlap = true;
+                }
+
+                //List<AccountTimeTable> existingATT = Database.AccountTimeTable.Where(a => a.AccountRateId == ARID).ToList();
+                //foreach (AccountTimeTable att in existingATT) //Iterate thorugh all the AccountRate record to check for overlap
+                //{
+                //    if (newATT.DayOfWeekNumber == att.DayOfWeekNumber)
+                //    {
+                //        if ((newATT.EffectiveStartDateTime.CompareTo(att.EffectiveStartDateTime) == 0) && (newATT.EffectiveEndDateTime.CompareTo(att.EffectiveEndDateTime) == 0))
+                //        {
+                //            identical = true;
+                //            identicalATT.Add(att);
+                //        }
+
+                //        bool overlapCurrentRecord = false;
+                //        if (newATT.EffectiveStartDateTime.CompareTo(att.EffectiveStartDateTime) >= 0)// Check if the new AR Start Date is After the current AR Start Date
+                //        {
+                //            if (newATT.EffectiveEndDateTime.CompareTo(att.EffectiveEndDateTime) <= 0)// Check if the new AR End Date is Before the current AR End Date
+                //            {
+                //                overlapCurrentRecord = true; //Record overlap the entire period
+                //            }
+                //            if (newATT.EffectiveStartDateTime.CompareTo(att.EffectiveEndDateTime) <= 0)// Check if the new AR Start Date is Before the current AR End Date
+                //            {
+                //                overlapCurrentRecord = true; // Record overlap front of period
+                //            }
+
+                //        }
+                //        else// The new AR Start Date is Before the current AR Start Date
+                //        {
+                //            if (newATT.EffectiveEndDateTime.CompareTo(att.EffectiveEndDateTime) >= 0)// Check if the new AR End Date is After the current AR End Date
+                //            {
+                //                overlapCurrentRecord = true; //Record is encapulated by period
+                //            }
+                //            if (newATT.EffectiveEndDateTime.CompareTo(att.EffectiveStartDateTime) >= 0)// Check if new AR End Date is After the current AR Start Date
+                //            {
+                //                overlapCurrentRecord = true; //Record over back of period
+                //            }
+                //        }
+                //        if (overlapCurrentRecord)//If there is overlap, collate a string of all the date clashes
+                //        {
+                //            overlap = true;
+                //            overlapATT.Add(att);
+                //        }
+                //    }
+                //}
+
+
                 if (identical) {
                     List<object> result = new List<object>();
                     foreach (AccountTimeTable iATT in identicalATT) {
@@ -348,47 +373,72 @@ namespace TMS.APIs
                 bool identical = false;
                 List<AccountTimeTable> identicalATT = new List<AccountTimeTable>();
                 List<AccountTimeTable> overlapATT = new List<AccountTimeTable>();
-                foreach (AccountTimeTable att in existingATT) //Iterate thorugh all the AccountRate record to check for overlap
+
+                SqlParameter[] parameters = new SqlParameter[5];
+                parameters[0] = new SqlParameter("@AccountTimeTableId", SqlDbType.Int);
+                parameters[0].Value = foundATT.AccountTimeTableId;
+                parameters[1] = new SqlParameter("@AccountRateId", SqlDbType.Int);
+                parameters[1].Value = foundATT.AccountRateId;
+                parameters[2] = new SqlParameter("@DayOfWeek", SqlDbType.Int);
+                parameters[2].Value = foundATT.DayOfWeekNumber;
+                parameters[3] = new SqlParameter("@StartDateTime", SqlDbType.DateTime2);
+                parameters[3].Value = foundATT.EffectiveStartDateTime;
+                parameters[4] = new SqlParameter("@EndDateTime", SqlDbType.DateTime2);
+                parameters[4].Value = foundATT.EffectiveEndDateTime;
+
+                identicalATT = Database.AccountTimeTable.FromSql($"exec uspAccountTimeTableCheckIdenticalBeforeUpdate @AccountTimeTableId,  @AccountRateId, @DayOfWeek, @StartDateTime, @EndDateTime", parameters).ToList();
+                if (identicalATT != null && identicalATT.Count > 0)
                 {
-                    if (foundATT.DayOfWeekNumber == att.DayOfWeekNumber)
-                    {
-                        if ((foundATT.EffectiveStartDateTime.CompareTo(att.EffectiveStartDateTime) == 0) && (foundATT.EffectiveEndDateTime.CompareTo(att.EffectiveEndDateTime) == 0))
-                        {
-                            identical = true;
-                            identicalATT.Add(att);
-                        }
-
-                        bool overlapCurrentRecord = false;
-                        if (foundATT.EffectiveStartDateTime.CompareTo(att.EffectiveStartDateTime) >= 0)// Check if the new AR Start Date is After the current AR Start Date
-                        {
-                            if (foundATT.EffectiveEndDateTime.CompareTo(att.EffectiveEndDateTime) <= 0)// Check if the new AR End Date is Before the current AR End Date
-                            {
-                                overlapCurrentRecord = true; //Record overlap the entire period
-                            }
-                            if (foundATT.EffectiveStartDateTime.CompareTo(att.EffectiveEndDateTime) <= 0)// Check if the new AR Start Date is Before the current AR End Date
-                            {
-                                overlapCurrentRecord = true; // Record overlap front of period
-                            }
-
-                        }
-                        else// The new AR Start Date is Before the current AR Start Date
-                        {
-                            if (foundATT.EffectiveEndDateTime.CompareTo(att.EffectiveEndDateTime) >= 0)// Check if the new AR End Date is After the current AR End Date
-                            {
-                                overlapCurrentRecord = true; //Record is encapulated by period
-                            }
-                            if (foundATT.EffectiveEndDateTime.CompareTo(att.EffectiveStartDateTime) >= 0)// Check if new AR End Date is After the current AR Start Date
-                            {
-                                overlapCurrentRecord = true; //Record over back of period
-                            }
-                        }
-                        if (overlapCurrentRecord)//If there is overlap, collate a string of all the date clashes
-                        {
-                            overlap = true;
-                            overlapATT.Add(att);
-                        }
-                    }
+                    identical = true;
                 }
+                overlapATT = Database.AccountTimeTable.FromSql($"exec uspAccountTimeTableCheckOverlapBeforeUpdate @AccountTimeTableId,  @AccountRateId, @DayOfWeek, @StartDateTime, @EndDateTime", parameters).ToList();
+                if (overlapATT != null && overlapATT.Count > 0)
+                {
+                    overlap = true;
+                }
+
+                //foreach (AccountTimeTable att in existingATT) //Iterate thorugh all the AccountRate record to check for overlap
+                //{
+                //    if (foundATT.DayOfWeekNumber == att.DayOfWeekNumber)
+                //    {
+                //        if ((foundATT.EffectiveStartDateTime.CompareTo(att.EffectiveStartDateTime) == 0) && (foundATT.EffectiveEndDateTime.CompareTo(att.EffectiveEndDateTime) == 0))
+                //        {
+                //            identical = true;
+                //            identicalATT.Add(att);
+                //        }
+
+                //        bool overlapCurrentRecord = false;
+                //        if (foundATT.EffectiveStartDateTime.CompareTo(att.EffectiveStartDateTime) >= 0)// Check if the new AR Start Date is After the current AR Start Date
+                //        {
+                //            if (foundATT.EffectiveEndDateTime.CompareTo(att.EffectiveEndDateTime) <= 0)// Check if the new AR End Date is Before the current AR End Date
+                //            {
+                //                overlapCurrentRecord = true; //Record overlap the entire period
+                //            }
+                //            if (foundATT.EffectiveStartDateTime.CompareTo(att.EffectiveEndDateTime) <= 0)// Check if the new AR Start Date is Before the current AR End Date
+                //            {
+                //                overlapCurrentRecord = true; // Record overlap front of period
+                //            }
+
+                //        }
+                //        else// The new AR Start Date is Before the current AR Start Date
+                //        {
+                //            if (foundATT.EffectiveEndDateTime.CompareTo(att.EffectiveEndDateTime) >= 0)// Check if the new AR End Date is After the current AR End Date
+                //            {
+                //                overlapCurrentRecord = true; //Record is encapulated by period
+                //            }
+                //            if (foundATT.EffectiveEndDateTime.CompareTo(att.EffectiveStartDateTime) >= 0)// Check if new AR End Date is After the current AR Start Date
+                //            {
+                //                overlapCurrentRecord = true; //Record over back of period
+                //            }
+                //        }
+                //        if (overlapCurrentRecord)//If there is overlap, collate a string of all the date clashes
+                //        {
+                //            overlap = true;
+                //            overlapATT.Add(att);
+                //        }
+                //    }
+                //}
+
                 if (identical)
                 {
                     List<object> result = new List<object>();

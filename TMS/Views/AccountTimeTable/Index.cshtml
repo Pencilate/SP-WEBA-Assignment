@@ -662,6 +662,10 @@
                 modal.find('.modal-body input#endTime').val(moment(editData.endTime, 'hh:mm:ss').format('h : mm A'));
                 modal.find('.modal-body input#endDate').val(moment(editData.endDate).format('DD/MM/YYYY'));
 
+                modal.find('.modal-body input#startDate').datepicker('setStartDate', accountRateRecord.startDate);
+                modal.find('.modal-body input#startDate').datepicker('setEndDate', accountRateRecord.endDate);
+                modal.find('.modal-body input#endDate').datepicker('setStartDate', accountRateRecord.startDate);
+                modal.find('.modal-body input#endDate').datepicker('setEndDate', accountRateRecord.endDate);
                 
 
                 $('#startDate').datepicker('update');
@@ -675,7 +679,7 @@
                 console.log('setStartTime')
                 var sT = $("#startTime").remove();
                 $('#stIG').append(sT); // later
-                $("#startTime").wickedpicker({ now: `${moment(editData.startTime, 'hh:mm:ss').format('HH:mm')}` });
+                $("#startTime").wickedpicker({ now: `${moment(editData.startTime, 'hh:mm:ss').format('HH:mm')}`, minutesInterval: 15 });
 
                 console.log('setEndTime')
                 var sT = $("#endTime").remove();

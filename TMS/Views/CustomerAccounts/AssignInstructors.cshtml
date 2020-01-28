@@ -22,6 +22,9 @@
         </div>
     </div>
     <div class="card-body col-12" style="padding:1% 3%">
+        <div class="alert alert-info" role="alert">
+            <span id="alertMsg">Please select a instructor using the respective radio button and fill in their respective wage rate.</span>
+        </div>
         <div class="row justify-content-center" id="paginationOptions" style="padding: 0.5em 0;">
             <div class="col d-inline">
                 <div class="input-group">
@@ -59,20 +62,22 @@
         <div class="row">
             <div class="table-responsive-md w-100">
                 <div id="topNavigationInterfaceContainer" class="btn-toolbar float-right" role="toolbar"></div>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr class="row m-0" style="vertical-align:central;">
-                            <th class="col-md-1">No.</th>
-                            <th class="col-md-1">Pick</th>
-                            <th class="col-md-2">Wage rate per hour (%)</th>
-                            <th class="col-md-2">Full Name</th>
-                            <th class="col-md-2">Email</th>
-                            <th class="col-md-4">Accounts</th>
+                <form name="assignInstructorForm" novalidate>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr class="row m-0" style="vertical-align:central;">
+                                <th class="col-md-1">No.</th>
+                                <th class="col-md-1">Pick</th>
+                                <th class="col-md-2">Wage rate per hour (%)</th>
+                                <th class="col-md-2">Full Name</th>
+                                <th class="col-md-2">Email</th>
+                                <th class="col-md-4">Accounts</th>
 
-                        </tr>
-                    </thead>
-                    <tbody id="tableBodyElement"></tbody>
-                </table>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBodyElement"></tbody>
+                    </table>
+                </form>
             </div>
         </div>
         <div class="row justify-content-center">
@@ -351,27 +356,64 @@
             $navElm.append($liNext);
         }
 
-        $('#unassignInstrctorBtn').on('click', function () {
-            let $chkBoxElement = $('input[type=checkbox]:checked');
-            let instructorAccountIdList = [];
-            $chkBoxElement.each(function () {
-                instructorAccountIdList.push($(this).val());
+        //IIFE function for jQuery-validation
+        (function () {
+
+            $("form[name='assignInstructorForm']").validate({
+                success: 'valid',
+                focusCleanup: true,
+                rules: {
+                    assignRadio: {
+                        required: true,
+                        //require_from_group: [1, ".assignRadio"]
+                    },
+                    wageSelection: {
+                        //required: true,
+                        require_from_group: [1, ".wageSelection select"]
+                    }
+                },
+                messages: {
+                    assignRadio: {
+                        //require_from_group: 'Please pick a instructor.'
+                        required: 'Please pick a instructor.'
+                    },
+                    wageSelection: {
+                        require_from_group: 'Please pick a wage.'
+                    }
+                },
+                errorPlacement: function (error, element) {
+                    //if (element.parent().is($('div.input-group'))) {
+                    //    error.appendTo(element.parent().parent());
+                    //}
+                    //else {
+                    //    //error.appendTo(element.parent());
+                    //    error.appendTo(element.next());
+                    //}
+                    return false;
+
+                },
+                invalidHandler: function (form, validator) {
+                    var errors = validator.numberOfInvalids();
+                    errors += " error(s) found: "
+                    if (errors) {
+                        if (validator.errorList.length > 0) {
+                            for (x = 0; x < validator.errorList.length; x++) {
+                                errors += validator.errorList[x].message;
+                            }
+                        }
+                        $('div.alert').removeClass('alert-info').addClass('alert-danger');
+                        $('#alertMsg').text(errors);
+                    } else {
+                        $('div.alert').removeClass('alert-danger').addClass('alert-info');
+                        $('#alertMsg').text("Please select a instructor using the respective radio button and fill in their respective wage rate");
+                    }
+                }
             });
 
-            console.dir(webFormData);
-            $.ajax({
-                method: 'DELETE',
-                url: `/API/Instructors/Unassign?value=${instructorAccountIdList}`,
-                contentType: 'application/json',
-                datatype: 'application/json'
-            }).done(function (data) {
-                new Noty({ text: data.message, type: 'success', timeout: 3000 }).show();
-
-            }).fail(function (data) {
-                new Noty({ text: data.responseJSON.message, type: 'error', timeout: 5000 }).show();
-
+            $('.assignRadio, .wageSelection select').on('change', function () {
+                $("form[name='assignInstructorForm']").valid();
             })
-        })
+        })();
 
         function WebFormData(iCustomerId, iInstructorId, iWage) {
             this.customerId = iCustomerId;
@@ -380,25 +422,28 @@
         }
         //Do select Validation
         $('#assignInstrctorSubmitBtn').on('click', function () {
-            let wage = $selectedWageSelect.val()
-            console.log('Selected Wage: ' + wage);
-            let webFormData = new WebFormData(customerID, choosenInstructor, wage);
-            console.dir(webFormData);
+            if ($("form[name='assignInstructorForm']").valid() == true) {
+                let wage = $selectedWageSelect.val()
+                console.log('Selected Wage: ' + wage);
+                let webFormData = new WebFormData(customerID, choosenInstructor, wage);
+                console.dir(webFormData);
 
-            $.ajax({
-                method: 'POST',
-                url: '/API/Instructors/Assign',
-                data: webFormData,
-                contentType: 'application/x-www-form-urlencoded',
-                datatype: 'application/json'
-            }).done(function (data) {
-                new Noty({ text: data.message, type: 'success', timeout: 3000 }).show();
-                loadData(1, pageSize, sortOrder);
-            }).fail(function (data) {
-                new Noty({ text: data.responseJSON.message, type: 'error', timeout: 5000 }).show();
+                $.ajax({
+                    method: 'POST',
+                    url: '/API/Instructors/Assign',
+                    data: webFormData,
+                    contentType: 'application/x-www-form-urlencoded',
+                    datatype: 'application/json'
+                }).done(function (data) {
+                    new Noty({ text: data.message, type: 'success', timeout: 3000 }).show();
+                    loadData(1, pageSize, sortOrder);
+                }).fail(function (data) {
+                    new Noty({ text: data.responseJSON.message, type: 'error', timeout: 5000 }).show();
 
-            });
-        })
+                });
+            }
+        });
+
 
 
     </script>

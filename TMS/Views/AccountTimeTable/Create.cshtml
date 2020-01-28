@@ -277,6 +277,12 @@
                     accountRateRecord = data
                     $('#startDate').val(moment(accountRateRecord.startDate).format('DD/MM/YYYY'));
                     $('#endDate').val(moment(accountRateRecord.endDate).format('DD/MM/YYYY'));
+
+                    $('#startDate').datepicker('setStartDate', accountRateRecord.startDate);
+                    $('#startDate').datepicker('setEndDate', accountRateRecord.endDate);
+                    $('#endDate').datepicker('setStartDate', accountRateRecord.startDate);
+                    $('#endDate').datepicker('setEndDate', accountRateRecord.endDate);
+
                 }).fail(function (editData) {
                     new Noty({ text: editData.responseJSON.message, type: 'error', timeout: 3000 }).show();
                 });
