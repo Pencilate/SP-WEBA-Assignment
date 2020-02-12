@@ -7,12 +7,12 @@
             <a asp-controller="CustomerAccounts" asp-action="Index">Manage Customer Accounts</a>
         </li>
         <li class="breadcrumb-item font-small">
-            <a href="/CustomerAccounts/ManageInstructorAssignment/" class="MIALink">Manage Instructor Assignment</a>
+            <a href="CustomerAccounts/ManageInstructorAssignment/" class="MIALink">Manage Instructor Assignment</a>
         </li>
-        <li class="breadcrumb-item font-small active">Assign Instructor to Customer Account</li>
         <li class="breadcrumb-item font-small">
-            <a href="/CustomerAccounts/AssignInstructorsV2/" id="AIV2Link">V2</a>
+            <a href="CustomerAccounts/AssignInstructors/" id="AILink">Assign Instructor to Customer Account</a>
         </li>
+        <li class="breadcrumb-item font-small active">V2</li>
     </ol>
 </nav>
 
@@ -24,13 +24,10 @@
             <button type="button" id="assignInstrctorSubmitBtn" class="btn btn-primary" style="margin-left:auto">Submit</button>
         </div>
         <div class="alert alert-info" role="alert">
-            <span id="alertMsg">Please select a instructor using the respective radio button and fill in their respective wage rate.</span>
+            <span id="alertMsg">Please select a instructor using the respective checkbox and fill in their respective wage rate.</span>
         </div>
     </div>
     <div class="card-body col-12" style="padding:1% 3%">
-        @*<div class="alert alert-info" role="alert">
-            <span id="alertMsg">Please select a instructor using the respective radio button and fill in their respective wage rate.</span>
-        </div>*@
         <div class="row justify-content-center" id="paginationOptions" style="padding: 0.5em 0;">
             <div class="col d-inline">
                 <div class="input-group">
@@ -180,7 +177,9 @@
             }
         }
         $('.MIALink').attr('href', '/CustomerAccounts/ManageInstructorAssignment/' + customerID); //Append customerID to the end of back button anchor href
-        $('#AIV2Link').attr('href', '/CustomerAccounts/AssignInstructorsV2/' + customerID); //Append customerID to the end of back button anchor href
+        $('#AILink').attr('href', '/CustomerAccounts/AssignInstructors/' + customerID); //Append customerID to the end of back button anchor href
+
+        var dictAssign = new Object();
 
         var choosenInstructor;
         var $selectedWageSelect;
@@ -213,7 +212,7 @@
         })();
 
         function loadData(pageNo, perPageSize, prefSortOrder, prefSearchTerm) {
-             //Call AJAX to retrieve all AccountRate data
+            //Call AJAX to retrieve all AccountRate data
             $.ajax({
                 url: `/API/Instructors/GetAllInstructorPaginated/${customerID}?page_number=${pageNo}&per_page=${perPageSize}&sort_order=${prefSortOrder}&search_term=${prefSearchTerm}`,
                 method: 'GET'
@@ -260,43 +259,69 @@
                 if (oneIA.isAlreadyAssignedToCustomer == true) {
                     $cusTR.append($("<td></td>").addClass("col-md-1").append('<i class="fas fa-check" style="color:#61d800;"></i>'));
                     $assignedWageSelect = $(`
-                        <select class="custom-select" name="wageSelection"  class="custom-select" value="${oneIA.wageRate}" disabled>
-                            <option value="">Choose</option>
-                            <option value="50">50</option>
-                            <option value="55">55</option>
-                            <option value="60">60</option>
-                            <option value="65">65</option>
-                            <option value="70">70</option>
-                            <option value="75">75</option>
-                            <option value="80">80</option>
-                        </select>
-                    `)
+                                <select class="custom-select" name="wageSelection"  class="custom-select" value="${oneIA.wageRate}" disabled>
+                                    <option value="">Choose</option>
+                                    <option value="50">50</option>
+                                    <option value="55">55</option>
+                                    <option value="60">60</option>
+                                    <option value="65">65</option>
+                                    <option value="70">70</option>
+                                    <option value="75">75</option>
+                                    <option value="80">80</option>
+                                </select>
+                            `)
                     $cusTR.append($(`<td></td>`).addClass("col-md-2").append($assignedWageSelect));
                     $assignedWageSelect.val(oneIA.wageRate);
                 } else {
-                    $radioEle = $(`<input type="radio" class="form-check-input" name="assignRadio" class="assignRadio" value="${oneIA.id}"></input>`)
-                    $radioEle.on('click', function () {
-                        $('.wageSelection').children().val('');
-                        $('.wageSelection').children().prop('disabled', true);
-                        choosenInstructor = $(this).val();
-                        console.log('Chosen Instructor: ' + choosenInstructor);
-                        $selectedWageSelect = $(this).parent().next().children()
-                        $selectedWageSelect.removeAttr('disabled');
-                    })
-                    $cusTR.append($(`<td></td>`).addClass("col-md-1").append($radioEle));
+                    $chkEle = $(`<input type="checkbox" class="form-check-input" name="assignCheckbox" class="assignCheckbox" value="${oneIA.id}"></input>`)
+                    $chkEle.on('change', function () {
+                        if ($(this).prop("checked") == true) {
+                            console.log('Chosen Instructor: ' + $(this).val());
+                            $selectedWageSelect = $(this).parent().next().children()
+                            $selectedWageSelect.prop('disabled', false);
+                        } else {
+                            $selectedWageSelect = $(this).parent().next().children()
+                            $selectedWageSelect.prop('disabled', true);
+                            $selectedWageSelect.val('');
+                            delete dictAssign[$(this).val()]
+                        }
 
-                    $cusTR.append($(`<td class="wageSelection">
-                        <select class="custom-select" name="wageSelection" class="custom-select" disabled>
-                            <option value="">Choose</option>
-                            <option value="50">50</option>
-                            <option value="55">55</option>
-                            <option value="60">60</option>
-                            <option value="65">65</option>
-                            <option value="70">70</option>
-                            <option value="75">75</option>
-                            <option value="80">80</option>
-                        </select>
-                    </td>`).addClass("col-md-2"));
+                    })
+                    $cusTR.append($(`<td></td>`).addClass("col-md-1").append($chkEle));
+
+                    $wageSelect = $(`<select class="custom-select" name="wageSelection" class="custom-select" disabled>
+                                            <option value=""> Choose</option >
+                                            <option value="50">50</option>
+                                            <option value="55">55</option>
+                                            <option value="60">60</option>
+                                            <option value="65">65</option>
+                                            <option value="70">70</option>
+                                            <option value="75">75</option>
+                                            <option value="80">80</option>
+                                         </select >`)
+                    $wageSelect.on('change', function () {
+                        console.log($(this).val())
+                        $selectedCheckBox = $(this).parent().prev().children()
+                        let oneInstructor = $selectedCheckBox.val();
+                        if ($(this).val() != null) {
+
+                            let oneWage = $(this).val()
+                            dictAssign[oneInstructor] = oneWage;
+                        } else {
+                            delete dictAssign[oneInstructor]
+                        }
+                    })
+                    $cusTR.append($(`<td class="wageSelection"></td>`).addClass("col-md-2").append($wageSelect));
+
+                    $wageSelect.val('');
+                    $wageSelect.prop('disabled', true);
+
+                    if (dictAssign[oneIA.id] != null) {
+                        $chkEle.prop('checked', true);
+                        $wageSelect.val(dictAssign[oneIA.id]);
+                        $wageSelect.prop('disabled', false);
+                    }
+
                 }
                 $cusTR.append($("<td></td>", { text: oneIA.name }).addClass("col-md-2"));
                 $cusTR.append($("<td></td>", { text: oneIA.email }).addClass("col-md-2"));
@@ -305,6 +330,8 @@
                 //Append populated table row into table body
                 $tableBodyElement.append($cusTR);
             }
+
+
         }
 
         function createPageNav($navElm, currentPage, totalPages) {
@@ -447,10 +474,32 @@
         }
         //Do select Validation
         $('#assignInstrctorSubmitBtn').on('click', function () {
-            if ($("form[name='assignInstructorForm']").valid() == true) {
-                let wage = $selectedWageSelect.val()
-                console.log('Selected Wage: ' + wage);
-                let webFormData = new WebFormData(customerID, choosenInstructor, wage);
+            //if ($("form[name='assignInstructorForm']").valid() == true) {
+            //    let wage = $selectedWageSelect.val()
+            //    console.log('Selected Wage: ' + wage);
+            //    let webFormData = new WebFormData(customerID, choosenInstructor, wage);
+            //    console.dir(webFormData);
+
+            //    $.ajax({
+            //        method: 'POST',
+            //        url: '/API/Instructors/Assign',
+            //        data: webFormData,
+            //        contentType: 'application/x-www-form-urlencoded',
+            //        datatype: 'application/json'
+            //    }).done(function (data) {
+            //        new Noty({ text: data.message, type: 'success', timeout: 3000 }).show();
+            //        loadData(currentPage, pageSize, sortOrder, searchTerm);
+            //    }).fail(function (data) {
+            //        new Noty({ text: data.responseJSON.message, type: 'error', timeout: 5000 }).show();
+
+            //    });
+            //}
+
+            for (var key in dictAssign) {
+                var value = dictAssign[key];
+
+                // do something with "key" and "value" variables
+                let webFormData = new WebFormData(customerID, key,value);
                 console.dir(webFormData);
 
                 $.ajax({

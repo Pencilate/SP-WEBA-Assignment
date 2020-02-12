@@ -37,5 +37,10 @@ namespace TMS.Controllers
         {
             return View();
         }
+        [Authorize("ADMIN")]
+        public IActionResult AssignInstructorsV2()
+        {
+            return View();
+        }
     }
 }
