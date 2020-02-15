@@ -184,6 +184,7 @@
 
         var choosenInstructor;
         var $selectedWageSelect;
+        var validator;
 
         //Pagination parameters
         var pageSize = 5;
@@ -241,6 +242,16 @@
                 let $navInfo = $('#navInfo');
                 $navInfo.empty();
                 $navInfo.text(`Showing ${fromRec} to ${toRec} of ${totalRecCount} entries`);
+
+                $('div.alert').removeClass('alert-danger').addClass('alert-info');
+                $('#alertMsg').text("Please select a instructor using the respective radio button and fill in their respective wage rate");
+                $('.wageSelectionTD select').on('change', function () {
+                    if ($("form[name='assignInstructorForm']").valid() == true) {
+                        $('div.alert').removeClass('alert-danger').addClass('alert-info');
+                        $('#alertMsg').text("Please select a instructor using the respective radio button and fill in their respective wage rate");
+                    }
+                })
+
             }).fail(function (data) {
                 new Noty({ text: "Fail to load customer account rate data. " + data.responseJSON.message, type: 'error', timeout: 3000 }).show();
             });
@@ -276,16 +287,17 @@
                 } else {
                     $radioEle = $(`<input type="radio" class="form-check-input" name="assignRadio" class="assignRadio" value="${oneIA.id}"></input>`)
                     $radioEle.on('click', function () {
-                        $('.wageSelection').children().val('');
-                        $('.wageSelection').children().prop('disabled', true);
+                        $('.wageSelectionTD').children().val('');
+                        $('.wageSelectionTD').children().prop('disabled', true);
                         choosenInstructor = $(this).val();
                         console.log('Chosen Instructor: ' + choosenInstructor);
                         $selectedWageSelect = $(this).parent().next().children()
                         $selectedWageSelect.removeAttr('disabled');
+                        validator.resetForm();
                     })
                     $cusTR.append($(`<td></td>`).addClass("col-md-1").append($radioEle));
 
-                    $cusTR.append($(`<td class="wageSelection">
+                    $cusTR.append($(`<td class="wageSelectionTD">
                         <select class="custom-select" name="wageSelection" class="custom-select" disabled>
                             <option value="">Choose</option>
                             <option value="50">50</option>
@@ -384,7 +396,7 @@
         //IIFE function for jQuery-validation
         (function () {
 
-            $("form[name='assignInstructorForm']").validate({
+            validator = $("form[name='assignInstructorForm']").validate({
                 success: 'valid',
                 focusCleanup: true,
                 rules: {
@@ -394,7 +406,7 @@
                     },
                     wageSelection: {
                         //required: true,
-                        require_from_group: [1, ".wageSelection select"]
+                        require_from_group: [1, ".wageSelectionTD select"]
                     }
                 },
                 messages: {
@@ -407,6 +419,11 @@
                     }
                 },
                 errorPlacement: function (error, element) {
+                    console.dir(error);
+                    console.dir(element);
+                    console.dir("ErrorPlacement Funciton Ran");
+
+                    return false;
                     //if (element.parent().is($('div.input-group'))) {
                     //    error.appendTo(element.parent().parent());
                     //}
@@ -414,8 +431,28 @@
                     //    //error.appendTo(element.parent());
                     //    error.appendTo(element.next());
                     //}
-                    return false;
 
+                    //element.parent().append(error);
+                    //error.appendTo(element.parent());
+                    //error.appendTo($(`input[value="${choosenInstructor}"]`).parent().next());
+                    //error.appendTo($selectedWageSelect.parent());
+
+                    //$radioSel = window.eval($(`input[value="${choosenInstructor}"]`));
+                    //error.appendTo($radioSel.parent().next());
+                    
+
+                    //function setErrorMsg(error) {
+                    //    $(`input[name="assignRadio"]`).each(function (index, data) {
+                    //        if ($(this).val() == choosenInstructor) {
+                    //            console.log($(this).parent().next().append(error));
+                    //        }
+                    //    });
+                    //}
+                    
+                    //setErrorMsg(error);
+
+                    //$('.error').parent().append(error);
+                    //error.insertAfter($(`input[value="${choosenInstructor}"]`).parent().next().children());
                 },
                 invalidHandler: function (form, validator) {
                     var errors = validator.numberOfInvalids();
@@ -428,17 +465,18 @@
                         }
                         $('div.alert').removeClass('alert-info').addClass('alert-danger');
                         $('#alertMsg').text(errors);
-                    } else {
-                        $('div.alert').removeClass('alert-danger').addClass('alert-info');
-                        $('#alertMsg').text("Please select a instructor using the respective radio button and fill in their respective wage rate");
+
+                        $('#wageSelectionerror').remove();
+                        $(`input[value="${choosenInstructor}"]`).parent().next().append('<label id="wageSelectionerror" class="error" for="wageSelection" style="">Please pick a wage.</label>');
                     }
                 }
             });
 
-            $('.assignRadio, .wageSelection select').on('change', function () {
-                $("form[name='assignInstructorForm']").valid();
-            })
+
         })();
+
+
+
 
         function WebFormData(iCustomerId, iInstructorId, iWage) {
             this.customerId = iCustomerId;
@@ -448,6 +486,9 @@
         //Do select Validation
         $('#assignInstrctorSubmitBtn').on('click', function () {
             if ($("form[name='assignInstructorForm']").valid() == true) {
+                $('div.alert').removeClass('alert-danger').addClass('alert-info');
+                $('#alertMsg').text("Please select a instructor using the respective radio button and fill in their respective wage rate");
+
                 let wage = $selectedWageSelect.val()
                 console.log('Selected Wage: ' + wage);
                 let webFormData = new WebFormData(customerID, choosenInstructor, wage);
@@ -467,9 +508,15 @@
 
                 });
             }
+            //else {
+            //    setSelectElementError();
+            //}
         });
 
-
+        //function setSelectElementError() {
+        //    $('#wageSelectionerror').remove();
+        //    $(`input[value="${choosenInstructor}"]`).parent().next().append('<label id="wageSelectionerror" class="error" for="wageSelection" style="">Please pick a wage.</label>');
+        //}
 
     </script>
 }

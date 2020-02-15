@@ -240,6 +240,16 @@
                 let $navInfo = $('#navInfo');
                 $navInfo.empty();
                 $navInfo.text(`Showing ${fromRec} to ${toRec} of ${totalRecCount} entries`);
+
+                $('div.alert').removeClass('alert-danger').addClass('alert-info');
+                $('#alertMsg').text("Please select a instructor using the respective radio button and fill in their respective wage rate");
+                $('.wageSelectionTD select').on('change', function () {
+                    if ($("form[name='assignInstructorForm']").valid() == true) {
+                        $('div.alert').removeClass('alert-danger').addClass('alert-info');
+                        $('#alertMsg').text("Please select a instructor using the respective radio button and fill in their respective wage rate");
+                    }
+                })
+
             }).fail(function (data) {
                 new Noty({ text: "Fail to load customer account rate data. " + data.responseJSON.message, type: 'error', timeout: 3000 }).show();
             });
@@ -311,7 +321,7 @@
                             delete dictAssign[oneInstructor]
                         }
                     })
-                    $cusTR.append($(`<td class="wageSelection"></td>`).addClass("col-md-2").append($wageSelect));
+                    $cusTR.append($(`<td class="wageSelectionTD"></td>`).addClass("col-md-2").append($wageSelect));
 
                     $wageSelect.val('');
                     $wageSelect.prop('disabled', true);
@@ -410,39 +420,38 @@
 
         //IIFE function for jQuery-validation
         (function () {
+            //Check if the rate has 2 decimal places
+            $.validator.addMethod("validWageSelection", function (value, element) {
+                filledFields = true
+                $('input[type="checkbox"]:checked').each(function (index, data) {
+                    if ($(this).parent().next().children().val() == '') {
+                        filledFields = filledFields && false;
+                    } else {
+                        filledFields = filledFields && true;
+                    }
+                });
+                return filledFields;
+
+            }, "Please ensure all wage rates field are filled up");
 
             $("form[name='assignInstructorForm']").validate({
                 success: 'valid',
                 focusCleanup: true,
                 rules: {
-                    assignRadio: {
-                        required: true,
-                        //require_from_group: [1, ".assignRadio"]
-                    },
                     wageSelection: {
-                        //required: true,
-                        require_from_group: [1, ".wageSelection select"]
+                        //required: function (element) {
+                        //    return $('input[type="checkbox"]:checked').length > 0;
+                        //},
+                        validWageSelection: true
                     }
                 },
                 messages: {
-                    assignRadio: {
-                        //require_from_group: 'Please pick a instructor.'
-                        required: 'Please pick a instructor.'
-                    },
                     wageSelection: {
                         require_from_group: 'Please pick a wage.'
                     }
                 },
                 errorPlacement: function (error, element) {
-                    //if (element.parent().is($('div.input-group'))) {
-                    //    error.appendTo(element.parent().parent());
-                    //}
-                    //else {
-                    //    //error.appendTo(element.parent());
-                    //    error.appendTo(element.next());
-                    //}
                     return false;
-
                 },
                 invalidHandler: function (form, validator) {
                     var errors = validator.numberOfInvalids();
@@ -455,6 +464,16 @@
                         }
                         $('div.alert').removeClass('alert-info').addClass('alert-danger');
                         $('#alertMsg').text(errors);
+
+                        for (let eidx = 0; eidx < $('input[type="checkbox"]:checked').length; eidx++) {
+                            $('#wageSelectionerror').remove();
+                        }
+                        $('input[type="checkbox"]:checked').each(function (index, data) {
+                            if ($(this).parent().next().children().val() == '') {
+                                $(this).parent().next().append('<label id="wageSelectionerror" class="error" for="wageSelection" style="">Please pick a wage.</label>');
+                            }
+                        });
+
                     } else {
                         $('div.alert').removeClass('alert-danger').addClass('alert-info');
                         $('#alertMsg').text("Please select a instructor using the respective radio button and fill in their respective wage rate");
@@ -462,9 +481,6 @@
                 }
             });
 
-            $('.assignRadio, .wageSelection select').on('change', function () {
-                $("form[name='assignInstructorForm']").valid();
-            })
         })();
 
         function WebFormData(iCustomerId, iInstructorId, iWage) {
@@ -494,27 +510,30 @@
 
             //    });
             //}
+            if ($("form[name='assignInstructorForm']").valid() == true) {
+                $('div.alert').removeClass('alert-danger').addClass('alert-info');
+                $('#alertMsg').text("Please select a instructor using the respective radio button and fill in their respective wage rate");
+                for (var key in dictAssign) {
+                    var value = dictAssign[key];
 
-            for (var key in dictAssign) {
-                var value = dictAssign[key];
+                    // do something with "key" and "value" variables
+                    let webFormData = new WebFormData(customerID, key, value);
+                    console.dir(webFormData);
 
-                // do something with "key" and "value" variables
-                let webFormData = new WebFormData(customerID, key,value);
-                console.dir(webFormData);
+                    $.ajax({
+                        method: 'POST',
+                        url: '/API/Instructors/Assign',
+                        data: webFormData,
+                        contentType: 'application/x-www-form-urlencoded',
+                        datatype: 'application/json'
+                    }).done(function (data) {
+                        new Noty({ text: data.message, type: 'success', timeout: 3000 }).show();
+                        loadData(currentPage, pageSize, sortOrder, searchTerm);
+                    }).fail(function (data) {
+                        new Noty({ text: data.responseJSON.message, type: 'error', timeout: 5000 }).show();
 
-                $.ajax({
-                    method: 'POST',
-                    url: '/API/Instructors/Assign',
-                    data: webFormData,
-                    contentType: 'application/x-www-form-urlencoded',
-                    datatype: 'application/json'
-                }).done(function (data) {
-                    new Noty({ text: data.message, type: 'success', timeout: 3000 }).show();
-                    loadData(currentPage, pageSize, sortOrder, searchTerm);
-                }).fail(function (data) {
-                    new Noty({ text: data.responseJSON.message, type: 'error', timeout: 5000 }).show();
-
-                });
+                    });
+                }
             }
         });
 
