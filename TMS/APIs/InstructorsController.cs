@@ -374,6 +374,45 @@ namespace TMS.APIs
         [HttpPost("Assign")]
         public IActionResult Post([FromForm]IFormCollection  data)
         {
+            int testInt = 0;
+            bool testBool = false;
+            decimal testDecimal = 0;
+            bool validDates = true;
+
+            List<String> errorMessages = new List<string>();
+            if (!data.ContainsKey("customerId"))
+            {
+                errorMessages.Add("Customer Account ID is missing");
+            }
+            if (!data.ContainsKey("instructorId"))
+            {
+                errorMessages.Add("Instructor ID is missing");
+            }
+            if (!data.ContainsKey("wageRate"))
+            {
+                errorMessages.Add("Wage Rate is missing");
+            }
+            if (!int.TryParse(data["customerId"].ToString(), out testInt))
+            {
+                errorMessages.Add("Customer Account ID MUST be numeric");
+            }
+            if (!int.TryParse(data["instructorId"].ToString(), out testInt))
+            {
+                errorMessages.Add("Instructor ID MUST be numeric");
+            }
+            if (!decimal.TryParse(data["wageRate"].ToString(), out testDecimal))
+            {
+                errorMessages.Add("Wage Rate MUST be a decimal");
+            }
+
+
+            string errorString = "";
+            errorString = string.Concat(errorMessages);
+
+            if (errorMessages.Count > 0)
+            {
+                return BadRequest(new { message = errorString });
+            }
             int userId = int.Parse(User.FindFirst("userid").Value); //Retireve the user id of the current logged in user
             try
             {
@@ -405,6 +444,23 @@ namespace TMS.APIs
         {
 
             List<string> IAid = value.Split(',').ToList();
+            int testInt = 0;
+
+            List<String> errorMessages = new List<string>();
+            foreach (string val in IAid) {
+                if (!int.TryParse(val, out testInt)) {
+                    errorMessages.Add(val.ToString() + " is not a valid Instructor Account ID");
+                }
+            }
+
+            string errorString = "";
+            errorString = string.Concat(errorMessages);
+
+            if (errorMessages.Count > 0)
+            {
+                return BadRequest(new { message = errorString });
+            }
+
             List<InstructorAccount> iaList = new List<InstructorAccount>();
             try {
                iaList  = Database.InstructorAccounts.Where(record => IAid.Contains(record.InstructorAccountId.ToString())).ToList();

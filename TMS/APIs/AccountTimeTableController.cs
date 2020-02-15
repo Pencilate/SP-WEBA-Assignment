@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -179,6 +180,7 @@ namespace TMS.APIs
         [HttpGet("GetAccountTimeTable/{id}")]
         public IActionResult GetTimeTable(int id)
         {
+
             try
             {
                 AccountTimeTable att = Database.AccountTimeTable.SingleOrDefault(tt => tt.AccountTimeTableId == id);
@@ -209,6 +211,79 @@ namespace TMS.APIs
         public IActionResult Post([FromForm]IFormCollection data)
         {
             int userId = int.Parse(User.FindFirst("userid").Value); //Retireve the user id of the current logged in user
+            int testInt = 0;
+            bool testBool = false;
+            DateTime testStartDate = DateTime.Now;
+            DateTime testEndDate = DateTime.Now;
+            bool validDates = true;
+
+            List<String> errorMessages = new List<string>();
+            if (!data.ContainsKey("id"))
+            {
+                errorMessages.Add("Account Rate ID is missing");
+            }
+            if (!data.ContainsKey("dayOfWeek")) {
+                errorMessages.Add("Day of Week is missing");
+            }
+            if (!data.ContainsKey("startDateTime"))
+            {
+                errorMessages.Add("Start Date and Time is missing");
+            }
+            if (!data.ContainsKey("endDateTime"))
+            {
+                errorMessages.Add("End Date and Time is missing");
+            }
+            if (!data.ContainsKey("visibility"))
+            {
+                errorMessages.Add("Account visiibility boolean is missing");
+            }
+            if (!data.ContainsKey("override"))
+            {
+                errorMessages.Add("Override boolean is missing");
+            }
+            if (!int.TryParse(data["id"].ToString(), out testInt)) {
+                errorMessages.Add("Account Rate ID MUST be numeric");
+            }
+            if (!int.TryParse(data["dayOfWeek"].ToString(), out testInt))
+            {
+                errorMessages.Add("Day Of Week MUST be numeric");
+            }
+            if (!bool.TryParse(data["visibility"].ToString(), out testBool))
+            {
+                errorMessages.Add("Visibility can only be true or false");
+            }
+            if (!bool.TryParse(data["override"].ToString(), out testBool))
+            {
+                errorMessages.Add("Override can only be true or false");
+            }
+            if (!DateTime.TryParseExact(data["startDateTime"], "d/M/yyyy h : mm tt", System.Globalization.CultureInfo.InvariantCulture, DateTimeStyles.None, out testStartDate))
+            {
+                validDates = false;
+                errorMessages.Add("Data contains invalid Start Date and Time");
+            }
+            if (!DateTime.TryParseExact(data["endDateTime"], "d/M/yyyy h : mm tt", System.Globalization.CultureInfo.InvariantCulture, DateTimeStyles.None, out testEndDate))
+            {
+                validDates = false;
+                errorMessages.Add("Data contains invalid End Date and Time");
+            }
+            if (validDates) {
+                if (testStartDate.Date.CompareTo(testEndDate.Date) > 0) {
+                    errorMessages.Add("Start Date must be earlier then End Date");
+                }
+                if (testStartDate.TimeOfDay.CompareTo(testEndDate.TimeOfDay) > 0) {
+                    errorMessages.Add("Start Time must be earlier then End Time");
+
+                }
+            }
+
+            string errorString = "";
+            errorString = string.Concat(errorMessages);
+
+            if (errorMessages.Count > 0)
+            {
+                return BadRequest(new { message = errorString });
+            }
+
             try
             {
 
@@ -350,6 +425,84 @@ namespace TMS.APIs
         [HttpPut("Update/{ttid}")]
         public IActionResult Put(int ttid, [FromForm]IFormCollection data)
         {
+            int testInt = 0;
+            bool testBool = false;
+            DateTime testStartDate = DateTime.Now;
+            DateTime testEndDate = DateTime.Now;
+            bool validDates = true;
+
+            List<String> errorMessages = new List<string>();
+            if (!data.ContainsKey("ttid"))
+            {
+                errorMessages.Add("Account Timetable ID is missing");
+            }
+            if (!data.ContainsKey("dayOfWeek"))
+            {
+                errorMessages.Add("Day of Week is missing");
+            }
+            if (!data.ContainsKey("startDateTime"))
+            {
+                errorMessages.Add("Start Date and Time is missing");
+            }
+            if (!data.ContainsKey("endDateTime"))
+            {
+                errorMessages.Add("End Date and Time is missing");
+            }
+            if (!data.ContainsKey("visibility"))
+            {
+                errorMessages.Add("Account visiibility boolean is missing");
+            }
+            if (!data.ContainsKey("override"))
+            {
+                errorMessages.Add("Override boolean is missing");
+            }
+            if (!int.TryParse(data["id"].ToString(), out testInt))
+            {
+                errorMessages.Add("Account Rate ID MUST be numeric");
+            }
+            if (!int.TryParse(data["dayOfWeek"].ToString(), out testInt))
+            {
+                errorMessages.Add("Day Of Week MUST be numeric");
+            }
+            if (!bool.TryParse(data["visibility"].ToString(), out testBool))
+            {
+                errorMessages.Add("Visibility can only be true or false");
+            }
+            if (!bool.TryParse(data["override"].ToString(), out testBool))
+            {
+                errorMessages.Add("Override can only be true or false");
+            }
+            if (!DateTime.TryParseExact(data["startDateTime"], "d/M/yyyy h : mm tt", System.Globalization.CultureInfo.InvariantCulture, DateTimeStyles.None, out testStartDate))
+            {
+                validDates = false;
+                errorMessages.Add("Data contains invalid Start Date and Time");
+            }
+            if (!DateTime.TryParseExact(data["endDateTime"], "d/M/yyyy h : mm tt", System.Globalization.CultureInfo.InvariantCulture, DateTimeStyles.None, out testEndDate))
+            {
+                validDates = false;
+                errorMessages.Add("Data contains invalid End Date and Time");
+            }
+            if (validDates)
+            {
+                if (testStartDate.Date.CompareTo(testEndDate.Date) > 0)
+                {
+                    errorMessages.Add("Start Date must be earlier then End Date");
+                }
+                if (testStartDate.TimeOfDay.CompareTo(testEndDate.TimeOfDay) > 0)
+                {
+                    errorMessages.Add("Start Time must be earlier then End Time");
+
+                }
+            }
+
+            string errorString = "";
+            errorString = string.Concat(errorMessages);
+
+            if (errorMessages.Count > 0)
+            {
+                return BadRequest(new { message = errorString });
+            }
+
             int userId = int.Parse(User.FindFirst("userid").Value); //Retireve the user id of the current logged in user
             try
             {
