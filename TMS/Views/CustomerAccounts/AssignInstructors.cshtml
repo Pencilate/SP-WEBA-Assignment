@@ -293,7 +293,7 @@
                         console.log('Chosen Instructor: ' + choosenInstructor);
                         $selectedWageSelect = $(this).parent().next().children()
                         $selectedWageSelect.removeAttr('disabled');
-                        validator.resetForm();
+                        $('#wageSelectionerror').remove();
                     })
                     $cusTR.append($(`<td></td>`).addClass("col-md-1").append($radioEle));
 
