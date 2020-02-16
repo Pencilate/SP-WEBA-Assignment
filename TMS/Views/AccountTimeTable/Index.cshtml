@@ -661,6 +661,7 @@
                 url: `/API/AccountTimeTable/GetAccountTimeTable/${accountTTID}`,
                 method: 'GET'
             }).done(function (editData) {
+                console.dir(editData)
                 //Populating modal with data from AJAX
                 modal.find('.modal-body #dayOfWeekSelect').val(editData.day);
                 modal.find('.modal-body input#startTime').val(moment(editData.startTime, 'hh:mm:ss').format('h : mm A'));
@@ -672,13 +673,18 @@
                 modal.find('.modal-body input#startDate').datepicker('setEndDate', accountRateRecord.endDate);
                 modal.find('.modal-body input#endDate').datepicker('setStartDate', accountRateRecord.startDate);
                 modal.find('.modal-body input#endDate').datepicker('setEndDate', accountRateRecord.endDate);
-                
+
 
                 $('#startDate').datepicker('update');
                 $('#endDate').datepicker('update');
                 if (editData.visibility == true) {
                     //modal.find('.modal-body input#timetableVisibilityToggle').prop('checked',true);
+                    console.log('Setting visibility to ON')
                     modal.find('.modal-body input#timetableVisibilityToggle').bootstrapToggle('on');
+                } else {
+                    console.log('Setting visibility to OFF')
+                    modal.find('.modal-body input#timetableVisibilityToggle').bootstrapToggle('off');
+
                 }
 
                 //https://stackoverflow.com/questions/39467345/remove-jquery-from-element-and-reapply
