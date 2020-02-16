@@ -43,7 +43,7 @@ namespace TMS.APIs
                     return NotFound(new { message = "Customer could not be found" });
                 }
                 AccountRate ar = Database.AccountRates.SingleOrDefault(r => r.AccountRateId == arID); //Check if the specific AccountRate exist in the database
-                if (ar == null) //If CustomerAccount does not exist in database, return 404 Not Found
+                if (ar == null) //If AccountRate does not exist in database, return 404 Not Found
                 {
                     return NotFound(new { message = "Customer's Account Rate could not be found" });
                 }
@@ -80,12 +80,12 @@ namespace TMS.APIs
                 List<AccountTimeTable> cusAccountTimeTable; //Declare a list to store all the AccountRate records related to the customer from the database
                 if (sortOrder.Equals("ASC"))
                 {
-                    //Query the database for AccountRate records related to the customer in the ascending order of AccountRateId
+                    //Query the database for AccountTimeTable records related to the customer in the ascending order of AccountTimeTableId
                     cusAccountTimeTable = Database.AccountTimeTable.Where(catt => catt.AccountRateId == arID).OrderBy(catt => catt.AccountTimeTableId).ToList();
                 }
                 else if (sortOrder.Equals("DESC"))
                 {
-                    //Query the database for AccountRate records related to the customer in the descending order of AccountRateId
+                    //Query the database for AccountTimeTable records related to the customer in the descending order of AccountTimeTableId
                     cusAccountTimeTable = Database.AccountTimeTable.Where(catt => catt.AccountRateId == arID).OrderByDescending(catt => catt.AccountTimeTableId).ToList();
                 }
                 else
@@ -94,12 +94,12 @@ namespace TMS.APIs
                     return BadRequest(new { message = "Invalid Sort Order" });
                 }
 
-                totalRecords = cusAccountTimeTable.Count; //Get the total no of AccountRate records from the datebase
+                totalRecords = cusAccountTimeTable.Count; //Get the total no of AccountTimeTable records from the datebase
 
                 totalPage = (int)Math.Ceiling((double)totalRecords / pageSize); //Calculate the total number of pages
                 if (totalRecords == 0)
                 {
-                    //If no records are found for the customer
+                    //If no records are found for the accountTimeTable
                     return Ok(new
                     {
                         accountName = ca.AccountName,
@@ -124,7 +124,7 @@ namespace TMS.APIs
                     endRecord = startRecord + pageSize - 1;
                 }
 
-                //Iterate through the list of AccountRates, and cherry pick the data to return
+                //Iterate through the list of AccountTimeTable, and cherry pick the data to return
                 List<object> cusAccountRateByPage = new List<object>();
                 for (int i = startRecord - 1; i <= endRecord - 1; i++)
                 {
@@ -211,67 +211,76 @@ namespace TMS.APIs
         public IActionResult Post([FromForm]IFormCollection data)
         {
             int userId = int.Parse(User.FindFirst("userid").Value); //Retireve the user id of the current logged in user
+
+            //API Data Validation
             int testInt = 0;
             bool testBool = false;
             DateTime testStartDate = DateTime.Now;
             DateTime testEndDate = DateTime.Now;
             bool validDates = true;
+            bool validDayWeek = true;
 
             List<String> errorMessages = new List<string>();
             if (!data.ContainsKey("id"))
             {
-                errorMessages.Add("Account Rate ID is missing");
+                errorMessages.Add("Account Rate ID is missing. ");
             }
             if (!data.ContainsKey("dayOfWeek")) {
-                errorMessages.Add("Day of Week is missing");
+                errorMessages.Add("Day of Week is missing. ");
             }
             if (!data.ContainsKey("startDateTime"))
             {
-                errorMessages.Add("Start Date and Time is missing");
+                errorMessages.Add("Start Date and Time is missing. ");
             }
             if (!data.ContainsKey("endDateTime"))
             {
-                errorMessages.Add("End Date and Time is missing");
+                errorMessages.Add("End Date and Time is missing. ");
             }
             if (!data.ContainsKey("visibility"))
             {
-                errorMessages.Add("Account visiibility boolean is missing");
+                errorMessages.Add("Account visiibility boolean is missing. ");
             }
             if (!data.ContainsKey("override"))
             {
-                errorMessages.Add("Override boolean is missing");
+                errorMessages.Add("Override boolean is missing. ");
             }
             if (!int.TryParse(data["id"].ToString(), out testInt)) {
-                errorMessages.Add("Account Rate ID MUST be numeric");
+                errorMessages.Add("Account Rate ID MUST be numeric. ");
             }
             if (!int.TryParse(data["dayOfWeek"].ToString(), out testInt))
             {
-                errorMessages.Add("Day Of Week MUST be numeric");
+                errorMessages.Add("Day Of Week MUST be numeric. ");
+                validDayWeek = false;
+            }
+            if (validDayWeek) {
+                if (testInt < 1 || testInt > 7) {
+                    errorMessages.Add("Day Of Week can only be from 1 to 7. ");
+                }
             }
             if (!bool.TryParse(data["visibility"].ToString(), out testBool))
             {
-                errorMessages.Add("Visibility can only be true or false");
+                errorMessages.Add("Visibility can only be true or false. ");
             }
             if (!bool.TryParse(data["override"].ToString(), out testBool))
             {
-                errorMessages.Add("Override can only be true or false");
+                errorMessages.Add("Override can only be true or false. ");
             }
             if (!DateTime.TryParseExact(data["startDateTime"], "d/M/yyyy h : mm tt", System.Globalization.CultureInfo.InvariantCulture, DateTimeStyles.None, out testStartDate))
             {
                 validDates = false;
-                errorMessages.Add("Data contains invalid Start Date and Time");
+                errorMessages.Add("Data contains invalid Start Date and Time. ");
             }
             if (!DateTime.TryParseExact(data["endDateTime"], "d/M/yyyy h : mm tt", System.Globalization.CultureInfo.InvariantCulture, DateTimeStyles.None, out testEndDate))
             {
                 validDates = false;
-                errorMessages.Add("Data contains invalid End Date and Time");
+                errorMessages.Add("Data contains invalid End Date and Time. ");
             }
             if (validDates) {
                 if (testStartDate.Date.CompareTo(testEndDate.Date) > 0) {
-                    errorMessages.Add("Start Date must be earlier then End Date");
+                    errorMessages.Add("Start Date must be earlier then End Date. ");
                 }
                 if (testStartDate.TimeOfDay.CompareTo(testEndDate.TimeOfDay) > 0) {
-                    errorMessages.Add("Start Time must be earlier then End Time");
+                    errorMessages.Add("Start Time must be earlier then End Time. ");
 
                 }
             }
@@ -286,7 +295,7 @@ namespace TMS.APIs
 
             try
             {
-
+                //Populate AccountTimeTable with data sent from client
                 AccountTimeTable newATT = new AccountTimeTable();
                 int ARID = int.Parse(data["id"]);
                 newATT.AccountRateId = ARID;
@@ -299,12 +308,14 @@ namespace TMS.APIs
                 newATT.UpdatedAt = _appDateTimeService.GetCurrentDateTime();
                 newATT.UpdatedById = userId;
 
+                //Variables for checking if the account timetable data sent by the client clashes with any existing records in the database
                 bool forceOverride = Boolean.Parse(data["override"]);
                 bool overlap = false;
                 bool identical = false;
                 List<AccountTimeTable> identicalATT = new List<AccountTimeTable>();
                 List<AccountTimeTable> overlapATT = new List<AccountTimeTable>();
 
+                //Setting up the Stored Procedure call for checking Identical and Overlap records
                 SqlParameter[] parameters = new SqlParameter[4];
                 parameters[0] = new SqlParameter("@AccountRateId", SqlDbType.Int);
                 parameters[0].Value = newATT.AccountRateId;
@@ -315,62 +326,21 @@ namespace TMS.APIs
                 parameters[3] = new SqlParameter("@EndDateTime", SqlDbType.DateTime2);
                 parameters[3].Value = newATT.EffectiveEndDateTime;
 
+                //Executing Stored Procedure For Identical records
                 identicalATT = Database.AccountTimeTable.FromSql($"exec uspAccountTimeTableCheckIdenticalBeforeAdd @AccountRateId, @DayOfWeek, @StartDateTime, @EndDateTime",parameters).ToList();
                 if (identicalATT != null && identicalATT.Count > 0) {
                     identical = true;
                 }
-                //overlapATT = Database.AccountTimeTable.FromSql($"exec uspAccountTimeTableCheckOverlapBeforeAdd {newATT.AccountTimeTableId},{newATT.AccountRateId},{newATT.DayOfWeekNumber},'{newATT.EffectiveStartDateTime.ToString("yyyy-MM-dd HH:mm:ss.fffffff")}','{newATT.EffectiveEndDateTime.ToString("yyyy-MM-dd HH:mm:ss.fffffff")}'").ToList();
+                //Executing Stored Procedure For Overlap records
                 overlapATT = Database.AccountTimeTable.FromSql($"exec uspAccountTimeTableCheckOverlapBeforeAdd @AccountRateId, @DayOfWeek, @StartDateTime, @EndDateTime", parameters).ToList();
                 if (overlapATT != null && overlapATT.Count > 0)
                 {
                     overlap = true;
                 }
 
-                //List<AccountTimeTable> existingATT = Database.AccountTimeTable.Where(a => a.AccountRateId == ARID).ToList();
-                //foreach (AccountTimeTable att in existingATT) //Iterate thorugh all the AccountRate record to check for overlap
-                //{
-                //    if (newATT.DayOfWeekNumber == att.DayOfWeekNumber)
-                //    {
-                //        if ((newATT.EffectiveStartDateTime.CompareTo(att.EffectiveStartDateTime) == 0) && (newATT.EffectiveEndDateTime.CompareTo(att.EffectiveEndDateTime) == 0))
-                //        {
-                //            identical = true;
-                //            identicalATT.Add(att);
-                //        }
-
-                //        bool overlapCurrentRecord = false;
-                //        if (newATT.EffectiveStartDateTime.CompareTo(att.EffectiveStartDateTime) >= 0)// Check if the new AR Start Date is After the current AR Start Date
-                //        {
-                //            if (newATT.EffectiveEndDateTime.CompareTo(att.EffectiveEndDateTime) <= 0)// Check if the new AR End Date is Before the current AR End Date
-                //            {
-                //                overlapCurrentRecord = true; //Record overlap the entire period
-                //            }
-                //            if (newATT.EffectiveStartDateTime.CompareTo(att.EffectiveEndDateTime) <= 0)// Check if the new AR Start Date is Before the current AR End Date
-                //            {
-                //                overlapCurrentRecord = true; // Record overlap front of period
-                //            }
-
-                //        }
-                //        else// The new AR Start Date is Before the current AR Start Date
-                //        {
-                //            if (newATT.EffectiveEndDateTime.CompareTo(att.EffectiveEndDateTime) >= 0)// Check if the new AR End Date is After the current AR End Date
-                //            {
-                //                overlapCurrentRecord = true; //Record is encapulated by period
-                //            }
-                //            if (newATT.EffectiveEndDateTime.CompareTo(att.EffectiveStartDateTime) >= 0)// Check if new AR End Date is After the current AR Start Date
-                //            {
-                //                overlapCurrentRecord = true; //Record over back of period
-                //            }
-                //        }
-                //        if (overlapCurrentRecord)//If there is overlap, collate a string of all the date clashes
-                //        {
-                //            overlap = true;
-                //            overlapATT.Add(att);
-                //        }
-                //    }
-                //}
-
-
-                if (identical) {
+                
+                if (identical)
+                {//If there are identical records, send the records back to the client as JSON along with error message and override indication
                     List<object> result = new List<object>();
                     foreach (AccountTimeTable iATT in identicalATT) {
                         result.Add(new
@@ -385,7 +355,8 @@ namespace TMS.APIs
                         });
                         return BadRequest(new { overridable = false, message = "Failed to create record. Your account timetable is the same as the following existing record.", record = result });
                     }
-                } else if (overlap && !forceOverride) {
+                } else if (overlap && !forceOverride)
+                { //If there areoverlap records and the client did not request override, send the records back to the client as JSON along with error message and override indication
 
                     List<object> result = new List<object>();
                     foreach (AccountTimeTable oATT in overlapATT)
@@ -405,6 +376,7 @@ namespace TMS.APIs
                     return BadRequest(new { overridable = true, message = "Your timetable overlaps with the following existing timetable. Continue creating?", record = result });
                 }
 
+                //If there is no identical records or overlap records with force insert, save the record to database
                 Database.AccountTimeTable.Add(newATT);
                 Database.SaveChanges();
                 return Ok(new { message = "Successfully added record." });
@@ -416,7 +388,7 @@ namespace TMS.APIs
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = "There are issues with the request." });
+                return BadRequest(new { message = "There are issues with the request." }); //Return BadRequest for any general exception occured
             }
         }
 
@@ -425,72 +397,82 @@ namespace TMS.APIs
         [HttpPut("Update/{ttid}")]
         public IActionResult Put(int ttid, [FromForm]IFormCollection data)
         {
+            //API Data Validation
             int testInt = 0;
             bool testBool = false;
             DateTime testStartDate = DateTime.Now;
             DateTime testEndDate = DateTime.Now;
             bool validDates = true;
+            bool validDayWeek = true;
 
             List<String> errorMessages = new List<string>();
-            if (!data.ContainsKey("ttid"))
+            if (!data.ContainsKey("id"))
             {
-                errorMessages.Add("Account Timetable ID is missing");
+                errorMessages.Add("Account Rate ID is missing. ");
             }
             if (!data.ContainsKey("dayOfWeek"))
             {
-                errorMessages.Add("Day of Week is missing");
+                errorMessages.Add("Day of Week is missing. ");
             }
             if (!data.ContainsKey("startDateTime"))
             {
-                errorMessages.Add("Start Date and Time is missing");
+                errorMessages.Add("Start Date and Time is missing. ");
             }
             if (!data.ContainsKey("endDateTime"))
             {
-                errorMessages.Add("End Date and Time is missing");
+                errorMessages.Add("End Date and Time is missing. ");
             }
             if (!data.ContainsKey("visibility"))
             {
-                errorMessages.Add("Account visiibility boolean is missing");
+                errorMessages.Add("Account visiibility boolean is missing. ");
             }
             if (!data.ContainsKey("override"))
             {
-                errorMessages.Add("Override boolean is missing");
+                errorMessages.Add("Override boolean is missing. ");
             }
             if (!int.TryParse(data["id"].ToString(), out testInt))
             {
-                errorMessages.Add("Account Rate ID MUST be numeric");
+                errorMessages.Add("Account Rate ID MUST be numeric. ");
             }
             if (!int.TryParse(data["dayOfWeek"].ToString(), out testInt))
             {
-                errorMessages.Add("Day Of Week MUST be numeric");
+                errorMessages.Add("Day Of Week MUST be numeric. ");
+                validDayWeek = false;
+            }
+            if (validDayWeek)
+            {
+                if (testInt < 1 || testInt > 7)
+                {
+                    errorMessages.Add("Day Of Week can only be from 1 to 7. ");
+                }
             }
             if (!bool.TryParse(data["visibility"].ToString(), out testBool))
             {
-                errorMessages.Add("Visibility can only be true or false");
+                errorMessages.Add("Visibility can only be true or false. ");
             }
             if (!bool.TryParse(data["override"].ToString(), out testBool))
             {
-                errorMessages.Add("Override can only be true or false");
+                errorMessages.Add("Override can only be true or false. ");
             }
             if (!DateTime.TryParseExact(data["startDateTime"], "d/M/yyyy h : mm tt", System.Globalization.CultureInfo.InvariantCulture, DateTimeStyles.None, out testStartDate))
             {
                 validDates = false;
-                errorMessages.Add("Data contains invalid Start Date and Time");
+                errorMessages.Add("Data contains invalid Start Date and Time. ");
             }
             if (!DateTime.TryParseExact(data["endDateTime"], "d/M/yyyy h : mm tt", System.Globalization.CultureInfo.InvariantCulture, DateTimeStyles.None, out testEndDate))
             {
                 validDates = false;
-                errorMessages.Add("Data contains invalid End Date and Time");
+                errorMessages.Add("Data contains invalid End Date and Time. ");
             }
             if (validDates)
             {
                 if (testStartDate.Date.CompareTo(testEndDate.Date) > 0)
                 {
-                    errorMessages.Add("Start Date must be earlier then End Date");
+                    errorMessages.Add("Start Date must be earlier then End Date. ");
                 }
                 if (testStartDate.TimeOfDay.CompareTo(testEndDate.TimeOfDay) > 0)
                 {
-                    errorMessages.Add("Start Time must be earlier then End Time");
+                    errorMessages.Add("Start Time must be earlier then End Time. ");
 
                 }
             }
@@ -511,7 +493,7 @@ namespace TMS.APIs
                 {
                     return NotFound(new { message = "Customer account timetable could not be found" });
                 }
-
+                //Update the information in the existing Account Timetable record
                 int ARID = int.Parse(data["id"]);
                 foundATT.DayOfWeekNumber = int.Parse(data["dayOfWeek"]);
                 foundATT.EffectiveStartDateTime = DateTime.ParseExact(data["startDateTime"], "d/M/yyyy h : mm tt", System.Globalization.CultureInfo.InvariantCulture);
@@ -520,6 +502,7 @@ namespace TMS.APIs
                 foundATT.UpdatedAt = _appDateTimeService.GetCurrentDateTime();
                 foundATT.UpdatedById = userId;
 
+                //Variables for checking if the account timetable data sent by the client clashes with any existing records in the database
                 bool forceOverride = Boolean.Parse(data["override"]);
                 List<AccountTimeTable> existingATT = Database.AccountTimeTable.Where(a => a.AccountRateId == ARID).Where(tt => tt.AccountTimeTableId != ttid).ToList();
                 bool overlap = false;
@@ -527,6 +510,7 @@ namespace TMS.APIs
                 List<AccountTimeTable> identicalATT = new List<AccountTimeTable>();
                 List<AccountTimeTable> overlapATT = new List<AccountTimeTable>();
 
+                //Setting up the Stored Procedure call for checking Identical and Overlap records
                 SqlParameter[] parameters = new SqlParameter[5];
                 parameters[0] = new SqlParameter("@AccountTimeTableId", SqlDbType.Int);
                 parameters[0].Value = foundATT.AccountTimeTableId;
@@ -539,61 +523,21 @@ namespace TMS.APIs
                 parameters[4] = new SqlParameter("@EndDateTime", SqlDbType.DateTime2);
                 parameters[4].Value = foundATT.EffectiveEndDateTime;
 
+                //Executing Stored Procedure For Identical records
                 identicalATT = Database.AccountTimeTable.FromSql($"exec uspAccountTimeTableCheckIdenticalBeforeUpdate @AccountTimeTableId,  @AccountRateId, @DayOfWeek, @StartDateTime, @EndDateTime", parameters).ToList();
                 if (identicalATT != null && identicalATT.Count > 0)
                 {
                     identical = true;
                 }
+                //Executing Stored Procedure For Overlap records
                 overlapATT = Database.AccountTimeTable.FromSql($"exec uspAccountTimeTableCheckOverlapBeforeUpdate @AccountTimeTableId,  @AccountRateId, @DayOfWeek, @StartDateTime, @EndDateTime", parameters).ToList();
                 if (overlapATT != null && overlapATT.Count > 0)
                 {
                     overlap = true;
                 }
 
-                //foreach (AccountTimeTable att in existingATT) //Iterate thorugh all the AccountRate record to check for overlap
-                //{
-                //    if (foundATT.DayOfWeekNumber == att.DayOfWeekNumber)
-                //    {
-                //        if ((foundATT.EffectiveStartDateTime.CompareTo(att.EffectiveStartDateTime) == 0) && (foundATT.EffectiveEndDateTime.CompareTo(att.EffectiveEndDateTime) == 0))
-                //        {
-                //            identical = true;
-                //            identicalATT.Add(att);
-                //        }
-
-                //        bool overlapCurrentRecord = false;
-                //        if (foundATT.EffectiveStartDateTime.CompareTo(att.EffectiveStartDateTime) >= 0)// Check if the new AR Start Date is After the current AR Start Date
-                //        {
-                //            if (foundATT.EffectiveEndDateTime.CompareTo(att.EffectiveEndDateTime) <= 0)// Check if the new AR End Date is Before the current AR End Date
-                //            {
-                //                overlapCurrentRecord = true; //Record overlap the entire period
-                //            }
-                //            if (foundATT.EffectiveStartDateTime.CompareTo(att.EffectiveEndDateTime) <= 0)// Check if the new AR Start Date is Before the current AR End Date
-                //            {
-                //                overlapCurrentRecord = true; // Record overlap front of period
-                //            }
-
-                //        }
-                //        else// The new AR Start Date is Before the current AR Start Date
-                //        {
-                //            if (foundATT.EffectiveEndDateTime.CompareTo(att.EffectiveEndDateTime) >= 0)// Check if the new AR End Date is After the current AR End Date
-                //            {
-                //                overlapCurrentRecord = true; //Record is encapulated by period
-                //            }
-                //            if (foundATT.EffectiveEndDateTime.CompareTo(att.EffectiveStartDateTime) >= 0)// Check if new AR End Date is After the current AR Start Date
-                //            {
-                //                overlapCurrentRecord = true; //Record over back of period
-                //            }
-                //        }
-                //        if (overlapCurrentRecord)//If there is overlap, collate a string of all the date clashes
-                //        {
-                //            overlap = true;
-                //            overlapATT.Add(att);
-                //        }
-                //    }
-                //}
-
                 if (identical)
-                {
+                {//If there are identical records, send the records back to the client as JSON along with error message and override indication
                     List<object> result = new List<object>();
                     foreach (AccountTimeTable iATT in identicalATT)
                     {
@@ -611,7 +555,7 @@ namespace TMS.APIs
                     }
                 }
                 else if (overlap && !forceOverride)
-                {
+                {//If there areoverlap records and the client did not request override, send the records back to the client as JSON along with error message and override indication
 
                     List<object> result = new List<object>();
                     foreach (AccountTimeTable oATT in overlapATT)
@@ -628,9 +572,10 @@ namespace TMS.APIs
                         });
                     }
 
-                    return BadRequest(new { overridable = true, message = "Your timetable overlaps with the following existing timetable. Continue creating?", record = result });
+                    return BadRequest(new { overridable = true, message = "Your timetable overlaps with the following existing timetable. Continue updating?", record = result });
                 }
 
+                //If there is no identical records or overlap records with force insert, save the record to database
                 Database.AccountTimeTable.Update(foundATT);
                 Database.SaveChanges();
                 return Ok(new { message = "Successfully updated record." });

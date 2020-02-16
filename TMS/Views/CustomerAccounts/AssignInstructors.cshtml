@@ -166,6 +166,9 @@
         .formheight {
             min-height: 6.5em;
         }
+        .pagination .page-item.disabled .page-link {
+            color: white;
+        }
     </style>
     <script>
         //Get custoemrID from URL
@@ -243,8 +246,10 @@
                 $navInfo.empty();
                 $navInfo.text(`Showing ${fromRec} to ${toRec} of ${totalRecCount} entries`);
 
+                //Reseting the alert box
                 $('div.alert').removeClass('alert-danger').addClass('alert-info');
                 $('#alertMsg').text("Please select a instructor using the respective radio button and fill in their respective wage rate");
+                //Reseting the alert box when the form is valid
                 $('.wageSelectionTD select').on('change', function () {
                     if ($("form[name='assignInstructorForm']").valid() == true) {
                         $('div.alert').removeClass('alert-danger').addClass('alert-info');
@@ -268,7 +273,7 @@
                 $cusTR.addClass("row m-0");
 
                 $cusTR.append($("<td></td>", { text: oneIA.no }).addClass("col-md-1"));
-                if (oneIA.isAlreadyAssignedToCustomer == true) {
+                if (oneIA.isAlreadyAssignedToCustomer == true) {//If the instructor is already assigned, put a checkmark with its respective wage rate
                     $cusTR.append($("<td></td>").addClass("col-md-1").append('<i class="fas fa-check" style="color:#61d800;"></i>'));
                     $assignedWageSelect = $(`
                         <select class="custom-select" name="wageSelection"  class="custom-select" value="${oneIA.wageRate}" disabled>
@@ -286,6 +291,7 @@
                     $assignedWageSelect.val(oneIA.wageRate);
                 } else {
                     $radioEle = $(`<input type="radio" class="form-check-input" name="assignRadio" class="assignRadio" value="${oneIA.id}"></input>`)
+                    //Radio button will reset all the select dropdown and disable them. It will also enable the select dropdown next to it.
                     $radioEle.on('click', function () {
                         $('.wageSelectionTD').children().val('');
                         $('.wageSelectionTD').children().prop('disabled', true);
@@ -401,17 +407,14 @@
                 focusCleanup: true,
                 rules: {
                     assignRadio: {
-                        required: true,
-                        //require_from_group: [1, ".assignRadio"]
+                        required: true
                     },
                     wageSelection: {
-                        //required: true,
                         require_from_group: [1, ".wageSelectionTD select"]
                     }
                 },
                 messages: {
                     assignRadio: {
-                        //require_from_group: 'Please pick a instructor.'
                         required: 'Please pick a instructor.'
                     },
                     wageSelection: {
@@ -419,42 +422,11 @@
                     }
                 },
                 errorPlacement: function (error, element) {
-                    console.dir(error);
-                    console.dir(element);
-                    console.dir("ErrorPlacement Funciton Ran");
 
                     return false;
-                    //if (element.parent().is($('div.input-group'))) {
-                    //    error.appendTo(element.parent().parent());
-                    //}
-                    //else {
-                    //    //error.appendTo(element.parent());
-                    //    error.appendTo(element.next());
-                    //}
-
-                    //element.parent().append(error);
-                    //error.appendTo(element.parent());
-                    //error.appendTo($(`input[value="${choosenInstructor}"]`).parent().next());
-                    //error.appendTo($selectedWageSelect.parent());
-
-                    //$radioSel = window.eval($(`input[value="${choosenInstructor}"]`));
-                    //error.appendTo($radioSel.parent().next());
-                    
-
-                    //function setErrorMsg(error) {
-                    //    $(`input[name="assignRadio"]`).each(function (index, data) {
-                    //        if ($(this).val() == choosenInstructor) {
-                    //            console.log($(this).parent().next().append(error));
-                    //        }
-                    //    });
-                    //}
-                    
-                    //setErrorMsg(error);
-
-                    //$('.error').parent().append(error);
-                    //error.insertAfter($(`input[value="${choosenInstructor}"]`).parent().next().children());
                 },
                 invalidHandler: function (form, validator) {
+                    //Set error message when the form is invalid
                     var errors = validator.numberOfInvalids();
                     errors += " error(s) found: "
                     if (errors) {
@@ -476,14 +448,12 @@
         })();
 
 
-
-
         function WebFormData(iCustomerId, iInstructorId, iWage) {
             this.customerId = iCustomerId;
             this.instructorId = iInstructorId;
             this.wageRate = iWage;
         }
-        //Do select Validation
+
         $('#assignInstrctorSubmitBtn').on('click', function () {
             if ($("form[name='assignInstructorForm']").valid() == true) {
                 $('div.alert').removeClass('alert-danger').addClass('alert-info');
@@ -508,15 +478,7 @@
 
                 });
             }
-            //else {
-            //    setSelectElementError();
-            //}
         });
-
-        //function setSelectElementError() {
-        //    $('#wageSelectionerror').remove();
-        //    $(`input[value="${choosenInstructor}"]`).parent().next().append('<label id="wageSelectionerror" class="error" for="wageSelection" style="">Please pick a wage.</label>');
-        //}
 
     </script>
 }

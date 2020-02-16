@@ -233,6 +233,9 @@
         .formheight {
             min-height: 6.5em;
         }
+        .pagination .page-item.disabled .page-link {
+            color: white;
+        }
     </style>
     <script>
         $(document).ready(function () {
@@ -252,16 +255,6 @@
 
             $('.aATTIndex').attr('href', '/AccountTimeTable/Index/' + customerID + '-' + accountRateID);  //Append accountRateID to the end of account rate breadcrumb anchor href
             $('#ARBreadcrumb').attr('href', '/AccountRates/Index/' + customerID); //Append accountRateID to the end of create account timetable anchor href
-
-            ////Call AJAX Method to get the customer name for the title of the page.
-            //$.ajax({
-            //    url: '/API/CustomerAccounts/' + customerID,
-            //    method: 'GET'
-            //}).done(function (data) {
-            //    $('.accountNameTitle').text(data.accountName);
-            //}).fail(function (editData) {
-            //    new Noty({ text: editData.responseJSON.message, type: 'error', timeout: 3000 }).show();
-            //});
 
             //Initialise datepicker
             $('[data-toggle="datepicker"]').datepicker({ format: 'DD/MM/YYYY' });
@@ -288,7 +281,7 @@
                 });
             }
 
-
+            //Initialise jQuery validation only after Retrieving account Rate Records
             $.when(retrieveARR()).done(function () {
 
                 //IIFE function for jQuery-validation
@@ -317,14 +310,16 @@
                     $.validator.addMethod('afterStartTime', function (value, element) {
                         return this.optional(element) || moment(value, 'h : mm A').isSameOrAfter(moment($("#startTime").val(), 'h : mm A'));
                     }, 'Please choose a valid time later than Start Time');
+                    //Check if the date value is after AccountRate Start Date
                     $.validator.addMethod('afterARStartDate', function (value, element) {
                         return this.optional(element) || moment(value, 'DD/MM/YYYY').isSameOrAfter(accountRateRecord.startDate, 'DD/MM/YYYY');
                     }, 'Please choose a valid date after AccountRate Start Date');
+                    //Check if the date value is before AccountRate End Date
                     $.validator.addMethod('beforeAREndDate', function (value, element) {
                         return this.optional(element) || moment(value, 'DD/MM/YYYY').isSameOrBefore(accountRateRecord.endDate, 'DD/MM/YYYY');
                     }, 'Please choose a valid date before AccountRate End Date');
 
-
+                    //Form Validation
                     $("form[name='createAccountTimeTableForm']").validate({
                         success: 'valid',
                         focusCleanup: true,
@@ -439,12 +434,12 @@
                     }).done(function (data) {
                         console.dir(data);
                         new Noty({ text: data.message, type: 'success', timeout: 5000 }).show();
-                        loadData(currentPage, pageSize, sortOrder);
+                        loadData(1, pageSize, sortOrder);
                     }).fail(function (conflictdata) {
                         console.dir(conflictdata);
                         new Noty({ text: `An error has occured: ${conflictdata.responseJSON.message}`, type: 'error', timeout: 7000 }).show();
                         $('#detailedConflict').text(conflictdata.responseJSON.message);
-
+                        //Check if the records can be inserted by overriding
                         console.log(conflictdata.overridable);
                         if (conflictdata.responseJSON.overridable == true) {
                             $('#overrideBtn').css('display', 'block');
@@ -457,6 +452,7 @@
                             $('#timetableConflictModal .modal-title').addClass('text-white');
                         }
                         let conflictRecords = conflictdata.responseJSON.record;
+                        //Populating the conflict records table
                         $tableBodyElement = $('#conflictTableBodyElement');
                         $tableBodyElement.empty();//Clear all html within the table body
                         for (let i = 0; i < conflictRecords.length; i++) {
@@ -481,6 +477,7 @@
                             //Append populated table row into table body
                             $tableBodyElement.append($cusTR);
                         }
+                        //Show the conflict modal
                         $('#timetableConflictModal').modal('show')
                     })
 
@@ -491,6 +488,7 @@
 
             });
 
+             //When override button is pressed
             $('#overrideBtn').on('click', function () {
 
                 //Retrieve valid from form
@@ -533,9 +531,11 @@
                 });
             });
 
+            //Reset Conflict Form
             $('#timetableConflictModal').on('hidden.bs.modal', function (e) {
                 $('#overrideBtn').css('display', 'none');
                 $('#timetableConflictModal .modal-header').removeClass('bg-warning');
+                $('#timetableConflictModal .modal-header').removeClass('bg-danger');
                 $('#timetableConflictModal .modal-title').removeClass('text-white');
             });
 
@@ -697,6 +697,7 @@
                 $navElm.append($liNext);
             }
 
+            //Toggle for showing the existing records
             $('#recordToggle').on('click', function () {
                 if ($('#listCard').css('display') == 'none') {
                     $('#listCard').css('display', 'block');
@@ -708,6 +709,7 @@
                 }
             })
 
+            //Toggle for fixating the table at the bottom
             $('#fixRecordTable').on('change', function () {
                 if ($('#fixRecordTable').prop('checked') == true) {
                     $('#listCard').css('position', 'fixed');

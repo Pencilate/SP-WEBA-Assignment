@@ -15,7 +15,7 @@
         <div class="container-fluid d-flex">
             <h4 class="one" style="padding-top:1.8%;width:80%">Assign instructor(s) to <span id="accountNameTitle">Account Name</span></h4>
             <a href="/CustomerAccounts/Index" id="backBtn" class="btn btn-secondary" style="text-align:center;    align-self: center;    padding: 1.7em;">Back</a>
-            <button type="button" id="unassignInstrctorBtn" class="btn btn-danger" style="margin-left:auto"><i class="fas fa-minus" style="color:#FFF;float:left;padding-top: 0.8em;"></i> Unassgin  Instructor</button>
+            <button type="button" id="unassignInstrctorBtn" class="btn btn-danger" style="margin-left:auto"><i class="fas fa-minus" style="color:#FFF;float:left;padding-top: 0.8em;"></i> Unassign  Instructor</button>
             <a href="/CustomerAccounts/AssignInstructors/" id="assignInstrctorBtn" class="btn btn-primary" style="margin-left:auto"><i class="fas fa-plus" style="color:#FFF;float:left;padding-top: 0.8em;"></i> Assign Instructor</a>
         </div>
     </div>
@@ -154,6 +154,9 @@
         .formheight {
             min-height: 6.5em;
         }
+        .pagination .page-item.disabled .page-link {
+            color: white;
+        }
     </style>
     <script>
         //Get custoemrID from URL
@@ -256,6 +259,7 @@
                 $tableBodyElement.append($cusTR);
             }
 
+            //Enable/Disable the submit unassign button depending if at least one checkbox is checked
             $("input[name='unassignChk']").on('change',function(){
             if(  $("input[name='unassignChk']:checked").length > 0){
                 $('#unassignInstrctorBtn').prop("disabled", false);
@@ -340,7 +344,9 @@
             $navElm.append($liNext);
         }
 
+        //When the unassign button is clicked
         $('#unassignInstrctorBtn').on('click', function () {
+            //Getting a list of instructorAccountId to unassign
             let $chkBoxElement = $('input[type=checkbox]:checked');
             let instructorAccountIdList = [];
             $chkBoxElement.each(function () {

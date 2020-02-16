@@ -77,7 +77,7 @@ namespace TMS.APIs
                 List <InstructorAccount> cusInstrctorAccounts; //Declare a list to store all the InstructorAccount records related to the customer from the database
                 if (sortOrder.Equals("ASC"))
                 {
-                    //Query the database for AccountRate records related to the customer in the ascending order of AccountRateId
+                    //Query the database for InstructorAccount records related to the customer in the ascending order of InstructorAccountId
                     if (String.IsNullOrEmpty(searchTerm))
                     {
                         cusInstrctorAccounts = Database.InstructorAccounts.Where(ia => ia.CustomerAccountId == id).Include(ia => ia.Instructor).Include(ia => ia.CreatedBy).OrderBy(ia => ia.InstructorAccountId).ToList();
@@ -89,7 +89,7 @@ namespace TMS.APIs
                 }
                 else if (sortOrder.Equals("DESC"))
                 {
-                    //Query the database for AccountRate records related to the customer in the descending order of AccountRateId
+                    //Query the database for InstructorAccount records related to the customer in the descending order of InstructorAccountId
                     if (String.IsNullOrEmpty(searchTerm))
                     {
                         cusInstrctorAccounts = Database.InstructorAccounts.Where(ia => ia.CustomerAccountId == id).Include(ia => ia.Instructor).Include(ia => ia.CreatedBy).OrderByDescending(ia => ia.InstructorAccountId).ToList();
@@ -106,12 +106,12 @@ namespace TMS.APIs
                     return BadRequest(new { message = "Invalid Sort Order" });
                 }
 
-                totalRecords = cusInstrctorAccounts.Count; //Get the total no of AccountRate records from the datebase
+                totalRecords = cusInstrctorAccounts.Count; //Get the total no of InstructorAccount records from the datebase
 
                 totalPage = (int)Math.Ceiling((double)totalRecords / pageSize); //Calculate the total number of pages
                 if (totalRecords == 0)
                 {
-                    //If no records are found for the customer
+                    //If no records are found for the InstructorAccount
                     return Ok(new
                     {
                         accountName = ca.AccountName,
@@ -135,7 +135,7 @@ namespace TMS.APIs
                     endRecord = startRecord + pageSize - 1;
                 }
 
-                //Iterate through the list of AccountRates, and cherry pick the data to return
+                //Iterate through the list of InstructorAccount, and cherry pick the data to return
                 List<object> cusInstructorAccountRateByPage = new List<object>();
                 for (int i = startRecord - 1; i <= endRecord - 1; i++)
                 {
@@ -149,6 +149,7 @@ namespace TMS.APIs
                         recordNo = totalRecords - i;
                     }
 
+                    //Find the list of Customer Assigned to the Instructor
                     string assignedCusAccounts = "";
                     List<InstructorAccount> iaCusAssigned = Database.InstructorAccounts.Where(ia => ia.InstructorId == cusInstrctorAccounts[i].InstructorId).Include(ia => ia.CustomerAccount).ToList();
                     foreach (InstructorAccount iar in iaCusAssigned)
@@ -242,10 +243,10 @@ namespace TMS.APIs
                     startRecord = ((currentPage - 1) * pageSize) + 1;
                 }
 
-                List<AppUser> instrctors; //Declare a list to store all the InstructorAccount records related to the customer from the database
+                List<AppUser> instrctors; //Declare a list to store all the Instructor records related to the customer from the database
                 if (sortOrder.Equals("ASC"))
                 {
-                    //Query the database for AccountRate records related to the customer in the ascending order of AccountRateId
+                    //Query the database for Instructor AppUser records related to the customer in the ascending order of Id
                     if (String.IsNullOrEmpty(searchTerm))
                     {
                         instrctors = Database.AppUsers.Where(au => au.RoleId == 2).OrderBy(au => au.Id).ToList();
@@ -256,7 +257,7 @@ namespace TMS.APIs
                 }
                 else if (sortOrder.Equals("DESC"))
                 {
-                    //Query the database for AccountRate records related to the customer in the descending order of AccountRateId
+                    //Query the database for Instructor AppUser records related to the customer in the descending order of Id
                     if (String.IsNullOrEmpty(searchTerm))
                     {
                         instrctors = Database.AppUsers.Where(au => au.RoleId == 2).OrderByDescending(au => au.Id).ToList();
@@ -272,7 +273,7 @@ namespace TMS.APIs
                     return BadRequest(new { message = "Invalid Sort Order" });
                 }
 
-                totalRecords = instrctors.Count; //Get the total no of AccountRate records from the datebase
+                totalRecords = instrctors.Count; //Get the total no of AppUser records from the datebase
 
                 totalPage = (int)Math.Ceiling((double)totalRecords / pageSize); //Calculate the total number of pages
                 if (totalRecords == 0)
@@ -301,7 +302,7 @@ namespace TMS.APIs
                     endRecord = startRecord + pageSize - 1;
                 }
 
-                //Iterate through the list of AccountRates, and cherry pick the data to return
+                //Iterate through the list of Instructor AppUsers, and cherry pick the data to return
                 List<object> cusInstructorAccountRateByPage = new List<object>();
                 for (int i = startRecord - 1; i <= endRecord - 1; i++)
                 {
@@ -315,6 +316,7 @@ namespace TMS.APIs
                         recordNo = totalRecords - i;
                     }
 
+                    //Find the list of Customer Assigned to the Instructor
                     string assignedCusAccounts = "";
                     List<InstructorAccount> iaCusAssigned = Database.InstructorAccounts.Where(ia => ia.InstructorId == instrctors[i].Id).Include(ia => ia.CustomerAccount).ToList();
                     foreach (InstructorAccount iar in iaCusAssigned) {
@@ -324,6 +326,8 @@ namespace TMS.APIs
                     {
                         assignedCusAccounts = assignedCusAccounts.Remove(assignedCusAccounts.Length - 1);
                     }
+
+                    //Check if the instructor is already assigned to Customer
                     bool assigned = false;
                     decimal? wage = null;
                     InstructorAccount iaRec = Database.InstructorAccounts.Where(c => c.CustomerAccountId == id).SingleOrDefault(ia => ia.InstructorId == instrctors[i].Id);
@@ -374,37 +378,53 @@ namespace TMS.APIs
         [HttpPost("Assign")]
         public IActionResult Post([FromForm]IFormCollection  data)
         {
+            //API Data Validation
             int testInt = 0;
             bool testBool = false;
             decimal testDecimal = 0;
             bool validDates = true;
-
+            bool validIDs = true;
             List<String> errorMessages = new List<string>();
             if (!data.ContainsKey("customerId"))
             {
-                errorMessages.Add("Customer Account ID is missing");
+                errorMessages.Add("Customer Account ID is missing. ");
             }
             if (!data.ContainsKey("instructorId"))
             {
-                errorMessages.Add("Instructor ID is missing");
+                errorMessages.Add("Instructor ID is missing. ");
             }
             if (!data.ContainsKey("wageRate"))
             {
-                errorMessages.Add("Wage Rate is missing");
+                errorMessages.Add("Wage Rate is missing. ");
             }
             if (!int.TryParse(data["customerId"].ToString(), out testInt))
             {
-                errorMessages.Add("Customer Account ID MUST be numeric");
+                errorMessages.Add("Customer Account ID MUST be numeric. ");
+                validIDs = false;
+            }
+            if (Database.CustomerAccounts.SingleOrDefault(ca => ca.CustomerAccountId == testInt) == null)
+            {
+                errorMessages.Add("Customer does not exist. ");
             }
             if (!int.TryParse(data["instructorId"].ToString(), out testInt))
             {
-                errorMessages.Add("Instructor ID MUST be numeric");
+                errorMessages.Add("Instructor ID MUST be numeric. ");
+                validIDs = false;   
+            }
+            if (Database.AppUsers.Where(au => au.RoleId == 2).SingleOrDefault(au => au.Id == testInt) == null)
+            {
+                errorMessages.Add("Instructor does not exist. ");
             }
             if (!decimal.TryParse(data["wageRate"].ToString(), out testDecimal))
             {
-                errorMessages.Add("Wage Rate MUST be a decimal");
+                errorMessages.Add("Wage Rate MUST be a decimal. ");
             }
-
+            if (validIDs) {
+                if (Database.InstructorAccounts.Where(ia => ia.CustomerAccountId == int.Parse(data["customerId"].ToString())).SingleOrDefault(ia => ia.InstructorAccountId == int.Parse(data["customerId"].ToString())) != null) {
+                    errorMessages.Add("Instructor Already Assigned to Customer. ");
+                }
+            }
+            
 
             string errorString = "";
             errorString = string.Concat(errorMessages);
@@ -413,9 +433,11 @@ namespace TMS.APIs
             {
                 return BadRequest(new { message = errorString });
             }
+
             int userId = int.Parse(User.FindFirst("userid").Value); //Retireve the user id of the current logged in user
             try
             {
+                //Populate InstructorAccount with data from sent by client
                 InstructorAccount newIA = new InstructorAccount();
                 newIA.CustomerAccountId = int.Parse(data["customerId"]);
                 newIA.InstructorId = int.Parse(data["instructorId"]);
@@ -423,6 +445,7 @@ namespace TMS.APIs
                 newIA.CreatedAt = _appDateTimeService.GetCurrentDateTime();
                 newIA.CreatedById = userId;
 
+                //Save changes to database
                 Database.InstructorAccounts.Add(newIA);
                 Database.SaveChanges();
 
@@ -444,12 +467,21 @@ namespace TMS.APIs
         {
 
             List<string> IAid = value.Split(',').ToList();
+
+            //API Data Validation
             int testInt = 0;
 
             List<String> errorMessages = new List<string>();
             foreach (string val in IAid) {
-                if (!int.TryParse(val, out testInt)) {
-                    errorMessages.Add(val.ToString() + " is not a valid Instructor Account ID");
+                if (!int.TryParse(val, out testInt))
+                {
+                    errorMessages.Add(val + " is not a valid Instructor Account ID");
+                }
+                else {
+                    if (Database.InstructorAccounts.SingleOrDefault(ia => ia.InstructorAccountId == testInt) == null)
+                    {
+                        errorMessages.Add("InstructorAccount "+val+" does not exist");
+                    }
                 }
             }
 
@@ -460,7 +492,7 @@ namespace TMS.APIs
             {
                 return BadRequest(new { message = errorString });
             }
-
+            //Remove Records and Save Changes to Database
             List<InstructorAccount> iaList = new List<InstructorAccount>();
             try {
                iaList  = Database.InstructorAccounts.Where(record => IAid.Contains(record.InstructorAccountId.ToString())).ToList();

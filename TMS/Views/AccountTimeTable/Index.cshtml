@@ -330,6 +330,10 @@
         .formheight {
             min-height: 6.5em;
         }
+
+        .pagination .page-item.disabled .page-link {
+            color: white;
+        }
     </style>
     <script>
         //Get custoemrID from URL
@@ -407,6 +411,7 @@
             });
         }
 
+        //Method for populating the tables
         function renderData(data) {
             $tableBodyElement = $('#tableBodyElement');
             $tableBodyElement.empty();//Clear all html within the table body
@@ -514,8 +519,9 @@
             $navElm.append($liNext);
         }
 
+        //Initialise Date Picker
         $('[data-toggle="datepicker"]').datepicker({ format: 'DD/MM/YYYY', zIndex: 2048 });
-
+        //Initialise Time Picker
         $('.timepicker').wickedpicker({ minutesInterval: 15 });
 
         var accountRateRecord = null;
@@ -531,7 +537,7 @@
             });
         }
 
-
+        //Initialise JQueryValidation only after retrieving AccountRateRecord Information
         $.when(retrieveARR()).done(function () {
             //IIFE function for jQuery-validation
             (function () {
@@ -559,14 +565,16 @@
                 $.validator.addMethod('afterStartTime', function (value, element) {
                     return this.optional(element) || moment(value, 'h : mm A').isSameOrAfter(moment($("#startTime").val(), 'h : mm A'));
                 }, 'Please choose a valid time later than Start Time');
+                //Check if the date value is after account rate start date
                 $.validator.addMethod('afterARStartDate', function (value, element) {
                     return this.optional(element) || moment(value, 'DD/MM/YYYY').isSameOrAfter(accountRateRecord.startDate, 'DD/MM/YYYY');
                 }, 'Please choose a valid date after AccountRate Start Date');
+                //Check if the date value is before account rate end date
                 $.validator.addMethod('beforeAREndDate', function (value, element) {
                     return this.optional(element) || moment(value, 'DD/MM/YYYY').isSameOrBefore(accountRateRecord.endDate, 'DD/MM/YYYY');
                 }, 'Please choose a valid date before AccountRate End Date');
 
-
+                //Form validation
                 $("form[name='editAccountTimeTableForm']").validate({
                     success: 'valid',
                     focusCleanup: true,
@@ -646,8 +654,6 @@
             let $button = $(event.relatedTarget); // Button that triggered the modal
             accountTTID = $button.data('ttid'); // Extract info from data-* attributes and set the value of the global cusID variable
             console.dir(accountTTID + " of Modal");
-
-            //new Noty({ text: `Edit Button Pressed for ${accountRateID}`, type: 'info', timeout: 1000 }).show();//For Debug
 
             var modal = $(this);
             //Call AJAX to retrieve one customer account rate information
@@ -733,7 +739,7 @@
                 //Create webFormData object
                 let webFormData = new WebFormData(false, accountRateID, cDayOfWeek, cCollatedStartDateTime, cCollatedEndDateTime, cVisibility);
                 console.dir(webFormData)
-                //Call AJAX with webFormData to create the record in database
+                //Call AJAX with webFormData to update the record in database
                 $.ajax({
                     url: `/API/AccountTimeTable/Update/${accountTTID}`,
                     method: 'PUT',
@@ -746,12 +752,14 @@
                     $('#editAccountTTModal').modal('hide');
                     loadData(currentPage, pageSize, sortOrder);
 
-                }).fail(function (conflictdata) {
+                    }).fail(function (conflictdata) {
+                    //When there is a conflict of records
                     console.dir(conflictdata);
                     new Noty({ text: `An error has occured: ${conflictdata.responseJSON.message}`, type: 'error', timeout: 7000 }).show();
                     $('#detailedConflict').text(conflictdata.responseJSON.message);
 
                     console.log(conflictdata.overridable);
+                    //Check if the record can be forced inserted into the database
                     if (conflictdata.responseJSON.overridable == true) {
                         $('#overrideBtn').css('display', 'block');
                         $('#timetableConflictModal .modal-header').addClass('bg-warning');
@@ -764,6 +772,7 @@
                         $('#editAccountTTModal').modal('hide');
                     }
                     let conflictRecords = conflictdata.responseJSON.record;
+                    //Populating the conflict records table
                     $tableBodyElement = $('#conflictTableBodyElement');
                     $tableBodyElement.empty();//Clear all html within the table body
                     for (let i = 0; i < conflictRecords.length; i++) {
@@ -788,13 +797,14 @@
                         //Append populated table row into table body
                         $tableBodyElement.append($cusTR);
                     }
-
+                    //Show the modal
                     $('#timetableConflictModal').modal('show')
                 })
 
             }
         });
 
+        //When override button is pressed
         $('#overrideBtn').on('click', function () {
 
             //Retrieve valid from form
@@ -833,6 +843,7 @@
         $('#timetableConflictModal').on('hidden.bs.modal', function (e) {
             $('#overrideBtn').css('display', 'none');
             $('#timetableConflictModal .modal-header').removeClass('bg-warning');
+            $('#timetableConflictModal .modal-header').removeClass('bg-danger');
             $('#timetableConflictModal .modal-title').removeClass('text-white');
         })
 
@@ -858,8 +869,6 @@
             let $button = $(event.relatedTarget); // Button that triggered the modal
             accountTTID = $button.data('ttid'); // Extract info from data-* attributes and set the value of the global cusID variable
             console.dir(accountTTID + " of Modal");
-
-            //new Noty({ text: `Edit Button Pressed for ${accountRateID}`, type: 'info', timeout: 1000 }).show();//For Debug
 
             var modal = $(this);
             //Call AJAX to get account summary of the AccountRate with specified accountRateID

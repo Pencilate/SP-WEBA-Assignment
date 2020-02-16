@@ -163,6 +163,9 @@
         .formheight {
             min-height: 6.5em;
         }
+        .pagination .page-item.disabled .page-link {
+            color: white;
+        }
     </style>
     <script>
         //Get custoemrID from URL
@@ -266,7 +269,7 @@
                 $cusTR.addClass("row m-0");
 
                 $cusTR.append($("<td></td>", { text: oneIA.no }).addClass("col-md-1"));
-                if (oneIA.isAlreadyAssignedToCustomer == true) {
+                if (oneIA.isAlreadyAssignedToCustomer == true) {//If the instructor is already assigned, put a checkmark with its respective wage rate
                     $cusTR.append($("<td></td>").addClass("col-md-1").append('<i class="fas fa-check" style="color:#61d800;"></i>'));
                     $assignedWageSelect = $(`
                                 <select class="custom-select" name="wageSelection"  class="custom-select" value="${oneIA.wageRate}" disabled>
@@ -283,6 +286,7 @@
                     $cusTR.append($(`<td></td>`).addClass("col-md-2").append($assignedWageSelect));
                     $assignedWageSelect.val(oneIA.wageRate);
                 } else {
+                    //Checkbox will toggle the select dropdown beside them.
                     $chkEle = $(`<input type="checkbox" class="form-check-input" name="assignCheckbox" class="assignCheckbox" value="${oneIA.id}"></input>`)
                     $chkEle.on('change', function () {
                         if ($(this).prop("checked") == true) {
@@ -293,6 +297,7 @@
                             $selectedWageSelect = $(this).parent().next().children()
                             $selectedWageSelect.prop('disabled', true);
                             $selectedWageSelect.val('');
+                            //Delete the record in dictionary if it was previously assigned
                             delete dictAssign[$(this).val()]
                         }
 
@@ -309,7 +314,7 @@
                                             <option value="75">75</option>
                                             <option value="80">80</option>
                                          </select >`)
-                    $wageSelect.on('change', function () {
+                    $wageSelect.on('change', function () {//Check if the dropdown selection is valid, if it is valid add to the dictionary
                         console.log($(this).val())
                         $selectedCheckBox = $(this).parent().prev().children()
                         let oneInstructor = $selectedCheckBox.val();
@@ -323,9 +328,11 @@
                     })
                     $cusTR.append($(`<td class="wageSelectionTD"></td>`).addClass("col-md-2").append($wageSelect));
 
+                    //Set initial state of dropdown
                     $wageSelect.val('');
                     $wageSelect.prop('disabled', true);
 
+                    //Assign previously checked instructors
                     if (dictAssign[oneIA.id] != null) {
                         $chkEle.prop('checked', true);
                         $wageSelect.val(dictAssign[oneIA.id]);
@@ -439,9 +446,6 @@
                 focusCleanup: true,
                 rules: {
                     wageSelection: {
-                        //required: function (element) {
-                        //    return $('input[type="checkbox"]:checked').length > 0;
-                        //},
                         validWageSelection: true
                     }
                 },
@@ -488,28 +492,9 @@
             this.instructorId = iInstructorId;
             this.wageRate = iWage;
         }
-        //Do select Validation
+
+        //When assign button is clicked, send the ajax request.
         $('#assignInstrctorSubmitBtn').on('click', function () {
-            //if ($("form[name='assignInstructorForm']").valid() == true) {
-            //    let wage = $selectedWageSelect.val()
-            //    console.log('Selected Wage: ' + wage);
-            //    let webFormData = new WebFormData(customerID, choosenInstructor, wage);
-            //    console.dir(webFormData);
-
-            //    $.ajax({
-            //        method: 'POST',
-            //        url: '/API/Instructors/Assign',
-            //        data: webFormData,
-            //        contentType: 'application/x-www-form-urlencoded',
-            //        datatype: 'application/json'
-            //    }).done(function (data) {
-            //        new Noty({ text: data.message, type: 'success', timeout: 3000 }).show();
-            //        loadData(currentPage, pageSize, sortOrder, searchTerm);
-            //    }).fail(function (data) {
-            //        new Noty({ text: data.responseJSON.message, type: 'error', timeout: 5000 }).show();
-
-            //    });
-            //}
             if ($("form[name='assignInstructorForm']").valid() == true) {
                 $('div.alert').removeClass('alert-danger').addClass('alert-info');
                 $('#alertMsg').text("Please select a instructor using the respective radio button and fill in their respective wage rate");
@@ -534,6 +519,7 @@
 
                     });
                 }
+                dictAssign = {};
             }
         });
 
